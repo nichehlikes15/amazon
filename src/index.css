@@ -103,6 +103,29 @@ button {
     font-weight: 500;
 }
 
+.nav-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.profile-picture {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.profile-name {
+  font-size: 14px;
+  font-weight: 300;
+  color: #1f2937;
+  white-space: nowrap;
+}
+
 .hero {
     background: linear-gradient(120deg, var(--light), #e8f1fb);
 }

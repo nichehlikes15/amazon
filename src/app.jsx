@@ -21,6 +21,15 @@ function App() {
             <button type="button" onClick={() => scrollToSection('community')}>Community</button>
           </div>
 
+          <div className="nav-profile">
+            <img
+              className="profile-picture"
+              src="/assets/images/defaultprofile.svg"
+              alt="Profile picture"
+            />
+            <span className="profile-name">Bob Bobby</span>
+          </div>
+
         </nav>
       </header>
 

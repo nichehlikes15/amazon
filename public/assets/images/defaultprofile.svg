@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <clipPath id="avatar-clip">
+      <circle cx="64" cy="64" r="64"/>
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#avatar-clip)">
+    <rect width="128" height="128" fill="#E5E7EB"/>
+    <circle cx="64" cy="46" r="23" fill="#9CA3AF"/>
+    <path d="M12 128c0-27 23-46 52-46s52 19 52 46z" fill="#9CA3AF"/>
+  </g>
+</svg>
