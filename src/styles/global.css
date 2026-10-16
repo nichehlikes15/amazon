@@ -1,0 +1,57 @@
+:root {
+    --navy: #062142;
+    --orange: #e7900e;
+    --ink: #172235;
+    --muted: #536174;
+    --line: #dce3eb;
+    --light: #f3f7fb;
+    --white: #ffffff;
+}
+
+@font-face {
+    font-family: "Amazon Ember Display";
+    src: url("/assets/fonts/AmazonEmberDisplay_Rg.ttf")
+        format("truetype");
+    font-weight: 400;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Amazon Ember Display";
+    src: url("/assets/fonts/AmazonEmberDisplay_Md.ttf")
+        format("truetype");
+    font-weight: 500;
+    font-display: swap;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    background: var(--white);
+    color: var(--ink);
+    font-family: "Amazon Ember Display", Arial, sans-serif;
+    font-size: 16px;
+}
+
+a, button {
+    font: inherit;
+}
+
+a {
+    color: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+h1, h2, h3, p {
+    margin-top: 0;
+}

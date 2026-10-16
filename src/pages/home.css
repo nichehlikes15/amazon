@@ -1,0 +1,156 @@
+/* Hero section */
+.hero {
+    background: linear-gradient(120deg, var(--light), #e8f1fb);
+}
+
+.hero-content {
+    max-width: 1120px;
+    min-height: 470px;
+    margin: 0 auto;
+    padding: 100px 24px;
+}
+
+.hero-copy {
+    max-width: 650px;
+}
+
+.eyebrow {
+    margin: 0 0 14px;
+    color: var(--orange);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.hero h1 {
+    margin-bottom: 20px;
+    color: var(--navy);
+    font-size: clamp(40px, 6vw, 64px);
+    font-weight: 500;
+    line-height: 1.05;
+}
+
+.hero h1 span {
+    color: var(--orange);
+}
+
+.hero-description {
+    max-width: 570px;
+    margin-bottom: 32px;
+    color: var(--muted);
+    font-size: 20px;
+    line-height: 1.5;
+}
+
+.hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+/* Buttons */
+.primary-button,
+.secondary-button {
+    padding: 13px 20px;
+    border-radius: 7px;
+    font-weight: 500;
+}
+
+.primary-button {
+    border: 1px solid var(--navy);
+    background: var(--navy);
+    color: var(--white);
+}
+
+.secondary-button {
+    border: 1px solid var(--navy);
+    background: transparent;
+    color: var(--navy);
+}
+
+.primary-button:hover,
+.secondary-button:hover {
+    background: #123d70;
+    color: var(--white);
+}
+
+/* Main content */
+.content-section {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 88px 24px;
+}
+
+.content-section h2 {
+    max-width: 570px;
+    margin-bottom: 18px;
+    color: var(--navy);
+    font-size: 38px;
+    font-weight: 500;
+    line-height: 1.1;
+}
+
+.section-intro {
+    max-width: 570px;
+    margin-bottom: 38px;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+/* Feature cards */
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+
+.feature-card {
+    padding: 26px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--white);
+}
+
+.feature-icon {
+    color: var(--orange);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.feature-card h3 {
+    margin: 26px 0 10px;
+    color: var(--navy);
+    font-size: 21px;
+    font-weight: 500;
+}
+
+.feature-card p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+/* Homepage responsive styles */
+@media (max-width: 650px) {
+    .hero-content {
+        min-height: 420px;
+        padding: 72px 20px;
+    }
+
+    .hero-description {
+        font-size: 18px;
+    }
+
+    .content-section {
+        padding: 64px 20px;
+    }
+
+    .content-section h2 {
+        font-size: 32px;
+    }
+
+    .feature-grid {
+        grid-template-columns: 1fr;
+    }
+}
