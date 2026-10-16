@@ -6,6 +6,7 @@ import Home from "./pages/home";
 import Profile from "./pages/profile";
 import Alummi from "./pages/alummi";
 import CoffeeChats from "./pages/coffee-chats";
+import Settings from "./pages/settings"
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/alummi" element={<Alummi />} />
         <Route path="/alummi/coffee-chats" element={<CoffeeChats />} />
+        <Route path="/settings" element={<Settings />} />
       </Routes>
     </div>
   );

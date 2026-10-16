@@ -1,0 +1,61 @@
+
+.settings-page {
+  min-height: 100vh;
+  padding: 30px 24px 64px;
+  background: var(--light);
+  color: var(--ink);
+}
+
+.settings-container {
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.settings-breadcrumb {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 34px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.settings-breadcrumb a {
+  color: var(--navy);
+  text-decoration: none;
+}
+
+.settings-breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+.settings-heading {
+  max-width: 680px;
+  margin-bottom: 32px;
+}
+
+.settings-eyebrow {
+  margin: 0 0 12px;
+  color: var(--orange);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.09em;
+}
+
+.settings-heading h1 {
+  margin: 0 0 14px;
+  color: var(--navy);
+  font-size: clamp(36px, 5vw, 46px);
+  font-weight: 500;
+}
+
+.settings-heading > p:last-child {
+  margin-bottom: 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+@media (max-width: 520px) {
+  .settings-page {
+    padding: 24px 16px 48px;
+  }
+}

@@ -20,13 +20,38 @@ function Navbar() {
           <button type="button" onClick={() => scrollToSection('community')}>Community</button>
         </div>
 
+
         <div className="nav-profile">
-          <img
-            className="profile-picture"
-            src="/assets/images/defaultprofile.svg"
-            alt="Profile picture"
-          />
-          <span className="profile-name">Bob Bobby</span>
+          <button
+            className="nav-profile-button"
+            type="button"
+            onClick={() =>
+              document
+                .getElementById('profile-dropdown')
+                ?.classList.toggle('show')
+            }
+            aria-label="Open account menu"
+            aria-haspopup="true"
+          >
+            <img
+              className="profile-picture"
+              src="/assets/images/defaultprofile.svg"
+              alt=""
+            />
+
+            <span className="nav-profile-text">
+              <span className="profile-greeting">Hello, Bob</span>
+              <span className="profile-name">Account &amp; Lists</span>
+            </span>
+
+            <span className="profile-arrow">⌄</span>
+          </button>
+
+          <div className="profile-dropdown" id="profile-dropdown">
+            <a href="/profile">My Profile</a>
+            <a href="/settings">Settings</a>
+            <a href="/alummi">Career Journey</a>
+          </div>
         </div>
 
       </nav>
