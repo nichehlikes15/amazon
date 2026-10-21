@@ -1,0 +1,142 @@
+/* Admin header band */
+.admin-header {
+    background: var(--navy);
+    border-bottom: 4px solid var(--orange);
+}
+
+.admin-header-content {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 48px 24px;
+}
+
+.admin-header h1 {
+    margin-bottom: 0.5rem;
+    color: var(--white);
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 500;
+    line-height: 1.05;
+}
+
+.admin-tagline {
+    max-width: 600px;
+    margin: 0;
+    color: #d8dee6;
+    font-size: 1.0625rem;
+    line-height: 1.5;
+}
+
+/* Toolbar */
+.admin-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.admin-count {
+    color: var(--navy);
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.admin-filter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.admin-filter label {
+    color: var(--muted);
+    font-size: 0.875rem;
+}
+
+.admin-filter select {
+    padding: 8px 12px;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    background: var(--white);
+    color: var(--ink);
+    font-family: inherit;
+}
+
+.admin-filter select:focus {
+    outline: 2px solid var(--orange);
+    outline-offset: 1px;
+}
+
+.admin-status {
+    color: var(--muted);
+}
+
+/* Table */
+.admin-table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9375rem;
+}
+
+.admin-table th {
+    padding: 14px 16px;
+    background: var(--light);
+    color: var(--navy);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.admin-table td {
+    padding: 14px 16px;
+    border-top: 1px solid var(--line);
+    color: var(--ink);
+    vertical-align: top;
+}
+
+.admin-pathway {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: var(--light);
+    color: var(--navy);
+    font-size: 0.8125rem;
+    font-weight: 500;
+}
+
+.admin-message {
+    max-width: 260px;
+    color: var(--muted);
+}
+
+.admin-date {
+    color: var(--muted);
+    font-size: 0.875rem;
+    white-space: nowrap;
+}
+
+/* Reuse the auth error style */
+.auth-error {
+    margin-bottom: 18px;
+    padding: 12px 14px;
+    border: 1px solid #f0c2c2;
+    border-radius: 2px;
+    background: #fdeaea;
+    color: #b42318;
+    font-size: 0.875rem;
+}
+
+@media (max-width: 650px) {
+    .admin-header-content {
+        padding: 40px 20px;
+    }
+}

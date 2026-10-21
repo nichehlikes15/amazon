@@ -1,11 +1,16 @@
 :root {
-    --navy: #062142;
-    --orange: #e7900e;
+    --navy: #232F3E;
+    --orange: #FF9900;
     --ink: #172235;
     --muted: #536174;
     --line: #dce3eb;
     --light: #f3f7fb;
     --white: #ffffff;
+    --orange-solid: #EC7211;
+    --orange-solid-hover: #EB5F07;
+    --grad-start: #0FB8C9;
+    --grad-mid: #2563EB;
+    --grad-end: #7C3AED;
 }
 
 @font-face {
@@ -54,4 +59,129 @@ button {
 
 h1, h2, h3, p {
     margin-top: 0;
+}
+
+/* ===== Shared layout ===== */
+.content-section {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 88px 24px;
+}
+
+.content-section h2 {
+    max-width: 570px;
+    margin-bottom: 18px;
+    color: var(--navy);
+    font-size: 38px;
+    font-weight: 500;
+    line-height: 1.1;
+}
+
+.eyebrow {
+    margin: 0 0 14px;
+    color: var(--orange);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.section-intro {
+    max-width: 570px;
+    margin-bottom: 38px;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+/* ===== Shared buttons (Amazon style) ===== */
+.primary-button,
+.secondary-button {
+    display: inline-block;
+    padding: 13px 22px;
+    border-radius: 2px;
+    font-weight: 500;
+    text-decoration: none;
+    text-align: center;
+}
+
+.primary-button {
+    border: 1px solid var(--orange-solid);
+    background: var(--orange-solid);
+    color: var(--white);
+}
+
+.primary-button:hover {
+    background: var(--orange-solid-hover);
+    border-color: var(--orange-solid-hover);
+}
+
+.secondary-button {
+    border: 1px solid var(--navy);
+    background: transparent;
+    color: var(--navy);
+}
+
+.secondary-button:hover {
+    background: var(--navy);
+    color: var(--white);
+}
+
+/* Responsive shared layout */
+@media (max-width: 650px) {
+    .content-section {
+        padding: 64px 20px;
+    }
+
+    .content-section h2 {
+        font-size: 32px;
+    }
+}
+
+/* ===== Accessibility preferences ===== */
+/* Controlled by data- attributes on <html>, set from the Settings page. */
+
+/* Text size: scales the whole site via the root font-size.
+   Components using rem/em and relative units scale with it. */
+html[data-text-size="small"] {
+    font-size: 87.5%;
+}
+
+html[data-text-size="medium"] {
+    font-size: 100%;
+}
+
+html[data-text-size="large"] {
+    font-size: 115%;
+}
+
+/* Colour-blind friendly mode: swaps the brand palette for a
+   higher-contrast, colour-blind safe set (blue/orange are safe hues;
+   we deepen them and darken muted text for stronger contrast). */
+html[data-colour-blind="on"] {
+    --orange: #D55E00;
+    --navy: #0B1B2B;
+    --ink: #0B1B2B;
+    --muted: #3d4a5c;
+    --line: #b9c4d0;
+}
+
+/* Reduce motion: turn off smooth scrolling and animations/transitions
+   for users who prefer less movement. */
+html[data-reduced-motion="on"] {
+    scroll-behavior: auto;
+}
+
+html[data-reduced-motion="on"] *,
+html[data-reduced-motion="on"] *::before,
+html[data-reduced-motion="on"] *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+}
+
+/* Respect the OS-level preference too, as a sensible default. */
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
 }

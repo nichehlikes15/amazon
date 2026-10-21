@@ -1,0 +1,76 @@
+/* Advice header band */
+.advice-header {
+    background: var(--navy);
+    border-bottom: 4px solid var(--orange);
+}
+
+.advice-header-content {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 64px 24px;
+}
+
+.advice-header h1 {
+    margin-bottom: 0.75rem;
+    color: var(--white);
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 500;
+    line-height: 1.05;
+}
+
+.advice-header h1 span {
+    color: var(--orange);
+}
+
+.advice-tagline {
+    max-width: 620px;
+    margin: 0;
+    color: #d8dee6;
+    font-size: 1.125rem;
+    line-height: 1.5;
+}
+
+/* Advice cards */
+.advice-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+
+.advice-card {
+    padding: 26px;
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--orange);
+    border-radius: 2px;
+    background: var(--white);
+}
+
+.advice-card h3 {
+    margin: 0 0 10px;
+    color: var(--navy);
+    font-size: 1.1875rem;
+    font-weight: 500;
+}
+
+.advice-card p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+/* School advice band */
+.advice-band {
+    background: var(--light);
+    border-top: 1px solid var(--line);
+}
+
+/* Advice responsive styles */
+@media (max-width: 650px) {
+    .advice-header-content {
+        padding: 48px 20px;
+    }
+
+    .advice-grid {
+        grid-template-columns: 1fr;
+    }
+}

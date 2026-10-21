@@ -1,0 +1,104 @@
+/* About header band */
+.about-header {
+    background: var(--navy);
+    border-bottom: 4px solid var(--orange);
+}
+
+.about-header-content {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 64px 24px;
+}
+
+.about-header h1 {
+    margin-bottom: 0.75rem;
+    color: var(--white);
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 500;
+    line-height: 1.05;
+}
+
+.about-header h1 span {
+    color: var(--orange);
+}
+
+.about-tagline {
+    max-width: 640px;
+    margin: 0;
+    color: #d8dee6;
+    font-size: 1.125rem;
+    line-height: 1.5;
+}
+
+/* Value cards */
+.value-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+
+.value-card {
+    padding: 26px;
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--orange);
+    border-radius: 2px;
+    background: var(--white);
+}
+
+.value-card h3 {
+    margin: 0 0 10px;
+    color: var(--navy);
+    font-size: 1.25rem;
+    font-weight: 500;
+}
+
+.value-card p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+/* Stats band */
+.about-stats {
+    background: var(--navy);
+}
+
+.about-stats-inner {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 56px 24px;
+    text-align: center;
+}
+
+.about-stat-number {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--orange);
+    font-size: 2.5rem;
+    font-weight: 500;
+}
+
+.about-stat p {
+    margin: 0;
+    color: #d8dee6;
+    line-height: 1.4;
+}
+
+/* About responsive styles */
+@media (max-width: 650px) {
+    .about-header-content {
+        padding: 48px 20px;
+    }
+
+    .value-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .about-stats-inner {
+        grid-template-columns: 1fr;
+        gap: 28px;
+    }
+}

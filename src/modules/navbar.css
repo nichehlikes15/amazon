@@ -58,6 +58,33 @@
     flex-shrink: 0;
 }
 
+/* Signed-out auth controls */
+.nav-auth {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.nav-signin {
+    padding: 10px 14px;
+    border-radius: 7px;
+    color: var(--ink);
+    font-size: 0.875rem;
+    text-decoration: none;
+}
+
+.nav-signin:hover {
+    background: var(--light);
+}
+
+.nav-signup {
+    padding: 9px 16px;
+    font-size: 0.875rem;
+    white-space: nowrap;
+}
+
 .profile-picture {
     display: block;
     width: 40px;
@@ -67,7 +94,7 @@
 }
 
 .profile-name {
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: 300;
     color: #1f2937;
     white-space: nowrap;
@@ -95,7 +122,7 @@
     .nav-links a,
     .nav-links button {
         padding: 8px;
-        font-size: 14px;
+        font-size: 0.875rem;
     }
 }
 
@@ -132,18 +159,18 @@
 
 .profile-greeting {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 
 .nav-profile-button .profile-name {
   color: var(--navy);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 500;
 }
 
 .profile-arrow {
   color: var(--muted);
-  font-size: 16px;
+  font-size: 1rem;
 }
 
 .profile-dropdown {
@@ -169,11 +196,30 @@
   padding: 12px;
   border-radius: 5px;
   color: var(--ink);
-  font-size: 14px;
+  font-size: 0.875rem;
   text-decoration: none;
 }
 
 .profile-dropdown a:hover {
+  background: var(--light);
+  color: var(--orange);
+}
+
+.dropdown-signout {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  padding: 12px;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 5px;
+  background: transparent;
+  color: var(--ink);
+  font-size: 0.875rem;
+  text-align: left;
+}
+
+.dropdown-signout:hover {
   background: var(--light);
   color: var(--orange);
 }

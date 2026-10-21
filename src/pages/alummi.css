@@ -1,0 +1,123 @@
+/* Alummi header band */
+.alummi-header {
+    background: var(--navy);
+    border-bottom: 4px solid var(--orange);
+}
+
+.alummi-header-content {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 64px 24px;
+}
+
+.alummi-header h1 {
+    margin-bottom: 0.75rem;
+    color: var(--white);
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 500;
+    line-height: 1.05;
+}
+
+.alummi-header h1 span {
+    color: var(--orange);
+}
+
+.alummi-tagline {
+    max-width: 600px;
+    margin-bottom: 2rem;
+    color: #d8dee6;
+    font-size: 1.125rem;
+    line-height: 1.5;
+}
+
+.alummi-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+/* Journey cards */
+.journey-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+
+.journey-card {
+    padding: 26px;
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--orange);
+    border-radius: 2px;
+    background: var(--white);
+}
+
+.journey-step {
+    color: var(--orange);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.journey-card h3 {
+    margin: 12px 0 8px;
+    color: var(--navy);
+    font-size: 1.25rem;
+    font-weight: 500;
+}
+
+.journey-card p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+/* Stories band */
+.stories-band {
+    background: var(--light);
+    border-top: 1px solid var(--line);
+}
+
+.story-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+
+.story-card {
+    padding: 26px;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    background: var(--white);
+}
+
+.story-quote {
+    margin: 0 0 16px;
+    color: var(--ink);
+    font-size: 1.0625rem;
+    line-height: 1.55;
+}
+
+.story-name {
+    margin: 0;
+    color: var(--navy);
+    font-weight: 500;
+}
+
+.story-pathway {
+    margin: 2px 0 0;
+    color: var(--muted);
+    font-size: 0.875rem;
+}
+
+/* Alummi responsive styles */
+@media (max-width: 650px) {
+    .alummi-header-content {
+        padding: 48px 20px;
+    }
+
+    .journey-grid,
+    .story-grid {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,0 +1,132 @@
+/* Interest header band */
+.interest-header {
+    background: var(--navy);
+    border-bottom: 4px solid var(--orange);
+}
+
+.interest-header-content {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 56px 24px;
+}
+
+.interest-header h1 {
+    margin-bottom: 0.75rem;
+    color: var(--white);
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 500;
+    line-height: 1.05;
+}
+
+.interest-tagline {
+    max-width: 600px;
+    margin: 0;
+    color: #d8dee6;
+    font-size: 1.0625rem;
+    line-height: 1.5;
+}
+
+/* Form card */
+.interest-card {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 32px;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    background: var(--white);
+}
+
+.interest-field {
+    margin-bottom: 18px;
+}
+
+.interest-field label {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--navy);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.interest-field input,
+.interest-field select,
+.interest-field textarea {
+    width: 100%;
+    padding: 11px 13px;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    background: var(--white);
+    color: var(--ink);
+    font-family: inherit;
+}
+
+.interest-field input:focus,
+.interest-field select:focus,
+.interest-field textarea:focus {
+    outline: 2px solid var(--orange);
+    outline-offset: 1px;
+}
+
+.interest-field textarea {
+    resize: vertical;
+}
+
+.interest-privacy {
+    margin: 0 0 20px;
+    padding: 12px 14px;
+    border-radius: 2px;
+    background: var(--light);
+    color: var(--muted);
+    font-size: 0.8125rem;
+    line-height: 1.5;
+}
+
+.interest-submit {
+    width: 100%;
+    border: 0;
+}
+
+.interest-submit:disabled {
+    opacity: 0.7;
+    cursor: default;
+}
+
+/* Success state */
+.interest-success {
+    text-align: center;
+}
+
+.interest-success h2 {
+    margin-bottom: 10px;
+    color: var(--navy);
+    font-size: 1.5rem;
+    font-weight: 500;
+}
+
+.interest-success p {
+    margin: 0 auto 24px;
+    max-width: 420px;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+/* Reuse the auth error style */
+.auth-error {
+    margin-bottom: 18px;
+    padding: 12px 14px;
+    border: 1px solid #f0c2c2;
+    border-radius: 2px;
+    background: #fdeaea;
+    color: #b42318;
+    font-size: 0.875rem;
+}
+
+@media (max-width: 650px) {
+    .interest-header-content {
+        padding: 44px 20px;
+    }
+
+    .interest-card {
+        padding: 24px;
+    }
+}
