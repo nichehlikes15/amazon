@@ -1,104 +1,182 @@
-/* About header band */
+/* =============================================================
+   Amazon T-Level (Launchpad) — About Us Supplemental Stylesheet
+   -------------------------------------------------------------
+   Layers brand polish on top of about-us.css. Assumes the design
+   tokens are already defined upstream (in home.css / about-us.css);
+   the :root block below documents the Amazon values and acts as a
+   safe fallback — delete it if the tokens are defined elsewhere to
+   keep a single source of truth.
+
+   Consistent brand palette:
+     --navy  : Amazon "Squid Ink" dark blue (primary surface)
+     --orange: Amazon orange (accent / calls to action)
+
+   CHANGE LOG: every edited/added rule is flagged inline with
+   /* CHANGED */ or /* ADDED */.
+   ============================================================= */
+
+/* -------------------------------------------------------------
+   DESIGN TOKENS — brand fallbacks
+   ADDED: Amazon palette. If about-us.css / home.css already define
+   these, delete this :root block to avoid duplication.
+   ------------------------------------------------------------- */
+:root {
+  /* Core Amazon brand colours */
+  --navy:   #131A22;  /* ADDED: Amazon "Squid Ink" darkish blue */
+  --orange: #FF9900;  /* ADDED: Amazon signature orange          */
+
+  /* Supporting neutrals tuned to sit with navy + orange */
+  --white:  #FFFFFF;  /* ADDED */
+  --light:  #F7F8FA;  /* ADDED: soft off-white section background */
+  --line:   #E3E6EB;  /* ADDED: subtle hairline borders           */
+  --muted:  #5A6472;  /* ADDED: secondary body text               */
+
+  /* Derived accents */
+  --orange-dark:   #E88B00;  /* ADDED: deeper orange for hover states */
+  --on-dark-muted: #D8DEE6;  /* ADDED: light text on dark surfaces    */
+}
+
+/* =============================================================
+   About header — Amazon navy band
+   CHANGED: mirrors the home-page hero (navy surface + orange
+   bottom rule) so both pages share one branded header style.
+   ============================================================= */
 .about-header {
-    background: var(--navy);
-    border-bottom: 4px solid var(--orange);
+  background: var(--navy);                 /* ADDED: Amazon navy surface */
+  border-bottom: 4px solid var(--orange);  /* ADDED: orange brand rule   */
 }
 
 .about-header-content {
-    max-width: 1120px;
-    margin: 0 auto;
-    padding: 64px 24px;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 96px 24px;   /* ADDED: generous hero spacing, matches home hero */
 }
 
 .about-header h1 {
-    margin-bottom: 0.75rem;
-    color: var(--white);
-    font-size: clamp(2rem, 5vw, 3rem);
-    font-weight: 500;
-    line-height: 1.05;
+  margin: 12px 0 20px;
+  color: var(--white);                          /* ADDED: readable on navy */
+  font-size: clamp(2.25rem, 5vw, 3.5rem);       /* ADDED: fluid hero scale */
+  font-weight: 500;
+  line-height: 1.08;
 }
 
+/* ADDED: highlight the "launch" word in Amazon orange, like the
+   home hero highlights "T Levels" */
 .about-header h1 span {
-    color: var(--orange);
+  color: var(--orange);
+}
+
+/* NOTE: .eyebrow is shared site-wide (home.css). We scope the
+   orange ONLY to the about header so the global eyebrow style is
+   left untouched, exactly as on the home page. */
+.about-header .eyebrow {
+  color: var(--orange);  /* ADDED */
 }
 
 .about-tagline {
-    max-width: 640px;
-    margin: 0;
-    color: #d8dee6;
-    font-size: 1.125rem;
-    line-height: 1.5;
+  max-width: 640px;
+  margin: 0;
+  color: var(--on-dark-muted);  /* ADDED: soft light text on the navy band */
+  font-size: 1.25rem;
+  line-height: 1.5;
 }
 
-/* Value cards */
+/* =============================================================
+   Values grid
+   ============================================================= */
 .value-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 18px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-top: 28px;   /* ADDED: breathing room under the section intro */
 }
 
 .value-card {
-    padding: 26px;
-    border: 1px solid var(--line);
-    border-top: 3px solid var(--orange);
-    border-radius: 2px;
-    background: var(--white);
+  display: flex;             /* ADDED */
+  flex-direction: column;    /* ADDED: consistent card layout */
+  padding: 26px;
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--orange);  /* ADDED: orange top edge, matches pathway cards */
+  border-radius: 2px;
+  background: var(--white);
+  transition: transform 0.2s ease, box-shadow 0.2s ease; /* ADDED: smooth hover feedback */
+}
+
+/* ADDED: Lift + navy-tinted shadow on hover, consistent with the
+   home page's pathway cards */
+.value-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(19, 26, 34, 0.1);
 }
 
 .value-card h3 {
-    margin: 0 0 10px;
-    color: var(--navy);
-    font-size: 1.25rem;
-    font-weight: 500;
+  margin: 0 0 10px;
+  color: var(--navy);
+  font-size: 1.25rem;
+  font-weight: 500;
 }
 
 .value-card p {
-    margin: 0;
-    color: var(--muted);
-    line-height: 1.5;
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
 }
 
-/* Stats band */
+/* =============================================================
+   Stats band — Amazon navy marketing strip
+   CHANGED: solid navy band with orange stat numbers so the key
+   figures pop in the Amazon accent colour.
+   ============================================================= */
 .about-stats {
-    background: var(--navy);
+  background: var(--navy);  /* ADDED: Amazon navy surface */
 }
 
 .about-stats-inner {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
-    max-width: 1120px;
-    margin: 0 auto;
-    padding: 56px 24px;
-    text-align: center;
-}
-
-.about-stat-number {
-    display: block;
-    margin-bottom: 8px;
-    color: var(--orange);
-    font-size: 2.5rem;
-    font-weight: 500;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 64px 24px;
+  text-align: center;
 }
 
 .about-stat p {
-    margin: 0;
-    color: #d8dee6;
-    line-height: 1.4;
+  margin: 8px 0 0;
+  color: var(--on-dark-muted);  /* ADDED: readable label on navy */
+  font-size: 1rem;
+  line-height: 1.5;
 }
 
-/* About responsive styles */
+/* ADDED: Oversized stat figure in Amazon orange for emphasis */
+.about-stat-number {
+  display: block;
+  color: var(--orange);
+  font-size: clamp(2.5rem, 5vw, 3.25rem);
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+/* =============================================================
+   Responsive styles
+   ADDED: single-column stacking on narrow screens, matching the
+   home page's 650px breakpoint behaviour.
+   ============================================================= */
 @media (max-width: 650px) {
-    .about-header-content {
-        padding: 48px 20px;
-    }
+  .about-header-content {
+    padding: 64px 20px;
+  }
 
-    .value-grid {
-        grid-template-columns: 1fr;
-    }
+  .about-tagline {
+    font-size: 1.125rem;
+  }
 
-    .about-stats-inner {
-        grid-template-columns: 1fr;
-        gap: 28px;
-    }
+  .value-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .about-stats-inner {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
 }
