@@ -1,27 +1,25 @@
 .site-header {
     border-bottom: 1px solid var(--line);
     background: var(--white);
+    padding: 0 80px;
 }
 
 .nav-bar {
     display: flex;
     align-items: center;
-    max-width: 1120px;
-    min-height: 76px;
-    margin: 0 auto;
-    padding: 8px 24px;
+    height: 80px;
+    margin: 0 76px;
 }
 
 .brand img {
     display: block;
-    width: 120px;
+    width: 140px;
+    height: 35px;
+    object-fit: contain;
 }
 
-.nav-divider {
-    width: 1px;
-    height: 28px;
-    margin: 0 28px;
-    background: var(--line);
+.brand {
+    padding-right: 56px;
 }
 
 .nav-links {
@@ -32,12 +30,13 @@
 
 .nav-links a,
 .nav-links button {
-    padding: 10px 14px;
+    padding: 10px 16px;
     border: 0;
     border-radius: 7px;
     background: transparent;
     color: var(--ink);
     text-decoration: none;
+    font-weight: 700;
 }
 
 .nav-links a:hover,

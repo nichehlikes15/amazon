@@ -1,20 +1,33 @@
+import { useEffect, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import './profile.css'
 import { useAuth } from '../modules/auth'
+import { api } from '../modules/api'
 
 function Profile() {
   const { user, loading } = useAuth()
 
-  // Wait for the session check, then require login.
-  if (loading) return null
-  if (!user) return <Navigate to="/login" replace />
+  const [saved, setSaved] = useState([])
+  const [savedLoading, setSavedLoading] = useState(true)
+  const [savedError, setSavedError] = useState('')
 
-  const savedItems = [
-    { type: 'Apprenticeship', title: 'Amazon Digital Apprenticeship', location: 'London', status: 'Open' },
-    { type: 'T Level', title: 'Digital Software Development', location: 'Nationwide', status: 'Saved' },
-    { type: 'Placement', title: 'Amazon Emerging Talent Placement', location: 'Manchester', status: 'Applied' },
-    { type: 'College', title: 'Ada National College for Digital Skills', location: 'London', status: 'Saved' },
-  ]
+  // Load the user's saved opportunities from the backend.
+  useEffect(() => {
+    if (loading || !user) return
+    api.listSavedOpportunities()
+      .then((data) => setSaved(data.items || []))
+      .catch((err) => setSavedError(err.message))
+      .finally(() => setSavedLoading(false))
+  }, [loading, user])
+
+  const removeSaved = async (id) => {
+    try {
+      await api.unsaveOpportunity(id)
+      setSaved((prev) => prev.filter((o) => o.id !== id))
+    } catch (err) {
+      setSavedError(err.message)
+    }
+  }
 
   const interests = ['Digital', 'Business', 'Engineering', 'Software Development']
 
@@ -36,33 +49,39 @@ function Profile() {
   const doneCount = checklist.filter((c) => c.done).length
   const completion = Math.round((doneCount / checklist.length) * 100)
 
+  // Wait for the session check, then require login.
+  // (Kept after the hooks above so hooks always run in the same order.)
+  if (loading) return null
+  if (!user) return <Navigate to="/login" replace />
+
   return (
     <>
       <main className="profile-page">
-        {/* Account banner */}
-        <section className="account-banner" aria-labelledby="profile-heading">
-          <div className="account-banner-inner">
-            <div className="account-identity">
+        <div className="profile-container">
+          {/* Profile header card (LinkedIn style) */}
+          <section className="profile-hero" aria-labelledby="profile-heading">
+            <div className="profile-cover" aria-hidden="true" />
+            <div className="profile-hero-body">
               <img
                 className="profile-avatar"
                 src="/assets/images/defaultprofile.svg"
                 alt=""
               />
-              <div>
-                <p className="account-eyebrow">Your account</p>
-                <h1 id="profile-heading">{user.fullName}</h1>
-                <p className="account-meta">Year 12 student · London · Digital pathway</p>
+              <div className="profile-hero-row">
+                <div className="profile-hero-text">
+                  <h1 id="profile-heading">{user.fullName}</h1>
+                  <p className="profile-headline">Year 12 student exploring T Levels and placements</p>
+                  <p className="profile-location">London · Digital pathway</p>
+                </div>
+                <div className="profile-hero-actions">
+                  <a className="primary-button" href="/register-interest">Register interest</a>
+                  <a className="secondary-button" href="/settings">Edit profile</a>
+                </div>
               </div>
             </div>
-            <div className="account-banner-actions">
-              <a className="primary-button" href="/register-interest">Register interest</a>
-              <a className="secondary-button secondary-on-dark" href="/settings">Edit profile</a>
-            </div>
-          </div>
-        </section>
+          </section>
 
-        {/* Dashboard body */}
-        <section className="dashboard">
+          {/* Dashboard body */}
           <div className="dashboard-grid">
             {/* Left column */}
             <aside className="dashboard-side">
@@ -101,7 +120,7 @@ function Profile() {
               {/* Stat tiles */}
               <div className="stat-row">
                 <article className="stat-tile">
-                  <span className="stat-number">4</span>
+                  <span className="stat-number">{saved.length}</span>
                   <p>Opportunities saved</p>
                 </article>
                 <article className="stat-tile">
@@ -118,22 +137,45 @@ function Profile() {
               <div className="panel">
                 <div className="panel-head">
                   <h2 className="panel-title">Saved opportunities</h2>
-                  <a className="panel-link" href="/information">Browse more →</a>
+                  <a className="panel-link" href="/opportunities">Browse more →</a>
                 </div>
-                <div className="saved-list">
-                  {savedItems.map((item) => (
-                    <article className="saved-row" key={item.title}>
-                      <div className="saved-row-main">
-                        <span className="saved-type">{item.type}</span>
-                        <h3>{item.title}</h3>
-                        <p className="saved-location">{item.location}</p>
-                      </div>
-                      <span className={`saved-status status-${item.status.toLowerCase()}`}>
-                        {item.status}
-                      </span>
-                    </article>
-                  ))}
-                </div>
+                {savedError && <div className="auth-error" role="alert">{savedError}</div>}
+                {savedLoading ? (
+                  <p className="saved-empty">Loading…</p>
+                ) : saved.length === 0 ? (
+                  <p className="saved-empty">
+                    You haven't saved anything yet. <a href="/opportunities">Browse opportunities →</a>
+                  </p>
+                ) : (
+                  <div className="saved-list">
+                    {saved.map((item) => (
+                      <article className="saved-row" key={item.id}>
+                        <div className="saved-row-main">
+                          <span className="saved-type">{item.pathway}</span>
+                          <h3>{item.title}</h3>
+                          <p className="saved-location">{item.employer} · {item.location}</p>
+                        </div>
+                        <div className="saved-row-actions">
+                          <a
+                            className="saved-apply"
+                            href={item.applyUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Apply →
+                          </a>
+                          <button
+                            type="button"
+                            className="saved-remove"
+                            onClick={() => removeSaved(item.id)}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Recent activity */}
@@ -151,7 +193,7 @@ function Profile() {
               </div>
             </div>
           </div>
-        </section>
+        </div>
       </main>
     </>
   )
