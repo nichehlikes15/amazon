@@ -17,6 +17,9 @@ import Login from "./pages/login";
 import Signup from "./pages/signup";
 import Interest from "./pages/interest";
 import Admin from "./pages/admin";
+import Opportunities from "./pages/opportunities";
+import OpportunityDetail from "./pages/opportunity-detail";
+import Guide from "./pages/guide";
 
 function App() {
   return (
@@ -38,6 +41,9 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/register-interest" element={<Interest />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/opportunities" element={<Opportunities />} />
+        <Route path="/opportunities/:id" element={<OpportunityDetail />} />
+        <Route path="/guides/:slug" element={<Guide />} />
       </Routes>
 
       <Footer />

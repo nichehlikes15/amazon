@@ -17,6 +17,21 @@ async function request(path, options = {}) {
   return data
 }
 
+// Separate helper for multipart file uploads: we must NOT set a JSON
+// content-type, so the browser adds the correct multipart boundary itself.
+async function uploadRequest(path, formData) {
+  const res = await fetch(`${BASE}${path}`, {
+    credentials: 'include',
+    method: 'POST',
+    body: formData,
+  })
+  const data = await res.json().catch(() => ({}))
+  if (!res.ok) {
+    throw new Error(data.error || 'Upload failed. Please try again.')
+  }
+  return data
+}
+
 export const api = {
   signup: (fullName, email, password) =>
     request('/signup', { method: 'POST', body: JSON.stringify({ fullName, email, password }) }),
@@ -27,4 +42,27 @@ export const api = {
   submitInterest: (payload) =>
     request('/interest', { method: 'POST', body: JSON.stringify(payload) }),
   listInterest: () => request('/interest'),
+  listOpportunities: () => request('/opportunities'),
+  listSavedOpportunities: () => request('/saved-opportunities'),
+  saveOpportunity: (id) =>
+    request(`/opportunities/${id}/save`, { method: 'POST' }),
+  unsaveOpportunity: (id) =>
+    request(`/opportunities/${id}/save`, { method: 'DELETE' }),
+  createOpportunity: (payload) =>
+    request('/opportunities', { method: 'POST', body: JSON.stringify(payload) }),
+  deleteOpportunity: (id) =>
+    request(`/opportunities/${id}`, { method: 'DELETE' }),
+  getOpportunity: (id) => request(`/opportunities/${id}`),
+  updateProgress: (id, payload) =>
+    request(`/opportunities/${id}/progress`, { method: 'PUT', body: JSON.stringify(payload) }),
+  uploadFile: (id, file) => {
+    const fd = new FormData()
+    fd.append('file', file)
+    return uploadRequest(`/opportunities/${id}/files`, fd)
+  },
+  deleteFile: (fileId) => request(`/files/${fileId}`, { method: 'DELETE' }),
+  // Direct download URL (opened in a new tab, uses the session cookie).
+  fileUrl: (fileId) => `${BASE}/files/${fileId}`,
+  explainPathway: (scores) =>
+    request('/pathway-explainer', { method: 'POST', body: JSON.stringify({ scores }) }),
 }

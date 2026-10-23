@@ -25,10 +25,9 @@ function Navbar() {
           <img src="/assets/images/launchpad.svg" alt="Launchpad" />
         </a>
 
-        <span className="nav-divider" aria-hidden="true" />
-
         <div className="nav-links">
-          <a className="active" href="/">Home</a>
+          <a href="/">Home</a>
+          <a href="/opportunities">Opportunities</a>
           <button type="button" onClick={() => scrollToSection('about')}>About us</button>
           <button type="button" onClick={() => scrollToSection('community')}>Community</button>
         </div>

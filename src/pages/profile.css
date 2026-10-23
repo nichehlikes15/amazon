@@ -1,73 +1,85 @@
-/* ===== Account banner ===== */
-.account-banner {
-    background: var(--navy);
-    border-bottom: 4px solid var(--orange);
+/* ===== Page ===== */
+.profile-page {
+    background: var(--light);
+    padding-bottom: 64px;
 }
 
-.account-banner-inner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 20px;
-    max-width: 1120px;
+.profile-container {
+    max-width: 1160px;
     margin: 0 auto;
-    padding: 40px 24px;
+    padding: 24px;
 }
 
-.account-identity {
-    display: flex;
-    align-items: center;
-    gap: 20px;
+/* ===== Profile hero card (LinkedIn style) ===== */
+.profile-hero {
+    margin-bottom: 24px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--white);
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgb(6 33 66 / 6%);
+}
+
+.profile-cover {
+    height: 140px;
+    background: linear-gradient(120deg, var(--grad-start), var(--grad-mid), var(--grad-end));
+}
+
+.profile-hero-body {
+    padding: 0 32px 28px;
 }
 
 .profile-avatar {
-    width: 72px;
-    height: 72px;
+    width: 128px;
+    height: 128px;
+    margin-top: -64px;
     border-radius: 50%;
-    border: 2px solid var(--white);
+    border: 4px solid var(--white);
+    background: var(--white);
     object-fit: cover;
+    box-shadow: 0 1px 3px rgb(6 33 66 / 10%);
 }
 
-.account-eyebrow {
-    margin: 0 0 4px;
-    color: var(--orange);
-    font-size: 0.75rem;
-    font-weight: 500;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+.profile-hero-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 12px;
 }
 
-.account-identity h1 {
+.profile-hero-text h1 {
     margin: 0 0 6px;
-    color: var(--white);
+    color: var(--navy);
     font-size: clamp(1.75rem, 4vw, 2.5rem);
     font-weight: 500;
-    line-height: 1.05;
+    line-height: 1.1;
 }
 
-.account-meta {
+.profile-headline {
+    margin: 0 0 4px;
+    color: var(--ink);
+    font-size: 1.0625rem;
+    line-height: 1.4;
+}
+
+.profile-location {
     margin: 0;
-    color: #d8dee6;
+    color: var(--muted);
     font-size: 0.9375rem;
 }
 
-.account-banner-actions {
+.profile-hero-actions {
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
 }
 
 /* ===== Dashboard layout ===== */
-.dashboard {
-    max-width: 1120px;
-    margin: 0 auto;
-    padding: 40px 24px 80px;
-}
-
 .dashboard-grid {
     display: grid;
-    grid-template-columns: 320px 1fr;
+    grid-template-columns: 340px 1fr;
     gap: 24px;
     align-items: start;
 }
@@ -84,25 +96,26 @@
     gap: 24px;
 }
 
-/* ===== Panels (AWS console cards) ===== */
+/* ===== Panels (modern cards) ===== */
 .panel {
-    padding: 22px;
+    padding: 26px;
     border: 1px solid var(--line);
-    border-radius: 2px;
+    border-radius: 12px;
     background: var(--white);
+    box-shadow: 0 1px 3px rgb(6 33 66 / 6%);
 }
 
 .panel-head {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 16px;
+    margin-bottom: 18px;
 }
 
 .panel-title {
-    margin: 0 0 16px;
+    margin: 0 0 18px;
     color: var(--navy);
-    font-size: 1.125rem;
+    font-size: 1.1875rem;
     font-weight: 500;
 }
 
@@ -160,7 +173,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 7px 0;
+    padding: 8px 0;
     color: var(--muted);
     font-size: 0.9375rem;
 }
@@ -198,7 +211,7 @@
 }
 
 .tag {
-    padding: 6px 14px;
+    padding: 7px 15px;
     border: 1px solid var(--line);
     border-radius: 999px;
     background: var(--light);
@@ -215,18 +228,18 @@
 }
 
 .stat-tile {
-    padding: 22px;
+    padding: 26px;
     border: 1px solid var(--line);
-    border-top: 3px solid var(--orange);
-    border-radius: 2px;
+    border-radius: 12px;
     background: var(--white);
+    box-shadow: 0 1px 3px rgb(6 33 66 / 6%);
 }
 
 .stat-number {
     display: block;
     margin-bottom: 6px;
     color: var(--navy);
-    font-size: 2.25rem;
+    font-size: 2.5rem;
     font-weight: 500;
 }
 
@@ -247,12 +260,13 @@
     align-items: center;
     justify-content: space-between;
     gap: 16px;
-    padding: 16px 0;
+    padding: 18px 0;
     border-top: 1px solid var(--line);
 }
 
 .saved-row:first-child {
     border-top: 0;
+    padding-top: 0;
 }
 
 .saved-type {
@@ -266,7 +280,7 @@
 .saved-row h3 {
     margin: 4px 0 2px;
     color: var(--navy);
-    font-size: 1rem;
+    font-size: 1.0625rem;
     font-weight: 500;
 }
 
@@ -278,7 +292,7 @@
 
 .saved-status {
     display: inline-block;
-    padding: 4px 12px;
+    padding: 5px 14px;
     border-radius: 999px;
     font-size: 0.8125rem;
     font-weight: 500;
@@ -300,6 +314,60 @@
     color: #b25e00;
 }
 
+/* Saved row actions + empty state */
+.saved-row-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-shrink: 0;
+}
+
+.saved-apply {
+    color: var(--orange);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.saved-apply:hover {
+    text-decoration: underline;
+}
+
+.saved-remove {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    font-size: 0.875rem;
+}
+
+.saved-remove:hover {
+    color: #b42318;
+    text-decoration: underline;
+}
+
+.saved-empty {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.9375rem;
+}
+
+.saved-empty a {
+    color: var(--orange);
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.auth-error {
+    margin-bottom: 16px;
+    padding: 12px 14px;
+    border: 1px solid #f0c2c2;
+    border-radius: 8px;
+    background: #fdeaea;
+    color: #b42318;
+    font-size: 0.875rem;
+}
 /* ===== Recent activity ===== */
 .activity-list {
     margin: 0;
@@ -311,12 +379,13 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 12px 0;
+    padding: 14px 0;
     border-top: 1px solid var(--line);
 }
 
 .activity-item:first-child {
     border-top: 0;
+    padding-top: 0;
 }
 
 .activity-dot {
@@ -347,11 +416,17 @@
 }
 
 @media (max-width: 650px) {
-    .account-banner-inner {
-        padding: 32px 20px;
+    .profile-hero-body {
+        padding: 0 20px 24px;
     }
 
-    .account-banner-actions {
+    .profile-avatar {
+        width: 104px;
+        height: 104px;
+        margin-top: -52px;
+    }
+
+    .profile-hero-actions {
         width: 100%;
     }
 

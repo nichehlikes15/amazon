@@ -36,3 +36,6 @@ backend/launchpad.db
 
 # Environment secrets
 .env
+
+# Uploaded files (student CVs, practice tasks - never commit)
+backend/uploads/
