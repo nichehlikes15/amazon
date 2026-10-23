@@ -117,7 +117,658 @@
     line-height: 1.5;
 }
 
+/* Outline button on the navy header */
+.tl-secondary-on-dark {
+    border-color: var(--white);
+    color: var(--white);
+}
+
+.tl-secondary-on-dark:hover {
+    background: var(--white);
+    color: var(--navy);
+}
+
+/* On-this-page jump links */
+.tl-subnav {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    border-bottom: 1px solid var(--line);
+    background: var(--white);
+}
+
+.tl-subnav ul {
+    display: flex;
+    gap: 28px;
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 24px;
+    overflow-x: auto;
+    list-style: none;
+}
+
+.tl-subnav a {
+    display: block;
+    padding: 16px 0;
+    border-bottom: 3px solid transparent;
+    color: var(--navy);
+    font-weight: 500;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.tl-subnav a:hover,
+.tl-subnav a:focus-visible {
+    border-bottom-color: var(--orange);
+}
+
+/* Section bands */
+.tl-band {
+    scroll-margin-top: 56px;
+    border-top: 1px solid var(--line);
+}
+
+.tl-band-light {
+    background: var(--light);
+}
+
+.tl-subheading {
+    margin-top: 72px;
+}
+
+.tl-body {
+    color: var(--muted);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+}
+
+.tl-link {
+    display: inline-block;
+    margin-top: 8px;
+    color: var(--navy);
+    font-weight: 500;
+}
+
+.tl-link:hover {
+    color: var(--orange-solid);
+}
+
+.tl-section-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 48px;
+}
+
+/* Text + image side by side */
+.tl-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    align-items: center;
+}
+
+.tl-split-flush {
+    align-items: stretch;
+}
+
+/* Images and grey placeholders */
+.tl-media {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    border-radius: 2px;
+    object-fit: cover;
+}
+
+.tl-media-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #d5d9de;
+    color: #6b7480;
+    font-size: 0.9375rem;
+}
+
+/* Three-column variant of the fact cards */
+.fact-grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+/* Placement phases */
+.phase-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.phase-card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    background: var(--white);
+}
+
+.phase-media {
+    aspect-ratio: 16 / 10;
+    border-radius: 0;
+}
+
+.phase-body {
+    padding: 24px;
+}
+
+.phase-label {
+    color: var(--orange-solid);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.phase-body h3 {
+    margin: 8px 0 10px;
+    color: var(--navy);
+    font-size: 1.25rem;
+    font-weight: 500;
+}
+
+.phase-body p {
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+.phase-body ul {
+    margin: 0;
+    padding-left: 18px;
+    color: var(--ink);
+    line-height: 1.7;
+}
+
+/* Skills (no boxes) */
+.skill-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+}
+
+.skill-item {
+    padding-top: 18px;
+    border-top: 3px solid var(--orange);
+}
+
+.skill-item h3,
+.reason-item h3 {
+    margin: 0 0 8px;
+    color: var(--navy);
+    font-size: 1.1875rem;
+    font-weight: 500;
+}
+
+.skill-item p,
+.reason-item p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+/* FAQ */
+.tl-faq {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 820px;
+}
+
+.tl-faq-item {
+    padding: 18px 20px;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    background: var(--white);
+}
+
+.tl-faq-item summary {
+    color: var(--navy);
+    font-size: 1.0625rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.tl-faq-item p {
+    margin: 14px 0 0;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+/* Reasons to partner */
+.reason-list {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 28px;
+}
+
+.reason-item {
+    padding-left: 18px;
+    border-left: 3px solid var(--orange);
+}
+
+/* Heading with a download button beside it */
+.tl-heading-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 72px;
+    margin-bottom: 18px;
+}
+
+.tl-heading-row .tl-subheading {
+    margin: 0;
+}
+
+.download-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border: 1px solid #fcd200;
+    border-radius: 20px;
+    background: #ffd814;
+    color: #0f1111;
+    font-size: 0.875rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.download-button:hover {
+    border-color: #f2c200;
+    background: #f7ca00;
+}
+
+.download-button:focus-visible {
+    outline: 2px solid var(--navy);
+    outline-offset: 2px;
+}
+
+/* Shared tag pills */
+.tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.tag {
+    padding: 5px 12px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--light);
+    color: var(--navy);
+    font-size: 0.8125rem;
+    line-height: 1.4;
+}
+
+.tag-label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--muted);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+/* Curriculum map (replaces table) */
+.map-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.map-item {
+    display: grid;
+    grid-template-columns: auto 1fr 1fr;
+    gap: 24px;
+    align-items: start;
+    padding: 22px 24px;
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--orange);
+    border-radius: 2px;
+    background: var(--white);
+}
+
+.map-index {
+    color: var(--orange-solid);
+    font-size: 1.5rem;
+    font-weight: 500;
+    line-height: 1;
+}
+
+.map-main h3 {
+    margin: 0 0 6px;
+    color: var(--navy);
+    font-size: 1.125rem;
+    font-weight: 500;
+}
+
+.map-main p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+/* Apprenticeship cards (replaces table) */
+.role-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 18px;
+    margin: 0 0 8px;
+    padding: 0;
+    list-style: none;
+}
+
+.role-card {
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--white);
+    transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.role-card:hover {
+    box-shadow: 0 6px 18px rgba(15, 17, 17, 0.12);
+    transform: translateY(-2px);
+}
+
+.role-kicker {
+    color: var(--orange-solid);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.role-card h3 {
+    margin: 6px 0 8px;
+    color: var(--navy);
+    font-size: 1.1875rem;
+    font-weight: 500;
+}
+
+.role-card p {
+    margin: 0 0 18px;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+.role-card .tag-list {
+    margin-top: auto;
+}
+
+/* Table (Leadership Principles skills) */
+.tl-table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    background: var(--white);
+}
+
+.tl-table {
+    width: 100%;
+    min-width: 640px;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.tl-table th,
+.tl-table td {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+    line-height: 1.5;
+}
+
+.tl-table thead th {
+    background: var(--navy);
+    color: var(--white);
+    font-weight: 500;
+}
+
+.tl-table tbody th {
+    color: var(--navy);
+    font-weight: 500;
+}
+
+.tl-table td {
+    color: var(--muted);
+}
+
+.tl-table tbody tr:last-child th,
+.tl-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.tl-table tbody tr:nth-child(even) {
+    background: var(--light);
+}
+
+/* 2026 framework box */
+.framework-box {
+    margin-top: 72px;
+    padding: 32px;
+    border-left: 4px solid var(--orange);
+    background: var(--navy);
+    color: #d8dee6;
+}
+
+.framework-box h3 {
+    margin: 0 0 12px;
+    color: var(--white);
+    font-size: 1.5rem;
+    font-weight: 500;
+}
+
+.framework-box p,
+.framework-box li {
+    line-height: 1.6;
+}
+
+.framework-box ul {
+    margin: 0 0 16px;
+    padding-left: 20px;
+}
+
+.framework-box .tl-link {
+    color: var(--orange);
+}
+
+.framework-box .tl-link:hover {
+    color: var(--white);
+}
+
+/* Career timeline */
+.timeline {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: none;
+}
+
+.timeline-step {
+    position: relative;
+}
+
+/* Connecting line between steps */
+.timeline-step::before {
+    content: "";
+    position: absolute;
+    top: 22px;
+    left: 44px;
+    right: -24px;
+    height: 3px;
+    background: var(--orange);
+}
+
+.timeline-step:last-child::before {
+    display: none;
+}
+
+.timeline-number {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    margin-bottom: 16px;
+    border-radius: 50%;
+    background: var(--navy);
+    color: var(--white);
+    font-weight: 500;
+}
+
+.timeline-step:last-child .timeline-number {
+    background: var(--orange-solid);
+}
+
+.timeline-step h3 {
+    margin: 0 0 8px;
+    color: var(--navy);
+    font-size: 1.1875rem;
+    font-weight: 500;
+}
+
+.timeline-step p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+/* Earn while you learn */
+.earn-callout {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    gap: 40px;
+    align-items: center;
+    margin-top: 64px;
+    padding: 32px;
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--orange);
+    border-radius: 2px;
+    background: var(--white);
+}
+
+.earn-callout h3 {
+    margin: 0 0 12px;
+    color: var(--navy);
+    font-size: 1.5rem;
+    font-weight: 500;
+}
+
+.earn-callout p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.6;
+}
+
+.earn-callout strong {
+    color: var(--navy);
+}
+
+.earn-media {
+    aspect-ratio: 16 / 10;
+}
+
+#pathway .role-grid + .tl-link {
+    margin-top: 16px;
+}
+
+/* Leadership Principles */
+.principle-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+}
+
+.principle-card {
+    padding: 24px;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    background: var(--white);
+}
+
+.principle-number {
+    color: var(--orange-solid);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.principle-card h3 {
+    margin: 6px 0 8px;
+    color: var(--navy);
+    font-size: 1.1875rem;
+    font-weight: 500;
+}
+
+.principle-card p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+.principle-card .principle-placement {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+    color: var(--ink);
+}
+
+.principle-placement strong {
+    color: var(--navy);
+    font-weight: 500;
+}
+
 /* T Level responsive styles */
+@media (max-width: 900px) {
+    .phase-list,
+    .skill-grid,
+    .fact-grid-3 {
+        grid-template-columns: 1fr;
+    }
+
+    .timeline {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .timeline-step::before {
+        display: none;
+    }
+
+    .map-item {
+        grid-template-columns: auto 1fr;
+    }
+
+    .map-tags {
+        grid-column: 2;
+    }
+}
+
 @media (max-width: 650px) {
     .tl-header-content {
         padding: 56px 20px;
@@ -129,5 +780,30 @@
 
     .step-grid {
         grid-template-columns: 1fr;
+    }
+
+    .tl-subnav ul {
+        gap: 20px;
+        padding: 0 20px;
+    }
+
+    .tl-split,
+    .earn-callout,
+    .principle-grid,
+    .timeline {
+        grid-template-columns: 1fr;
+    }
+
+    .tl-split {
+        gap: 32px;
+    }
+
+    .earn-callout,
+    .framework-box {
+        padding: 24px;
+    }
+
+    .tl-subheading {
+        margin-top: 56px;
     }
 }
