@@ -1,4 +1,5 @@
 import './home.css'
+import Events from '../modules/events'
 
 const pathways = [
   {
@@ -131,6 +132,9 @@ function Home() {
             </div>
           </div>
         </section>
+
+        {/* Events at Amazon */}
+        <Events />
 
         {/* Gradient marketing band */}
         <section className="gradient-band">

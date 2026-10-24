@@ -1,0 +1,103 @@
+/* Events at Amazon */
+.events-anchor {
+    scroll-margin-top: 16px;
+}
+
+.event-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.event-card {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 24px;
+    align-items: center;
+    padding: 22px 24px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--white);
+}
+
+.event-date {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    height: 72px;
+    border-radius: 8px;
+    background: var(--navy);
+    color: var(--white);
+}
+
+.event-day {
+    font-size: 1.75rem;
+    font-weight: 500;
+    line-height: 1;
+}
+
+.event-month {
+    margin-top: 4px;
+    color: var(--orange);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.event-type {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.event-online {
+    background: #e7f0fd;
+    color: #1d4ed8;
+}
+
+.event-in-person {
+    background: #fff3e0;
+    color: #a14a00;
+}
+
+.event-body h3 {
+    margin: 8px 0 4px;
+    color: var(--navy);
+    font-size: 1.1875rem;
+    font-weight: 500;
+}
+
+.event-meta {
+    margin: 0 0 6px;
+    color: var(--ink);
+    font-size: 0.875rem;
+}
+
+.event-body p:last-child {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+.event-button {
+    min-width: 132px;
+    padding: 10px 16px;
+    font-size: 0.875rem;
+}
+
+@media (max-width: 650px) {
+    .event-card {
+        grid-template-columns: auto 1fr;
+    }
+
+    .event-button {
+        grid-column: 1 / -1;
+    }
+}

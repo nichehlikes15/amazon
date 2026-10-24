@@ -16,7 +16,8 @@ function Footer() {
           <div className="footer-column">
             <h3>Explore</h3>
             <a href="/">Home</a>
-            <a href="/tlevel">T Levels</a>
+            <a href="/tlevel">T Levels at Amazon</a>
+            <a href="/what-is-a-t-level">What is a T Level?</a>
             <a href="/information">Information</a>
             <a href="/quiz">Career quiz</a>
           </div>

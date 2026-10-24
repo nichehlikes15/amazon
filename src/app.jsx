@@ -12,6 +12,7 @@ import CoffeeChats from "./pages/coffee-chats";
 import Settings from "./pages/settings";
 import Quiz from "./pages/quiz";
 import TLevelAdvice from "./pages/t-level-advice";
+import WhatIsTLevel from "./pages/what-is-a-t-level";
 import Information from "./pages/information";
 import Login from "./pages/login";
 import Signup from "./pages/signup";
@@ -36,6 +37,7 @@ function App() {
         <Route path="/settings" element={<Settings />} />
         <Route path="/quiz" element={<Quiz />} />
         <Route path="/t-level/advice" element={<TLevelAdvice />} />
+        <Route path="/what-is-a-t-level" element={<WhatIsTLevel />} />
         <Route path="/information" element={<Information />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
