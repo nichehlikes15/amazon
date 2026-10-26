@@ -1,8 +1,14 @@
 import { useEffect, useState } from 'react'
-import { Navigate } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import './profile.css'
 import { useAuth } from '../modules/auth'
 import { api } from '../modules/api'
+
+const Arrow = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M5 12h14" /><path d="M13 6l6 6-6 6" />
+  </svg>
+)
 
 function Profile() {
   const { user, loading } = useAuth()
@@ -10,6 +16,7 @@ function Profile() {
   const [saved, setSaved] = useState([])
   const [savedLoading, setSavedLoading] = useState(true)
   const [savedError, setSavedError] = useState('')
+  const [progress, setProgress] = useState({ quizCompleted: false, quizPathway: null, interestRegistered: false })
 
   // Load the user's saved opportunities from the backend.
   useEffect(() => {
@@ -18,6 +25,9 @@ function Profile() {
       .then((data) => setSaved(data.items || []))
       .catch((err) => setSavedError(err.message))
       .finally(() => setSavedLoading(false))
+    api.myProgress()
+      .then((data) => setProgress(data))
+      .catch(() => {})
   }, [loading, user])
 
   const removeSaved = async (id) => {
@@ -29,173 +39,110 @@ function Profile() {
     }
   }
 
-  const interests = ['Digital', 'Business', 'Engineering', 'Software Development']
-
-  const activity = [
-    { action: 'Applied to Amazon Emerging Talent Placement', when: '2 days ago' },
-    { action: 'Saved Digital Software Development T Level', when: '5 days ago' },
-    { action: 'Completed the career quiz', when: '1 week ago' },
-  ]
-
-  const checklist = [
-    { label: 'Create your account', done: true },
-    { label: 'Add your interests', done: true },
-    { label: 'Take the career quiz', done: true },
-    { label: 'Save 3 opportunities', done: true },
-    { label: 'Register your interest with Amazon', done: false },
-    { label: 'Upload your CV', done: false },
-  ]
-
-  const doneCount = checklist.filter((c) => c.done).length
-  const completion = Math.round((doneCount / checklist.length) * 100)
-
-  // Wait for the session check, then require login.
-  // (Kept after the hooks above so hooks always run in the same order.)
   if (loading) return null
   if (!user) return <Navigate to="/login" replace />
 
+  // Checklist built from real account data, each step linking to where you do it.
+  const checklist = [
+    { label: 'Create your account', done: true, to: null },
+    { label: 'Add your school or college', done: Boolean(user.school), to: '/settings#account' },
+    { label: 'Save 3 opportunities', done: saved.length >= 3, to: '/opportunities' },
+    {
+      label: progress.quizCompleted ? `Take the career quiz - you matched ${progress.quizPathway}` : 'Take the career quiz',
+      done: progress.quizCompleted,
+      to: '/quiz',
+    },
+    { label: 'Register your interest with Amazon', done: progress.interestRegistered, to: '/register-interest' },
+  ]
+  const completion = Math.round((checklist.filter((c) => c.done).length / checklist.length) * 100)
+
   return (
-    <>
-      <main className="profile-page">
-        <div className="profile-container">
-          {/* Profile header card (LinkedIn style) */}
-          <section className="profile-hero" aria-labelledby="profile-heading">
-            <div className="profile-cover" aria-hidden="true" />
-            <div className="profile-hero-body">
-              <img
-                className="profile-avatar"
-                src="/assets/images/defaultprofile.svg"
-                alt=""
-              />
-              <div className="profile-hero-row">
-                <div className="profile-hero-text">
-                  <h1 id="profile-heading">{user.fullName}</h1>
-                  <p className="profile-headline">Year 12 student exploring T Levels and placements</p>
-                  <p className="profile-location">London · Digital pathway</p>
-                </div>
-                <div className="profile-hero-actions">
-                  <a className="primary-button" href="/register-interest">Register interest</a>
-                  <a className="secondary-button" href="/settings">Edit profile</a>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Dashboard body */}
-          <div className="dashboard-grid">
-            {/* Left column */}
-            <aside className="dashboard-side">
-              {/* Profile completion */}
-              <div className="panel">
-                <h2 className="panel-title">Profile completion</h2>
-                <div className="completion">
-                  <div className="completion-bar">
-                    <div className="completion-fill" style={{ width: `${completion}%` }} />
-                  </div>
-                  <span className="completion-pct">{completion}%</span>
-                </div>
-                <ul className="checklist">
-                  {checklist.map((item) => (
-                    <li key={item.label} className={item.done ? 'check done' : 'check'}>
-                      <span className="check-mark" aria-hidden="true">{item.done ? '✓' : ''}</span>
-                      {item.label}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Interests */}
-              <div className="panel">
-                <h2 className="panel-title">Your interests</h2>
-                <ul className="tag-list">
-                  {interests.map((interest) => (
-                    <li className="tag" key={interest}>{interest}</li>
-                  ))}
-                </ul>
-              </div>
-            </aside>
-
-            {/* Main column */}
-            <div className="dashboard-main">
-              {/* Stat tiles */}
-              <div className="stat-row">
-                <article className="stat-tile">
-                  <span className="stat-number">{saved.length}</span>
-                  <p>Opportunities saved</p>
-                </article>
-                <article className="stat-tile">
-                  <span className="stat-number">1</span>
-                  <p>Applications started</p>
-                </article>
-                <article className="stat-tile">
-                  <span className="stat-number">1</span>
-                  <p>Quiz completed</p>
-                </article>
-              </div>
-
-              {/* Saved opportunities */}
-              <div className="panel">
-                <div className="panel-head">
-                  <h2 className="panel-title">Saved opportunities</h2>
-                  <a className="panel-link" href="/opportunities">Browse more →</a>
-                </div>
-                {savedError && <div className="auth-error" role="alert">{savedError}</div>}
-                {savedLoading ? (
-                  <p className="saved-empty">Loading…</p>
-                ) : saved.length === 0 ? (
-                  <p className="saved-empty">
-                    You haven't saved anything yet. <a href="/opportunities">Browse opportunities →</a>
-                  </p>
-                ) : (
-                  <div className="saved-list">
-                    {saved.map((item) => (
-                      <article className="saved-row" key={item.id}>
-                        <div className="saved-row-main">
-                          <span className="saved-type">{item.pathway}</span>
-                          <h3>{item.title}</h3>
-                          <p className="saved-location">{item.employer} · {item.location}</p>
-                        </div>
-                        <div className="saved-row-actions">
-                          <a
-                            className="saved-apply"
-                            href={item.applyUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            Apply →
-                          </a>
-                          <button
-                            type="button"
-                            className="saved-remove"
-                            onClick={() => removeSaved(item.id)}
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      </article>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Recent activity */}
-              <div className="panel">
-                <h2 className="panel-title">Recent activity</h2>
-                <ul className="activity-list">
-                  {activity.map((item) => (
-                    <li className="activity-item" key={item.action}>
-                      <span className="activity-dot" aria-hidden="true" />
-                      <span className="activity-text">{item.action}</span>
-                      <span className="activity-when">{item.when}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
+    <main className="pf">
+      {/* Light lilac hero */}
+      <header className="pf-hero">
+        <div className="pf-hero-inner">
+          <img className="pf-avatar" src="/assets/images/defaultprofile.svg" alt="" />
+          <div className="pf-hero-text">
+            <h1>{user.fullName}</h1>
+            <p className="pf-meta">
+              {user.school ? user.school : <Link to="/settings#account">Add your school or college</Link>}
+              <span aria-hidden="true"> · </span>
+              {user.email}
+            </p>
+          </div>
+          <div className="pf-hero-actions">
+            <Link className="pf-btn" to="/register-interest">Register interest</Link>
+            <Link className="pf-link" to="/settings">Edit profile <Arrow /></Link>
           </div>
         </div>
-      </main>
-    </>
+      </header>
+
+      <div className="pf-body">
+        <div className="pf-grid">
+          {/* Saved opportunities */}
+          <section className="pf-section">
+            <div className="pf-section-head">
+              <h2>Saved opportunities <span className="pf-count">{saved.length}</span></h2>
+              <Link className="pf-link" to="/opportunities">Browse more <Arrow /></Link>
+            </div>
+
+            {savedError && <div className="pf-error" role="alert">{savedError}</div>}
+
+            {savedLoading ? (
+              <p className="pf-empty">Loading…</p>
+            ) : saved.length === 0 ? (
+              <p className="pf-empty">
+                You haven't saved anything yet. <Link to="/opportunities">Browse opportunities</Link>
+              </p>
+            ) : (
+              <ul className="pf-saved">
+                {saved.map((item) => (
+                  <li key={item.id}>
+                    <div className="pf-saved-main">
+                      <Link className="pf-saved-title" to={`/opportunities/${item.id}`}>{item.title}</Link>
+                      <p>{item.employer} · {item.location}</p>
+                    </div>
+                    <div className="pf-saved-actions">
+                      <a className="pf-link" href={item.applyUrl} target="_blank" rel="noopener noreferrer">
+                        Apply <Arrow />
+                      </a>
+                      <button type="button" className="pf-remove" onClick={() => removeSaved(item.id)}>
+                        Remove
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          {/* Next steps */}
+          <aside className="pf-section pf-side">
+            <h2>Your next steps</h2>
+            <div className="pf-progress-row">
+              <div className="pf-progress"><div className="pf-progress-fill" style={{ width: `${completion}%` }} /></div>
+              <span>{completion}%</span>
+            </div>
+            <ul className="pf-checklist">
+              {checklist.map((item) => (
+                <li key={item.label} className={item.done ? 'is-done' : ''}>
+                  <span className="pf-check" aria-hidden="true">
+                    {item.done && (
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5L20 7" /></svg>
+                    )}
+                  </span>
+                  {item.done || !item.to ? (
+                    <span>{item.label}</span>
+                  ) : (
+                    <Link to={item.to}>{item.label}</Link>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </aside>
+        </div>
+      </div>
+    </main>
   )
 }
 

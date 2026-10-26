@@ -1,7 +1,6 @@
 /* T Level header band */
 .tl-header {
-    background: var(--navy);
-    border-bottom: 4px solid var(--orange);
+    background: linear-gradient(180deg, #e3d4f6 0%, #ecdff8 22%, #f3ecfb 46%, var(--white) 82%);
 }
 
 .tl-header-content {
@@ -12,9 +11,9 @@
 
 .tl-header h1 {
     margin-bottom: 0.75rem;
-    color: var(--white);
+    color: var(--navy);
     font-size: clamp(2rem, 5vw, 3.25rem);
-    font-weight: 500;
+    font-weight: 600;
     line-height: 1.05;
 }
 
@@ -25,7 +24,7 @@
 .tl-tagline {
     max-width: 600px;
     margin-bottom: 2rem;
-    color: #d8dee6;
+    color: var(--muted);
     font-size: 1.25rem;
     line-height: 1.5;
 }
@@ -44,18 +43,16 @@
 }
 
 .fact-card {
-    padding: 26px;
-    border: 1px solid var(--line);
-    border-left: 3px solid var(--orange);
-    border-radius: 2px;
-    background: var(--white);
+    padding: 20px 0 0;
+    border-top: 2px solid var(--orange);
+    background: transparent;
 }
 
 .fact-card h3 {
     margin: 0 0 10px;
     color: var(--navy);
     font-size: 1.1875rem;
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .fact-card p {
@@ -66,7 +63,6 @@
 
 /* Steps band */
 .tl-steps {
-    background: var(--light);
     border-top: 1px solid var(--line);
 }
 
@@ -84,10 +80,8 @@
 }
 
 .step-card {
-    padding: 24px;
-    border: 1px solid var(--line);
-    border-radius: 2px;
-    background: var(--white);
+    padding: 0;
+    background: transparent;
 }
 
 .step-number {
@@ -119,13 +113,13 @@
 
 /* Outline button on the navy header */
 .tl-secondary-on-dark {
-    border-color: var(--white);
-    color: var(--white);
+    border-color: var(--navy);
+    color: var(--navy);
 }
 
 .tl-secondary-on-dark:hover {
-    background: var(--white);
-    color: var(--navy);
+    background: var(--navy);
+    color: var(--white);
 }
 
 /* On-this-page jump links */
@@ -248,18 +242,16 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    border: 1px solid var(--line);
-    border-radius: 2px;
-    background: var(--white);
+    background: transparent;
 }
 
 .phase-media {
     aspect-ratio: 16 / 10;
-    border-radius: 0;
+    border-radius: 14px;
 }
 
 .phase-body {
-    padding: 24px;
+    padding: 18px 0 0;
 }
 
 .phase-label {
@@ -481,24 +473,13 @@
 .role-card {
     display: flex;
     flex-direction: column;
-    padding: 24px;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    background: var(--white);
-    transition: box-shadow 0.15s ease, transform 0.15s ease;
+    padding: 22px 0 0;
+    border-top: 2px solid var(--orange);
+    background: transparent;
 }
 
 .role-card:hover {
-    box-shadow: 0 6px 18px rgba(15, 17, 17, 0.12);
-    transform: translateY(-2px);
-}
-
-.role-kicker {
-    color: var(--orange-solid);
-    font-size: 0.75rem;
-    font-weight: 500;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    transform: none;
 }
 
 .role-card h3 {
@@ -707,10 +688,9 @@
 }
 
 .principle-card {
-    padding: 24px;
-    border: 1px solid var(--line);
-    border-radius: 2px;
-    background: var(--white);
+    padding: 22px 0 0;
+    border-top: 2px solid var(--orange);
+    background: transparent;
 }
 
 .principle-number {

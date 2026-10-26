@@ -31,7 +31,6 @@ function Opportunities() {
 
   const toggleSave = async (opp) => {
     if (!user) {
-      // Not logged in - send them to login.
       window.location.href = '/login'
       return
     }
@@ -64,43 +63,61 @@ function Opportunities() {
   })
 
   return (
-    <>
-      <main>
-        <section className="opps-header">
-          <div className="opps-header-content">
-            <p className="eyebrow">Opportunities</p>
-            <h1>Current apprenticeships</h1>
-            <p className="opps-tagline">
-              Explore live apprenticeship opportunities, save the ones you like, and apply
-              directly. {user ? '' : 'Sign in to save opportunities to your profile.'}
-            </p>
-          </div>
-        </section>
+    <main>
+      <header className="opps-hero">
+        <div className="opps-hero-inner">
+          <h1>Current <span>apprenticeships</span></h1>
+          <p className="opps-lead">
+            Explore live apprenticeship opportunities, save the ones you like, and apply
+            directly. {user ? '' : 'Sign in to save opportunities to your profile.'}
+          </p>
+        </div>
+      </header>
 
-        <section className="content-section">
-          <div className="opps-toolbar">
-            <span className="opps-count">{shown.length} {shown.length === 1 ? 'opportunity' : 'opportunities'}</span>
-            <div className="opps-controls">
+      <div className="opps-body">
+        {/* Left filter sidebar */}
+        <aside className="opps-sidebar" aria-label="Filter opportunities">
+          <div className="opps-sidebar-inner">
+            <label className="opps-field">
+              <span className="opps-field-label">Search</span>
               <input
                 className="opps-search"
                 type="search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search title, employer or location"
+                placeholder="Title, employer or location"
                 aria-label="Search opportunities"
               />
-              <div className="opps-filter">
-                <label htmlFor="pathway-filter">Pathway</label>
-                <select id="pathway-filter" value={filter} onChange={(e) => setFilter(e.target.value)}>
-                  {PATHWAYS.map((p) => <option key={p} value={p}>{p}</option>)}
-                </select>
-              </div>
+            </label>
+
+            <div className="opps-field">
+              <span className="opps-field-label">Pathway</span>
+              <ul className="opps-pathways">
+                {PATHWAYS.map((p) => (
+                  <li key={p}>
+                    <button
+                      type="button"
+                      className={filter === p ? 'opps-pathway-btn is-active' : 'opps-pathway-btn'}
+                      onClick={() => setFilter(p)}
+                      aria-pressed={filter === p}
+                    >
+                      {p}
+                    </button>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
+        </aside>
+
+        {/* Right results area */}
+        <section className="opps-results">
+          <p className="opps-count">
+            {shown.length} {shown.length === 1 ? 'opportunity' : 'opportunities'}
+          </p>
 
           {loading && <p className="opps-status">Loading…</p>}
           {error && <div className="auth-error" role="alert">{error}</div>}
-
           {!loading && !error && shown.length === 0 && (
             <p className="opps-status">No opportunities match your search.</p>
           )}
@@ -109,7 +126,7 @@ function Opportunities() {
             {shown.map((opp) => (
               <article className="opp-card" key={opp.id}>
                 <div className="opp-card-top">
-                  <span className="opp-pathway">{opp.pathway}</span>
+                  <span className="opp-type">{opp.type}</span>
                   <button
                     type="button"
                     className={opp.saved ? 'opp-save saved' : 'opp-save'}
@@ -123,12 +140,9 @@ function Opportunities() {
                 <h2 className="opp-title">{opp.title}</h2>
                 <p className="opp-employer">{opp.employer} · {opp.location}</p>
                 {opp.summary && <p className="opp-summary">{opp.summary}</p>}
-                <div className="opp-meta">
-                  <span className="opp-type">{opp.type}</span>
-                  {opp.closingDate && (
-                    <span className="opp-closing">Closes {formatDate(opp.closingDate)}</span>
-                  )}
-                </div>
+                {opp.closingDate && (
+                  <p className="opp-closing">Closes {formatDate(opp.closingDate)}</p>
+                )}
                 <div className="opp-actions">
                   <Link className="opp-view" to={`/opportunities/${opp.id}`}>
                     View details
@@ -154,8 +168,8 @@ function Opportunities() {
             ))}
           </div>
         </section>
-      </main>
-    </>
+      </div>
+    </main>
   )
 }
 

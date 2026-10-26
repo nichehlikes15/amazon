@@ -1,123 +1,172 @@
-/* Alummi header band */
-.alummi-header {
-    background: var(--navy);
-    border-bottom: 4px solid var(--orange);
+/* ============================================================
+   Career journey (alummi) - open editorial layout (no boxes)
+   ============================================================ */
+
+.al { overflow-x: clip; }
+
+/* Hero */
+.al-hero {
+    background: linear-gradient(180deg, #e3d4f6 0%, #ecdff8 22%, #f3ecfb 46%, var(--white) 82%);
 }
 
-.alummi-header-content {
+.al-hero-inner {
     max-width: 1120px;
     margin: 0 auto;
-    padding: 64px 24px;
+    padding: 84px 24px 60px;
 }
 
-.alummi-header h1 {
-    margin-bottom: 0.75rem;
-    color: var(--white);
-    font-size: clamp(2rem, 5vw, 3rem);
-    font-weight: 500;
-    line-height: 1.05;
-}
-
-.alummi-header h1 span {
-    color: var(--orange);
-}
-
-.alummi-tagline {
-    max-width: 600px;
-    margin-bottom: 2rem;
-    color: #d8dee6;
-    font-size: 1.125rem;
-    line-height: 1.5;
-}
-
-.alummi-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-}
-
-/* Journey cards */
-.journey-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 18px;
-}
-
-.journey-card {
-    padding: 26px;
-    border: 1px solid var(--line);
-    border-top: 3px solid var(--orange);
-    border-radius: 2px;
-    background: var(--white);
-}
-
-.journey-step {
-    color: var(--orange);
-    font-size: 0.8125rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-}
-
-.journey-card h3 {
-    margin: 12px 0 8px;
+.al-hero h1 {
+    margin: 0 0 14px;
     color: var(--navy);
-    font-size: 1.25rem;
-    font-weight: 500;
+    font-size: clamp(2.2rem, 5vw, 3.4rem);
+    font-weight: 600;
+    line-height: 1.04;
+    letter-spacing: -0.02em;
 }
 
-.journey-card p {
-    margin: 0;
+.al-hero h1 span { color: var(--orange); }
+
+.al-lead {
+    max-width: 640px;
+    margin: 0 0 24px;
     color: var(--muted);
-    line-height: 1.5;
+    font-size: 1.15rem;
+    line-height: 1.6;
 }
 
-/* Stories band */
-.stories-band {
-    background: var(--light);
+.al-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--orange);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.al-link:hover { text-decoration: underline; }
+
+/* Sections */
+.al-section {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 56px 24px;
     border-top: 1px solid var(--line);
 }
 
-.story-grid {
+.al-h2 {
+    margin: 0 0 28px;
+    color: var(--navy);
+    font-size: clamp(1.75rem, 3vw, 2.4rem);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+/* Journey - open numbered columns separated by hairlines */
+.al-steps {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 18px;
+    gap: 0;
 }
 
-.story-card {
-    padding: 26px;
-    border: 1px solid var(--line);
-    border-radius: 2px;
-    background: var(--white);
+.al-step {
+    padding: 8px 28px 8px 0;
+    border-left: 2px solid var(--orange);
+    padding-left: 22px;
+    margin-right: 28px;
 }
 
-.story-quote {
-    margin: 0 0 16px;
-    color: var(--ink);
-    font-size: 1.0625rem;
-    line-height: 1.55;
+.al-step-n {
+    display: block;
+    margin-bottom: 10px;
+    color: var(--orange);
+    font-size: 0.9375rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
 }
 
-.story-name {
-    margin: 0;
+.al-step h3 {
+    margin: 0 0 8px;
     color: var(--navy);
-    font-weight: 500;
+    font-size: 1.3rem;
+    font-weight: 600;
 }
 
-.story-pathway {
-    margin: 2px 0 0;
+.al-step p {
+    margin: 0;
     color: var(--muted);
-    font-size: 0.875rem;
+    line-height: 1.6;
 }
 
-/* Alummi responsive styles */
-@media (max-width: 650px) {
-    .alummi-header-content {
-        padding: 48px 20px;
-    }
+/* Stories - large open quotes on hairlines */
+.al-story-list {
+    display: flex;
+    flex-direction: column;
+}
 
-    .journey-grid,
-    .story-grid {
-        grid-template-columns: 1fr;
-    }
+.al-story {
+    margin: 0;
+    padding: 32px 0;
+    border-top: 1px solid var(--line);
+}
+
+.al-story:first-child { border-top: 0; }
+
+.al-story blockquote {
+    margin: 0 0 16px;
+    max-width: 760px;
+    color: var(--navy);
+    font-size: clamp(1.25rem, 2.4vw, 1.6rem);
+    font-weight: 500;
+    line-height: 1.5;
+    letter-spacing: -0.01em;
+}
+
+.al-story figcaption {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+}
+
+.al-story-name { color: var(--ink); font-weight: 600; }
+.al-story-path { color: var(--orange); font-size: 0.875rem; font-weight: 600; }
+
+/* CTA */
+.al-cta {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 56px 24px 90px;
+    text-align: center;
+    border-top: 1px solid var(--line);
+}
+
+.al-cta h2 {
+    margin: 0 0 12px;
+    color: var(--navy);
+    font-size: clamp(1.8rem, 3vw, 2.4rem);
+    font-weight: 600;
+}
+
+.al-cta p {
+    margin: 0 0 26px;
+    color: var(--muted);
+    font-size: 1.125rem;
+}
+
+.al-cta-btn {
+    display: inline-block;
+    padding: 13px 26px;
+    border-radius: 12px;
+    background: var(--orange);
+    color: #fff;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.15s ease;
+}
+
+.al-cta-btn:hover { background: var(--orange-solid-hover); }
+
+/* Responsive */
+@media (max-width: 720px) {
+    .al-steps { grid-template-columns: 1fr; gap: 20px; }
+    .al-step { margin-right: 0; }
 }

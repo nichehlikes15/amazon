@@ -210,7 +210,6 @@ function TLevel() {
         {/* Header */}
         <section className="tl-header" aria-labelledby="tl-heading">
           <div className="tl-header-content">
-            <p className="eyebrow">T Levels at Amazon</p>
             <h1 id="tl-heading">A new way to <span>start your career</span></h1>
             <p className="tl-tagline">
               T Levels combine classroom study with a real industry placement. At Amazon,
@@ -236,7 +235,6 @@ function TLevel() {
         {/* Intro */}
         <section className="content-section tl-split" aria-labelledby="tl-intro-heading">
           <div>
-            <p className="eyebrow">T Levels at Amazon</p>
             <h2 id="tl-intro-heading">Real work, real teams, real progression</h2>
             <p className="tl-body">
               Amazon offers T Level industry placements that give students hands-on
@@ -256,7 +254,6 @@ function TLevel() {
         {/* ================= FOR STUDENTS ================= */}
         <section className="tl-band" id="students" aria-labelledby="students-heading">
           <div className="content-section">
-            <p className="eyebrow">For students</p>
             <h2 id="students-heading">What is a T Level?</h2>
             <p className="section-intro">
               T Levels are designed with employers, so what you learn matches what the
@@ -324,7 +321,6 @@ function TLevel() {
         {/* Your journey (original four steps) */}
         <section className="tl-steps" aria-labelledby="steps-heading">
           <div className="tl-steps-inner">
-            <p className="eyebrow">Your journey</p>
             <h2 id="steps-heading">From curious to placement in four steps</h2>
             <div className="step-grid">
               {steps.map((item) => (
@@ -341,7 +337,6 @@ function TLevel() {
         {/* ================= FOR SCHOOLS ================= */}
         <section className="tl-band" id="schools" aria-labelledby="schools-heading">
           <div className="content-section">
-            <p className="eyebrow">For schools and colleges</p>
             <h2 id="schools-heading">Why partner with Amazon?</h2>
             <p className="section-intro">
               An Amazon placement helps your students build the skills for employability
@@ -399,7 +394,6 @@ function TLevel() {
             </div>
 
             <aside className="framework-box" aria-labelledby="framework-heading">
-              <p className="eyebrow">Updated for 2026</p>
               <h3 id="framework-heading">The new industry placement framework</h3>
               <p>
                 The Department for Education updated its industry placement guidance for
@@ -432,7 +426,6 @@ function TLevel() {
         {/* ================= CAREER PATHWAY ================= */}
         <section className="tl-band tl-band-light" id="pathway" aria-labelledby="pathway-heading">
           <div className="content-section">
-            <p className="eyebrow">Career pathway</p>
             <h2 id="pathway-heading">From T Level to a career at Amazon</h2>
             <p className="section-intro">
               Your placement can be the first step on a fast-track route into an Amazon
@@ -474,7 +467,6 @@ function TLevel() {
             <ul className="role-grid" aria-labelledby="apprenticeships-heading">
               {apprenticeships.map((row) => (
                 <li className="role-card" key={row.role}>
-                  <span className="role-kicker">Apprenticeship</span>
                   <h3>{row.role}</h3>
                   <p>{row.work}</p>
                   <ul className="tag-list">
@@ -499,7 +491,6 @@ function TLevel() {
         {/* ================= LEADERSHIP PRINCIPLES ================= */}
         <section className="tl-band" id="principles" aria-labelledby="principles-heading">
           <div className="content-section">
-            <p className="eyebrow">Leadership Principles</p>
             <h2 id="principles-heading">How Amazon works, and how you will too</h2>
             <p className="section-intro">
               Amazon's Leadership Principles guide how every employee works. Here are ten

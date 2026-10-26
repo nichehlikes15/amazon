@@ -62,15 +62,67 @@ def init_db():
     db = sqlite3.connect(DB_PATH)
     with open(SCHEMA_PATH) as f:
         db.executescript(f.read())
+    # Add newer user columns to databases created before they existed.
+    cols = {r[1] for r in db.execute("PRAGMA table_info(users)").fetchall()}
+    if "school" not in cols:
+        db.execute("ALTER TABLE users ADD COLUMN school TEXT")
+    if "email_updates" not in cols:
+        db.execute("ALTER TABLE users ADD COLUMN email_updates INTEGER NOT NULL DEFAULT 1")
+    # Point the prep-guide resources at the downloadable PDFs.
+    # Matched by title so older databases with any old link get fixed too.
+    for title, new_url in (
+        ("How to pass an assessment centre", "/guides/how-to-pass-an-assessment-centre.pdf"),
+        ("Interview preparation tips", "/guides/interview-preparation-tips.pdf"),
+        ("Writing a great application", "/guides/writing-a-great-application.pdf"),
+    ):
+        db.execute("UPDATE resources SET url = ?, kind = 'PDF guide' WHERE title = ?", (new_url, title))
+    # Point opportunities at live Amazon job pages (applies to older databases too).
+    for old_title, old_loc, title, loc, pathway, url, summary in (
+        ('Software Development Engineer Apprentice', 'London', 'Software Development Engineer Apprentice', 'Cupertino, USA', 'Digital',
+         'https://www.amazon.jobs/en/jobs/3188438/software-development-engineer-apprentice-military-veterans',
+         'Learn to build software with Amazon engineers. This role is for military veterans.'),
+        ('DevOps Engineer Apprentice', 'Manchester', 'Automation Engineer Apprentice', 'Daytona Beach, USA', 'Engineering',
+         'https://www.amazon.jobs/en/jobs/10553762/automation-engineer-apprentice',
+         'Learn to look after and improve the automated systems in an Amazon site.'),
+        ('Digital Product Manager Apprentice', 'Leeds', 'Amazon Youth Apprenticeship Program', 'Cupertino, USA', 'Business',
+         'https://www.amazon.jobs/en/jobs/10529804/amazon-youth-apprenticeship-program',
+         'A paid apprenticeship for young people to learn how a business works.'),
+        ('Digital Product Manager Apprentice', 'London', 'Graduate Automation Engineer Apprenticeship Program', 'Kojetin, Czech Republic', 'Engineering',
+         'https://www.amazon.jobs/en/jobs/10578695/graduate-automation-engineer-apprenticeship-program',
+         'Train as an automation engineer working with robotics and machines.'),
+        ('Finance Apprentice', 'Edinburgh', 'Automation Engineer (work and study)', 'Kaiserslautern, Germany', 'Engineering',
+         'https://www.amazon.jobs/en/jobs/10586445/duales-studium-automation-engineer',
+         'Study for a degree while training as an automation engineer.'),
+        ('RME Mechatronics Apprentice', 'Northern Ireland', 'Mechatronic Apprentice I', 'San Antonio, USA', 'Engineering',
+         'https://www.amazon.jobs/en/jobs/10579284/mechatronic-apprentice-i',
+         'Train to maintain and repair the robotics and machines in Amazon sites.'),
+        ('OEM Engineering Apprentice', 'Birmingham', 'Mechatronic Apprentice I', 'San Antonio, USA', 'Engineering',
+         'https://www.amazon.jobs/en/jobs/10579284/mechatronic-apprentice-i',
+         'Train to maintain and repair the robotics and machines in Amazon sites.'),
+    ):
+        db.execute(
+            "UPDATE opportunities SET title = ?, location = ?, pathway = ?, apply_url = ?, summary = ? "
+            "WHERE title = ? AND location = ?",
+            (title, loc, pathway, url, summary, old_title, old_loc),
+        )
+    if "quiz_pathway" not in cols:
+        db.execute("ALTER TABLE users ADD COLUMN quiz_pathway TEXT")
+    if "quiz_completed_at" not in cols:
+        db.execute("ALTER TABLE users ADD COLUMN quiz_completed_at TEXT")
+    db.commit()
     db.close()
 
 
 def user_to_dict(row):
+    keys = row.keys()
     return {
         "id": row["id"],
         "fullName": row["full_name"],
         "email": row["email"],
         "isAdmin": bool(row["is_admin"]),
+        "school": row["school"] if "school" in keys else None,
+        "emailUpdates": bool(row["email_updates"]) if "email_updates" in keys else True,
+        "quizPathway": row["quiz_pathway"] if "quiz_pathway" in keys else None,
     }
 
 
@@ -634,6 +686,125 @@ def pathway_explainer():
         "confidence": confidence,
         "explanation": explanation,
     })
+
+
+# ---------- Account settings and progress ----------
+
+@app.put("/api/me")
+def update_me():
+    """Update the signed-in user's name, email, school and email preference."""
+    user = current_user()
+    if user is None:
+        return jsonify({"error": "You must be signed in."}), 401
+    data = request.get_json(silent=True) or {}
+    full_name = (data.get("fullName") or "").strip()
+    email = (data.get("email") or "").strip().lower()
+    school = (data.get("school") or "").strip() or None
+    email_updates = 1 if data.get("emailUpdates", True) else 0
+
+    if not full_name or not email:
+        return jsonify({"error": "Name and email are required."}), 400
+    if "@" not in email:
+        return jsonify({"error": "Please enter a valid email address."}), 400
+
+    db = get_db()
+    taken = db.execute(
+        "SELECT id FROM users WHERE email = ? AND id != ?", (email, user["id"])
+    ).fetchone()
+    if taken:
+        return jsonify({"error": "That email is already used by another account."}), 409
+
+    db.execute(
+        "UPDATE users SET full_name = ?, email = ?, school = ?, email_updates = ? WHERE id = ?",
+        (full_name, email, school, email_updates, user["id"]),
+    )
+    db.commit()
+    row = db.execute("SELECT * FROM users WHERE id = ?", (user["id"],)).fetchone()
+    return jsonify({"user": user_to_dict(row)})
+
+
+@app.put("/api/me/password")
+def change_password():
+    """Change password - requires the current password."""
+    user = current_user()
+    if user is None:
+        return jsonify({"error": "You must be signed in."}), 401
+    data = request.get_json(silent=True) or {}
+    current = data.get("currentPassword") or ""
+    new = data.get("newPassword") or ""
+    if not check_password_hash(user["password_hash"], current):
+        return jsonify({"error": "Your current password is incorrect."}), 400
+    if len(new) < 8:
+        return jsonify({"error": "New password must be at least 8 characters."}), 400
+    db = get_db()
+    db.execute(
+        "UPDATE users SET password_hash = ? WHERE id = ?",
+        (generate_password_hash(new, method="pbkdf2:sha256"), user["id"]),
+    )
+    db.commit()
+    return jsonify({"ok": True})
+
+
+@app.delete("/api/me")
+def delete_me():
+    """Delete the signed-in user's account and their data (UK GDPR right to erasure)."""
+    user = current_user()
+    if user is None:
+        return jsonify({"error": "You must be signed in."}), 401
+    db = get_db()
+    files = db.execute(
+        "SELECT stored_name FROM application_files WHERE user_id = ?", (user["id"],)
+    ).fetchall()
+    for f in files:
+        try:
+            os.remove(os.path.join(UPLOAD_DIR, f["stored_name"]))
+        except OSError:
+            pass
+    db.execute("DELETE FROM application_files WHERE user_id = ?", (user["id"],))
+    db.execute("DELETE FROM application_progress WHERE user_id = ?", (user["id"],))
+    db.execute("DELETE FROM saved_opportunities WHERE user_id = ?", (user["id"],))
+    db.execute("UPDATE expressions_of_interest SET user_id = NULL WHERE user_id = ?", (user["id"],))
+    db.execute("DELETE FROM users WHERE id = ?", (user["id"],))
+    db.commit()
+    session.clear()
+    return jsonify({"ok": True})
+
+
+@app.get("/api/me/progress")
+def my_progress():
+    """What the signed-in user has done, for the profile's next steps."""
+    user = current_user()
+    if user is None:
+        return jsonify({"error": "You must be signed in."}), 401
+    db = get_db()
+    row = db.execute(
+        "SELECT COUNT(*) AS n FROM expressions_of_interest WHERE user_id = ? OR lower(email) = ?",
+        (user["id"], (user["email"] or "").lower()),
+    ).fetchone()
+    return jsonify({
+        "quizCompleted": bool(user["quiz_completed_at"]),
+        "quizPathway": user["quiz_pathway"],
+        "interestRegistered": row["n"] > 0,
+    })
+
+
+@app.post("/api/me/quiz-result")
+def save_quiz_result():
+    """Record the signed-in user's latest quiz result."""
+    user = current_user()
+    if user is None:
+        return jsonify({"error": "You must be signed in."}), 401
+    data = request.get_json(silent=True) or {}
+    pathway = (data.get("pathway") or "").strip()
+    if pathway not in PATHWAYS:
+        return jsonify({"error": "Please choose a valid pathway."}), 400
+    db = get_db()
+    db.execute(
+        "UPDATE users SET quiz_pathway = ?, quiz_completed_at = datetime('now') WHERE id = ?",
+        (pathway, user["id"]),
+    )
+    db.commit()
+    return jsonify({"ok": True})
 
 
 if __name__ == "__main__":

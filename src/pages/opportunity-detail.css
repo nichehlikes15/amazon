@@ -1,195 +1,151 @@
-.od-page {
-    min-height: 70vh;
-    background: var(--light);
-    padding: 32px 0 80px;
+/* ============================================================
+   Opportunity detail - open editorial layout (no boxes)
+   ============================================================ */
+
+.od { overflow-x: clip; }
+
+.od-status {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 64px 24px;
+    color: var(--muted);
 }
 
-.od-container {
-    max-width: 1080px;
+/* Light lilac hero */
+.od-hero {
+    background: linear-gradient(180deg, #e3d4f6 0%, #ecdff8 22%, #f3ecfb 46%, var(--white) 82%);
+}
+
+.od-hero-inner {
+    max-width: 1120px;
     margin: 0 auto;
-    padding: 0 24px;
+    padding: 40px 24px 52px;
 }
 
 .od-back {
-    display: inline-block;
-    margin-bottom: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 28px;
     color: var(--muted);
     font-size: 0.9375rem;
+    font-weight: 500;
     text-decoration: none;
 }
 
-.od-back:hover {
-    color: var(--orange);
-}
+.od-back:hover { color: var(--orange); }
 
-.od-status {
-    max-width: 1080px;
-    margin: 0 auto;
-    padding: 48px 24px;
-    color: var(--muted);
-}
-
-/* Header */
-.od-header {
-    margin-bottom: 24px;
-    padding: 32px;
-    border-radius: 14px;
-    background: var(--white);
-    box-shadow: 0 1px 3px rgb(6 33 66 / 6%);
-}
-
-.od-pathway {
-    display: inline-block;
-    margin-bottom: 12px;
-    padding: 4px 12px;
-    border-radius: 999px;
-    background: #fff4e6;
-    color: #b25e00;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.od-header h1 {
-    margin: 0 0 6px;
+.od-hero h1 {
+    margin: 0 0 10px;
+    max-width: 800px;
     color: var(--navy);
-    font-size: clamp(1.6rem, 4vw, 2.25rem);
+    font-size: clamp(2rem, 4.5vw, 3rem);
     font-weight: 600;
-    line-height: 1.15;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
 }
 
 .od-employer {
     margin: 0 0 4px;
     color: var(--ink);
-    font-size: 1.0625rem;
+    font-size: 1.125rem;
 }
 
 .od-closing {
-    margin: 0 0 20px;
+    margin: 0;
     color: var(--muted);
     font-size: 0.9375rem;
 }
 
-/* Friendly, solid apply button - no heavy border */
-.od-apply-button {
-    display: inline-block;
+.od-apply {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 24px;
     padding: 12px 22px;
     border-radius: 10px;
     background: var(--orange);
-    color: var(--white);
+    color: #fff;
     font-weight: 600;
     text-decoration: none;
     transition: background 0.15s ease;
 }
 
-.od-apply-button:hover {
-    background: #e07c00;
+.od-apply:hover { background: var(--orange-solid-hover); }
+
+/* Body */
+.od-body {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 16px 24px 90px;
 }
 
-.od-apply-button {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.od-apply-button svg {
-    width: 14px;
-    height: 14px;
-    flex-shrink: 0;
-}
-
-/* Layout */
 .od-grid {
     display: grid;
-    grid-template-columns: 1fr 360px;
-    gap: 24px;
+    grid-template-columns: 1fr 340px;
+    gap: 64px;
     align-items: start;
 }
 
-.od-main {
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
+/* Open sections under an orange top-rule */
+.od-section {
+    padding-top: 20px;
+    margin-bottom: 48px;
+    border-top: 2px solid var(--orange);
 }
 
-/* Cards - soft, borderless, light shadow */
-.od-card {
-    padding: 28px;
-    border-radius: 14px;
-    background: var(--white);
-    box-shadow: 0 1px 3px rgb(6 33 66 / 6%);
-}
-
-.od-card h2 {
+.od-section h2 {
     margin: 0 0 16px;
     color: var(--navy);
-    font-size: 1.25rem;
+    font-size: 1.375rem;
     font-weight: 600;
 }
 
 .od-about {
     margin: 0 0 14px;
+    max-width: 680px;
     color: var(--ink);
-    line-height: 1.6;
+    font-size: 1.0625rem;
+    line-height: 1.7;
 }
 
-.od-about:last-child {
-    margin-bottom: 0;
-}
-
-/* Resources */
+/* Resources - hairline rows */
 .od-resources {
     margin: 0;
     padding: 0;
     list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
 }
 
 .od-resources li {
-    padding: 16px;
-    border-radius: 10px;
-    background: var(--light);
+    padding: 16px 0;
+    border-bottom: 1px solid var(--line);
 }
 
-.od-resources a {
-    display: flex;
+.od-resources li:first-child { padding-top: 0; }
+
+.od-res-link {
+    display: inline-flex;
     align-items: center;
-    gap: 10px;
+    gap: 7px;
+    color: var(--navy);
+    font-size: 1.0625rem;
+    font-weight: 600;
     text-decoration: none;
 }
 
-.od-res-kind {
-    padding: 3px 10px;
-    border-radius: 999px;
-    background: var(--white);
-    color: var(--muted);
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-.od-res-title {
-    color: var(--navy);
-    font-weight: 600;
-}
-
-.od-resources a:hover .od-res-title {
-    color: var(--orange);
-}
+.od-res-link:hover { color: var(--orange); }
 
 .od-res-desc {
-    margin: 8px 0 0;
+    margin: 6px 0 0;
     color: var(--muted);
     font-size: 0.9375rem;
     line-height: 1.5;
 }
 
-/* Application tracker */
-.od-side .od-card h2 {
-    margin-bottom: 18px;
+/* Tracker side column */
+.od-side {
+    position: sticky;
+    top: 96px;
 }
 
 .od-signin-note {
@@ -212,8 +168,7 @@
     font-weight: 600;
 }
 
-.od-select,
-.od-textarea {
+.od-input {
     width: 100%;
     margin-bottom: 18px;
     padding: 10px 12px;
@@ -221,12 +176,11 @@
     border-radius: 10px;
     background: var(--white);
     color: var(--ink);
-    font-family: inherit;
+    font: inherit;
     font-size: 0.9375rem;
 }
 
-.od-select:focus,
-.od-textarea:focus {
+.od-input:focus {
     outline: 2px solid var(--orange);
     outline-offset: 1px;
     border-color: transparent;
@@ -243,19 +197,19 @@
     gap: 12px;
 }
 
-/* Soft primary button - rounded, no hard border */
-.od-primary {
+.od-save {
     padding: 10px 18px;
     border: 0;
     border-radius: 10px;
     background: var(--orange);
-    color: var(--white);
+    color: #fff;
+    font: inherit;
     font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease;
 }
 
-.od-primary:hover {
-    background: #e07c00;
-}
+.od-save:hover { background: var(--orange-solid-hover); }
 
 .od-saved-msg {
     color: #1e7e34;
@@ -263,15 +217,15 @@
     font-weight: 600;
 }
 
-/* Files */
+/* Files - hairline list */
 .od-files {
-    margin-top: 24px;
+    margin-top: 28px;
     padding-top: 20px;
     border-top: 1px solid var(--line);
 }
 
 .od-files h3 {
-    margin: 0 0 12px;
+    margin: 0 0 10px;
     color: var(--navy);
     font-size: 1rem;
     font-weight: 600;
@@ -287,23 +241,20 @@
     margin: 0 0 14px;
     padding: 0;
     list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
 }
 
 .od-files li {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 10px 12px;
-    border-radius: 10px;
-    background: var(--light);
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
     font-size: 0.9375rem;
 }
 
 .od-files li a {
     flex: 1;
+    min-width: 0;
     color: var(--navy);
     font-weight: 500;
     text-decoration: none;
@@ -312,9 +263,7 @@
     white-space: nowrap;
 }
 
-.od-files li a:hover {
-    color: var(--orange);
-}
+.od-files li a:hover { color: var(--orange); }
 
 .od-file-size {
     color: var(--muted);
@@ -325,9 +274,11 @@
 .od-file-remove {
     padding: 0;
     border: 0;
-    background: transparent;
+    background: none;
     color: var(--muted);
+    font: inherit;
     font-size: 0.8125rem;
+    cursor: pointer;
 }
 
 .od-file-remove:hover {
@@ -340,21 +291,15 @@
     font-size: 0.875rem;
 }
 
-.od-uploading {
-    margin: 8px 0 0;
-    color: var(--muted);
-    font-size: 0.875rem;
-}
-
+.od-uploading,
 .od-file-hint {
-    margin: 10px 0 0;
+    margin: 8px 0 0;
     color: var(--muted);
     font-size: 0.8125rem;
 }
 
-/* Error */
 .od-error {
-    margin-bottom: 20px;
+    margin-bottom: 24px;
     padding: 12px 14px;
     border-radius: 10px;
     background: #fdeaea;
@@ -362,15 +307,7 @@
     font-size: 0.9375rem;
 }
 
-/* Responsive */
-@media (max-width: 860px) {
-    .od-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 650px) {
-    .od-header {
-        padding: 24px;
-    }
+@media (max-width: 900px) {
+    .od-grid { grid-template-columns: 1fr; gap: 0; }
+    .od-side { position: static; }
 }

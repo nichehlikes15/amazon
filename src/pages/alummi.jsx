@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import './alummi.css'
 
 const stories = [
@@ -14,53 +15,59 @@ const steps = [
 
 function Alummi() {
   return (
-    <>
-      <main>
-        <section className="alummi-header" aria-labelledby="alummi-heading">
-          <div className="alummi-header-content">
-            <p className="eyebrow">Career journey</p>
-            <h1 id="alummi-heading">Where Launchpad can <span>take you</span></h1>
-            <p className="alummi-tagline">
-              Hear from students who have completed their placements, and see how your
-              own journey could unfold.
-            </p>
-            <div className="alummi-actions">
-              <a className="primary-button" href="/alummi/coffee-chats">Book a coffee chat</a>
-            </div>
-          </div>
-        </section>
+    <main className="al">
+      {/* Hero */}
+      <header className="al-hero">
+        <div className="al-hero-inner">
+          <h1>Where Launchpad can <span>take you</span></h1>
+          <p className="al-lead">
+            Hear from students who have completed their placements, and see how your own
+            journey could unfold.
+          </p>
+          <Link className="al-link" to="/alummi/coffee-chats">
+            Book a coffee chat
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
+          </Link>
+        </div>
+      </header>
 
-        <section className="content-section">
-          <p className="eyebrow">Your journey</p>
-          <h2>Three steps to launch</h2>
-          <div className="journey-grid">
-            {steps.map((item, index) => (
-              <article className="journey-card" key={item.title}>
-                <span className="journey-step">Step {index + 1}</span>
-                <h3>{item.title}</h3>
-                <p>{item.text}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section className="stories-band">
-          <div className="content-section">
-            <p className="eyebrow">Student stories</p>
-            <h2>Hear from real students</h2>
-            <div className="story-grid">
-              {stories.map((story) => (
-                <article className="story-card" key={story.name}>
-                  <p className="story-quote">&ldquo;{story.quote}&rdquo;</p>
-                  <p className="story-name">{story.name}</p>
-                  <p className="story-pathway">{story.pathway} pathway</p>
-                </article>
-              ))}
+      {/* Journey - open numbered steps */}
+      <section className="al-section">
+        <h2 className="al-h2">Three steps to launch</h2>
+        <div className="al-steps">
+          {steps.map((item, i) => (
+            <div className="al-step" key={item.title}>
+              <span className="al-step-n" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+              <h3>{item.title}</h3>
+              <p>{item.text}</p>
             </div>
-          </div>
-        </section>
-      </main>
-    </>
+          ))}
+        </div>
+      </section>
+
+      {/* Stories - open quotes separated by hairlines */}
+      <section className="al-section al-stories">
+        <h2 className="al-h2">Hear from real students</h2>
+        <div className="al-story-list">
+          {stories.map((story) => (
+            <figure className="al-story" key={story.name}>
+              <blockquote>&ldquo;{story.quote}&rdquo;</blockquote>
+              <figcaption>
+                <span className="al-story-name">{story.name}</span>
+                <span className="al-story-path">{story.pathway} pathway</span>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="al-cta">
+        <h2>Ready to talk to someone?</h2>
+        <p>Book an informal coffee chat with a student, alum or Amazon buddy.</p>
+        <Link className="al-cta-btn" to="/alummi/coffee-chats">Book a coffee chat</Link>
+      </section>
+    </main>
   )
 }
 

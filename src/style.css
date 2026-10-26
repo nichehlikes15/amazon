@@ -141,15 +141,6 @@ button {
     max-width: 650px;
 }
 
-.eyebrow {
-    margin: 0 0 14px;
-    color: var(--orange);
-    font-size: 13px;
-    font-weight: 500;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-}
-
 h1,
 h2,
 h3,

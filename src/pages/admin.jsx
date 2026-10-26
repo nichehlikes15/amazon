@@ -94,7 +94,6 @@ function Admin() {
       <main>
         <section className="admin-header">
           <div className="admin-header-content">
-            <p className="eyebrow">Admin</p>
             <h1>Admin dashboard</h1>
             <p className="admin-tagline">
               Manage apprenticeship opportunities and review expressions of interest.

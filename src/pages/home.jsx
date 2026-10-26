@@ -1,193 +1,208 @@
+import { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import './home.css'
 import Events from '../modules/events'
 
-const pathways = [
+const PATHWAYS = [
   {
-    name: 'Digital',
-    blurb: 'Practise real digital skills — software development, data and support — and see where a Digital T Level could take you.',
+    name: 'Digital', blurb: 'Software, data and support.',
+    // code brackets </>
+    icon: <><polyline points="16 18 22 12 16 6" /><polyline points="8 6 2 12 8 18" /></>,
   },
   {
-    name: 'Business',
-    blurb: 'Explore management, operations and planning, and learn how a Business placement works day to day.',
+    name: 'Business', blurb: 'Operations, planning and people.',
+    // briefcase
+    icon: <><rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" /></>,
   },
   {
-    name: 'Media',
-    blurb: 'Build skills in content, design and communication, and discover creative roles across the industry.',
+    name: 'Media', blurb: 'Content, design and communication.',
+    // play / media
+    icon: <><rect x="2" y="3" width="20" height="14" rx="2" /><path d="M10 8l5 3-5 3V8z" /><line x1="8" y1="21" x2="16" y2="21" /></>,
   },
   {
-    name: 'Finance',
-    blurb: 'Get hands-on with budgets, analysis and reporting, and understand what a Finance pathway involves.',
+    name: 'Finance', blurb: 'Budgets, analysis and reporting.',
+    // trending up chart
+    icon: <><polyline points="3 17 9 11 13 15 21 7" /><polyline points="15 7 21 7 21 13" /></>,
   },
   {
-    name: 'Engineering',
-    blurb: 'Design, build and test real products. More engineering sub-pathways coming soon.',
-  },
-]
-
-const benefits = [
-  {
-    title: 'No account needed to explore',
-    text: 'Browse T Levels, placements and advice freely. Sign up only when you want to save items or register your interest.',
-  },
-  {
-    title: 'Learn at your own pace',
-    text: 'Clear information and downloadable resources you can read, save and use offline, whenever suits you.',
-  },
-  {
-    title: 'Hear from real students',
-    text: 'Connect with current T Level students and Amazonians to find out what placements are really like.',
-  },
-  {
-    title: 'Built for everyone',
-    text: 'Adjustable text size, colour-blind friendly mode and full keyboard support so everyone can take part.',
+    name: 'Engineering', blurb: 'Design, build and maintain.',
+    // wrench / tool
+    icon: <><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2-2 2.6-2.6z" /></>,
   },
 ]
 
-const faqs = [
-  {
-    q: 'What is a T Level?',
-    a: 'A T Level is a two-year qualification you can take after GCSEs, equal to three A Levels, that combines classroom study with an industry placement.',
-  },
-  {
-    q: 'Who can apply for an Amazon placement?',
-    a: 'Students studying a T Level in a relevant subject can apply. Use the career quiz to see which pathway fits you best.',
-  },
-  {
-    q: 'How much does it cost?',
-    a: 'Nothing. Exploring the site, reading resources and registering your interest are all completely free.',
-  },
+const STATS = [
+  { value: 27446, suffix: '', label: 'T Level learners in England (2025-26)' },
+  { value: 21, suffix: '', label: 'T Level pathways nationally' },
+  { value: 5, suffix: '', label: 'subject areas at Amazon' },
 ]
+
+const STEPS = [
+  { n: '01', title: 'Discover', text: 'Explore pathways and take the quiz to find your fit.' },
+  { n: '02', title: 'Prepare', text: 'Use on-site guides and track your application.' },
+  { n: '03', title: 'Apply', text: 'Save opportunities and apply to real placements.' },
+]
+
+// Small hook: adds a class when the element scrolls into view, for reveal animations.
+function useReveal() {
+  const ref = useRef(null)
+  const [shown, setShown] = useState(false)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            setShown(true)
+            io.unobserve(e.target)
+          }
+        })
+      },
+      { threshold: 0.15 },
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
+  return [ref, shown]
+}
+
+// Count-up number animation, triggered when the stats band is revealed.
+function useCountUp(target, run, duration = 1400) {
+  const [value, setValue] = useState(0)
+  useEffect(() => {
+    if (!run) return
+    let frame
+    const start = performance.now()
+    const tick = (now) => {
+      const p = Math.min(1, (now - start) / duration)
+      // easeOutCubic
+      const eased = 1 - Math.pow(1 - p, 3)
+      setValue(Math.round(target * eased))
+      if (p < 1) frame = requestAnimationFrame(tick)
+    }
+    frame = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(frame)
+  }, [run, target, duration])
+  return value
+}
+
+function StatCard({ stat, run }) {
+  const value = useCountUp(stat.value, run)
+  return (
+    <div className="h-stat">
+      <span className="h-stat-num">{value.toLocaleString()}{stat.suffix}</span>
+      <span className="h-stat-label">{stat.label}</span>
+    </div>
+  )
+}
 
 function Home() {
-  const scrollToSection = (sectionId) => {
-    document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' })
-  }
+  const [statsRef, statsShown] = useReveal()
+  const [pathRef, pathShown] = useReveal()
+  const [stepsRef, stepsShown] = useReveal()
+  const [ctaRef, ctaShown] = useReveal()
 
   return (
-    <>
-      <main>
-        {/* Hero promise */}
-        <section className="hero" aria-labelledby="hero-heading">
-          <div className="hero-content">
-            <div className="hero-copy">
-              <p className="eyebrow">Amazon Emerging Talent</p>
-              <h1 id="hero-heading">Discover <span>T Levels</span> at your own pace, for free</h1>
-              <p className="hero-description">
-                Launchpad is open to any student, whatever stage you are at. Explore
-                T Levels, Amazon placements and the resources you need to take your
-                next step — all in one place.
-              </p>
-              <div className="hero-actions">
-                <button className="primary-button" type="button" onClick={() => scrollToSection('pathways')}>Explore pathways</button>
-                <a className="secondary-button" href="/quiz">Take the career quiz</a>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Problem framing */}
-        <section className="framing">
-          <div className="framing-inner">
-            <h2>Not sure which path is right for you?</h2>
-            <p>
-              Choosing what to do after your GCSEs can feel overwhelming. Launchpad
-              gives you one simple, guided place to explore your options and find the
-              pathway that fits your interests and strengths.
-            </p>
-            <a className="primary-button" href="/quiz">Find your pathway</a>
-          </div>
-        </section>
-
-        {/* Pathway module grid */}
-        <section className="content-section" id="pathways" aria-labelledby="pathways-heading">
-          <p className="eyebrow">Explore subjects</p>
-          <h2 id="pathways-heading">Learn and practise, pathway by pathway</h2>
-          <p className="section-intro">
-            Each pathway shows you what the work involves, what you would study, and
-            how an Amazon placement could help you get started.
+    <main className="home">
+      {/* ===== Animated hero ===== */}
+      <section className="h-hero">
+        <div className="h-hero-glow" aria-hidden="true" />
+        <div className="h-hero-inner">
+          <h1 className="h-title">
+            <span className="h-rise" style={{ animationDelay: '0.15s' }}>Launch</span>{' '}
+            <span className="h-rise" style={{ animationDelay: '0.3s' }}>your</span>{' '}
+            <span className="h-rise h-accent" style={{ animationDelay: '0.45s' }}>future</span>
+          </h1>
+          <p className="h-hero-sub h-rise" style={{ animationDelay: '0.6s' }}>
+            Discover T Levels, placements and apprenticeships at Amazon. Find your pathway,
+            prepare with real guides, and apply - all in one place.
           </p>
-          <div className="pathway-grid">
-            {pathways.map((pathway) => (
-              <article className="pathway-card" key={pathway.name}>
-                <h3>Getting started with {pathway.name}</h3>
-                <p>{pathway.blurb}</p>
-                <a href="/information" className="pathway-link">Learn more →</a>
-              </article>
-            ))}
+          <div className="h-hero-actions h-rise" style={{ animationDelay: '0.75s' }}>
+            <Link className="h-btn h-btn-primary" to="/quiz">Find your pathway</Link>
+            <Link className="h-btn h-btn-ghost" to="/opportunities">Browse opportunities</Link>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Benefits row */}
-        <section className="benefits">
-          <div className="benefits-inner">
-            <p className="eyebrow">Why Launchpad</p>
-            <h2>Launchpad benefits</h2>
-            <div className="benefit-grid">
-              {benefits.map((benefit) => (
-                <div className="benefit" key={benefit.title}>
-                  <h3>{benefit.title}</h3>
-                  <p>{benefit.text}</p>
-                </div>
-              ))}
+      {/* ===== Stats band with count-up ===== */}
+      <section
+        className={`h-stats ${statsShown ? 'is-shown' : ''}`}
+        ref={statsRef}
+      >
+        {STATS.map((s) => (
+          <StatCard key={s.label} stat={s} run={statsShown} />
+        ))}
+      </section>
+
+      {/* ===== Pathways showcase ===== */}
+      <section className="h-section" ref={pathRef}>
+        <div className="h-section-head">
+          <h2>Five pathways, one launchpad</h2>
+          <p className="h-lead">
+            Each pathway blends real work with training. Pick the one that fits how you think.
+          </p>
+        </div>
+        <div className="h-path-grid">
+          {PATHWAYS.map((p, i) => (
+            <Link
+              to="/information"
+              className={`h-path-card ${pathShown ? 'is-shown' : ''}`}
+              key={p.name}
+              style={{ transitionDelay: `${i * 0.08}s` }}
+            >
+              <span className="h-path-dot" aria-hidden="true" />
+              <span className="h-path-dot" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  {p.icon}
+                </svg>
+              </span>
+              <h3>{p.name}</h3>
+              <p>{p.blurb}</p>
+              <span className="h-path-go" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 12h14" />
+                  <path d="M13 6l6 6-6 6" />
+                </svg>
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* ===== Steps ===== */}
+      <section className="h-steps-wrap" ref={stepsRef}>
+        <div className="h-section-head">
+          <h2>From curious to placement</h2>
+        </div>
+        <div className="h-steps">
+          {STEPS.map((s, i) => (
+            <div
+              className={`h-step ${stepsShown ? 'is-shown' : ''}`}
+              key={s.n}
+              style={{ transitionDelay: `${i * 0.12}s` }}
+            >
+              <span className="h-step-n">{s.n}</span>
+              <h3>{s.title}</h3>
+              <p>{s.text}</p>
             </div>
-          </div>
-        </section>
+          ))}
+        </div>
+      </section>
 
-        {/* Events at Amazon */}
-        <Events />
-
-        {/* Gradient marketing band */}
-        <section className="gradient-band">
-          <div className="gradient-band-inner">
-            <h2>Your future starts with a single step</h2>
-            <p>
-              Join thousands of students exploring T Levels and Amazon placements.
-              Take the quiz, find your pathway, and register your interest today.
-            </p>
-            <a className="gradient-band-button" href="/quiz">Start the career quiz</a>
-          </div>
-        </section>
-
-        {/* Dual audience split */}
-        <section className="content-section audience" aria-labelledby="audience-heading">
-          <h2 id="audience-heading" className="sr-only">Who Launchpad is for</h2>
-          <div className="audience-grid">
-            <article className="audience-card">
-              <p className="eyebrow">For students</p>
-              <h3>Start your career journey</h3>
-              <p>
-                Explore pathways, save opportunities, read advice from real students
-                and register your interest in an Amazon placement.
-              </p>
-              <a className="primary-button" href="/profile">Go to my profile</a>
-            </article>
-            <article className="audience-card audience-card-dark">
-              <p className="eyebrow">For schools</p>
-              <h3>Bring T Levels to your students</h3>
-              <p>
-                Find out how to set up and manage placements, download resources for
-                assemblies and parents, and collaborate with Amazon on T Levels.
-              </p>
-              <a className="secondary-button secondary-on-dark" href="/t-level/advice">School advice</a>
-            </article>
-          </div>
-        </section>
-
-        {/* FAQ */}
-        <section className="content-section faq" aria-labelledby="faq-heading">
-          <p className="eyebrow">Questions?</p>
-          <h2 id="faq-heading">Frequently asked questions</h2>
-          <div className="faq-list">
-            {faqs.map((faq) => (
-              <details className="faq-item" key={faq.q}>
-                <summary>{faq.q}</summary>
-                <p>{faq.a}</p>
-              </details>
-            ))}
-          </div>
-        </section>
-      </main>
-    </>
+      {/* ===== Gradient CTA ===== */}
+      <section
+        className={`h-cta ${ctaShown ? 'is-shown' : ''}`}
+        ref={ctaRef}
+      >
+        <div className="h-cta-shimmer" aria-hidden="true" />
+        <div className="h-cta-inner">
+          <h2>Your next step starts here</h2>
+          <p>Take the two-minute quiz and we'll point you to the pathway that fits.</p>
+          <Link className="h-btn h-btn-light" to="/quiz">Start the quiz</Link>
+        </div>
+      </section>
+    </main>
   )
 }
 
