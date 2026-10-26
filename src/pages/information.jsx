@@ -1,3 +1,5 @@
+import { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import './information.css'
 
 const pathways = [
@@ -44,99 +46,126 @@ const pathways = [
   },
 ]
 
+const COLS = [
+  { key: 'study', label: 'What you would study' },
+  { key: 'skills', label: 'Skills you would build' },
+  { key: 'roles', label: 'Where it can lead' },
+]
+
 function Information() {
+  const [active, setActive] = useState(pathways[0].id)
+  const sectionsRef = useRef(null)
+
   const scrollToPathway = (id) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
+  // Scroll-spy: highlight the side-rail item for the pathway in view,
+  // and reveal each section as it enters.
+  useEffect(() => {
+    const sections = sectionsRef.current?.querySelectorAll('.pw-row') || []
+    const spy = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            setActive(e.target.id)
+            e.target.classList.add('is-in')
+          }
+        })
+      },
+      { rootMargin: '-45% 0px -45% 0px', threshold: 0 },
+    )
+    const reveal = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add('is-in')
+            reveal.unobserve(e.target)
+          }
+        })
+      },
+      { threshold: 0.12 },
+    )
+    sections.forEach((s) => { spy.observe(s); reveal.observe(s) })
+    return () => { spy.disconnect(); reveal.disconnect() }
+  }, [])
+
   return (
-    <>
-      <main>
-        {/* Header band */}
-        <section className="info-header" aria-labelledby="info-heading">
-          <div className="info-header-content">
-            <p className="eyebrow">Subjects offered</p>
-            <h1 id="info-heading">Explore the <span>T Level</span> pathways</h1>
-            <p className="info-tagline">
-              Amazon Emerging Talent offers placements across five subject areas.
-              Explore what you would study, the skills you would build, and the kinds
-              of roles each pathway can lead to.
-            </p>
-          </div>
-        </section>
+    <main className="info2">
+      {/* Hero */}
+      <header className="info2-hero">
+        <div className="info2-hero-inner">
+          <h1>Explore the <span>T Level</span> pathways</h1>
+          <p className="info2-lead">
+            Amazon Emerging Talent offers placements across five subject areas. Explore what
+            you would study, the skills you would build, and where each pathway can lead.
+          </p>
+        </div>
+      </header>
 
-        {/* Quick nav */}
-        <section className="info-nav" aria-label="Jump to a pathway">
-          <div className="info-nav-inner">
-            {pathways.map((pathway) => (
-              <button
-                key={pathway.id}
-                type="button"
-                className="info-nav-pill"
-                onClick={() => scrollToPathway(pathway.id)}
-              >
-                {pathway.name}
-              </button>
+      {/* Body: sticky side rail + open sections */}
+      <div className="info2-body">
+        <aside className="info2-rail" aria-label="Pathways">
+          <ol>
+            {pathways.map((p, i) => (
+              <li key={p.id}>
+                <button
+                  type="button"
+                  className={active === p.id ? 'is-active' : ''}
+                  onClick={() => scrollToPathway(p.id)}
+                >
+                  <span className="info2-rail-n">{String(i + 1).padStart(2, '0')}</span>
+                  {p.name}
+                </button>
+              </li>
             ))}
-          </div>
-        </section>
+          </ol>
+        </aside>
 
-        {/* Pathway detail sections */}
-        <section className="content-section">
-          <div className="pathway-detail-list">
-            {pathways.map((pathway) => (
-              <article className="pathway-detail" id={pathway.id} key={pathway.id}>
-                <div className="pathway-detail-head">
-                  <h2>{pathway.name}</h2>
-                  {pathway.comingSoon && (
-                    <span className="coming-soon">More coming soon</span>
-                  )}
+        <div className="info2-sections" ref={sectionsRef}>
+          {pathways.map((p, i) => (
+            <section className="pw-row" id={p.id} key={p.id}>
+              <div className="pw-index" aria-hidden="true">{String(i + 1).padStart(2, '0')}</div>
+              <div className="pw-content">
+                <div className="pw-head">
+                  <h2>{p.name}</h2>
+                  {p.comingSoon && <span className="pw-soon">More coming soon</span>}
                 </div>
-                <p className="pathway-summary">{pathway.summary}</p>
+                <p className="pw-summary">{p.summary}</p>
 
-                <div className="pathway-columns">
-                  <div className="pathway-col">
-                    <h3>What you would study</h3>
-                    <ul>
-                      {pathway.study.map((item) => <li key={item}>{item}</li>)}
-                    </ul>
-                  </div>
-                  <div className="pathway-col">
-                    <h3>Skills you would build</h3>
-                    <ul>
-                      {pathway.skills.map((item) => <li key={item}>{item}</li>)}
-                    </ul>
-                  </div>
-                  <div className="pathway-col">
-                    <h3>Where it can lead</h3>
-                    <ul>
-                      {pathway.roles.map((item) => <li key={item}>{item}</li>)}
-                    </ul>
-                  </div>
+                <div className="pw-cols">
+                  {COLS.map((col) => (
+                    <div className="pw-col" key={col.key}>
+                      <h3>{col.label}</h3>
+                      <ul>
+                        {p[col.key].map((item) => <li key={item}>{item}</li>)}
+                      </ul>
+                    </div>
+                  ))}
                 </div>
 
-                <div className="pathway-detail-actions">
-                  <a className="primary-button" href="/quiz">Is this pathway right for me?</a>
-                  <a className="secondary-button" href="/profile">Save to my profile</a>
+                <div className="pw-actions">
+                  <Link className="pw-link" to="/quiz">
+                    Is this right for me?
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
+                  </Link>
+                  <Link className="pw-link pw-link-muted" to="/opportunities">
+                    See opportunities
+                  </Link>
                 </div>
-              </article>
-            ))}
-          </div>
-        </section>
+              </div>
+            </section>
+          ))}
+        </div>
+      </div>
 
-        {/* Closing CTA */}
-        <section className="info-cta">
-          <div className="info-cta-inner">
-            <h2>Ready to register your interest?</h2>
-            <p>
-              Let Amazon know which pathway interests you. It only takes a minute and
-              helps the Emerging Talent team plan placements.
-            </p>
-            <a className="primary-button" href="/profile">Register your interest</a>
-          </div>
-        </section>
-      </main>
-    </>
+      {/* Closing CTA */}
+      <section className="info2-cta">
+        <h2>Ready to register your interest?</h2>
+        <p>Let Amazon know which pathway interests you - it only takes a minute.</p>
+        <Link className="info2-cta-btn" to="/register-interest">Register your interest</Link>
+      </section>
+    </main>
   )
 }
 

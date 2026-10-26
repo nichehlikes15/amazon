@@ -10,7 +10,7 @@ function Interest() {
   const [form, setForm] = useState({
     fullName: user?.fullName || '',
     email: user?.email || '',
-    school: '',
+    school: user?.school || '',
     pathway: '',
     message: '',
   })
@@ -43,7 +43,6 @@ function Interest() {
       <main>
         <section className="interest-header">
           <div className="interest-header-content">
-            <p className="eyebrow">Register your interest</p>
             <h1>Tell Amazon you're interested</h1>
             <p className="interest-tagline">
               Let the Amazon Emerging Talent team know which pathway interests you.

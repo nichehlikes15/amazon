@@ -4,7 +4,7 @@
     justify-content: center;
     min-height: 70vh;
     padding: 64px 24px;
-    background: var(--light);
+    background: linear-gradient(180deg, #e3d4f6 0%, #ecdff8 20%, #f3ecfb 40%, var(--light) 80%);
 }
 
 .auth-card {
@@ -13,8 +13,8 @@
     align-self: flex-start;
     padding: 32px;
     border: 1px solid var(--line);
-    border-top: 3px solid var(--orange);
-    border-radius: 2px;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgb(6 33 66 / 6%);
     background: var(--white);
 }
 

@@ -19,6 +19,12 @@ function formatSize(bytes) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
+const Arrow = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M5 12h14" /><path d="M13 6l6 6-6 6" />
+  </svg>
+)
+
 function OpportunityDetail() {
   const { id } = useParams()
   const { user } = useAuth()
@@ -85,43 +91,40 @@ function OpportunityDetail() {
     }
   }
 
-  if (loading) return <main className="od-page"><p className="od-status">Loading…</p></main>
-  if (error && !opp) return <main className="od-page"><p className="od-status">{error}</p></main>
+  if (loading) return <main className="od"><p className="od-status">Loading…</p></main>
+  if (error && !opp) return <main className="od"><p className="od-status">{error}</p></main>
   if (!opp) return null
 
   return (
-    <main className="od-page">
-      <div className="od-container">
-        <Link className="od-back" to="/opportunities">← All opportunities</Link>
-
-        {/* Header */}
-        <header className="od-header">
-          <span className="od-pathway">{opp.pathway}</span>
+    <main className="od">
+      {/* Light lilac hero */}
+      <header className="od-hero">
+        <div className="od-hero-inner">
+          <Link className="od-back" to="/opportunities">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M19 12H5" /><path d="M11 18l-6-6 6-6" />
+            </svg>
+            All opportunities
+          </Link>
           <h1>{opp.title}</h1>
           <p className="od-employer">{opp.employer} · {opp.location}</p>
-          {opp.closingDate && (
-            <p className="od-closing">Closes {formatDate(opp.closingDate)}</p>
-          )}
-          <a
-            className="od-apply-button"
-            href={opp.applyUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          {opp.closingDate && <p className="od-closing">Closes {formatDate(opp.closingDate)}</p>}
+          <a className="od-apply" href={opp.applyUrl} target="_blank" rel="noopener noreferrer">
             Apply on the official site
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M7 17L17 7" />
-              <path d="M8 7h9v9" />
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M7 17L17 7" /><path d="M8 7h9v9" />
             </svg>
           </a>
-        </header>
+        </div>
+      </header>
 
+      <div className="od-body">
         {error && <div className="od-error" role="alert">{error}</div>}
 
         <div className="od-grid">
-          {/* Main column */}
+          {/* Main column - open sections */}
           <div className="od-main">
-            <section className="od-card">
+            <section className="od-section">
               <h2>About this opportunity</h2>
               <p className="od-about">{opp.summary}</p>
               <p className="od-about">
@@ -131,21 +134,15 @@ function OpportunityDetail() {
               </p>
             </section>
 
-            <section className="od-card">
+            <section className="od-section">
               <h2>Resources to help you prepare</h2>
               <ul className="od-resources">
                 {resources.map((r) => (
                   <li key={r.id}>
                     {r.url.startsWith('/') ? (
-                      <Link to={r.url}>
-                        <span className="od-res-kind">{r.kind}</span>
-                        <span className="od-res-title">{r.title}</span>
-                      </Link>
+                      <Link className="od-res-link" to={r.url}>{r.title} <Arrow /></Link>
                     ) : (
-                      <a href={r.url} target="_blank" rel="noopener noreferrer">
-                        <span className="od-res-kind">{r.kind}</span>
-                        <span className="od-res-title">{r.title}</span>
-                      </a>
+                      <a className="od-res-link" href={r.url} target="_blank" rel="noopener noreferrer">{r.title} <Arrow /></a>
                     )}
                     {r.description && <p className="od-res-desc">{r.description}</p>}
                   </li>
@@ -154,9 +151,9 @@ function OpportunityDetail() {
             </section>
           </div>
 
-          {/* Application tracker (requires login) */}
+          {/* Application tracker - open column, no card */}
           <aside className="od-side">
-            <section className="od-card">
+            <section className="od-section">
               <h2>Your application</h2>
               {!user ? (
                 <p className="od-signin-note">
@@ -166,21 +163,14 @@ function OpportunityDetail() {
               ) : (
                 <>
                   <label className="od-label" htmlFor="status">Status</label>
-                  <select
-                    id="status"
-                    className="od-select"
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value)}
-                  >
+                  <select id="status" className="od-input" value={status} onChange={(e) => setStatus(e.target.value)}>
                     {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
                   </select>
 
-                  <label className="od-label" htmlFor="notes">
-                    Notes &amp; answers
-                  </label>
+                  <label className="od-label" htmlFor="notes">Notes &amp; answers</label>
                   <textarea
                     id="notes"
-                    className="od-textarea"
+                    className="od-input od-textarea"
                     rows="7"
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
@@ -188,9 +178,7 @@ function OpportunityDetail() {
                   />
 
                   <div className="od-save-row">
-                    <button className="od-primary" type="button" onClick={saveProgress}>
-                      Save progress
-                    </button>
+                    <button className="od-save" type="button" onClick={saveProgress}>Save progress</button>
                     {savedMsg && <span className="od-saved-msg">{savedMsg}</span>}
                   </div>
 
@@ -200,23 +188,13 @@ function OpportunityDetail() {
                     <ul>
                       {files.map((f) => (
                         <li key={f.id}>
-                          <a href={api.fileUrl(f.id)} target="_blank" rel="noopener noreferrer">
-                            {f.name}
-                          </a>
+                          <a href={api.fileUrl(f.id)} target="_blank" rel="noopener noreferrer">{f.name}</a>
                           <span className="od-file-size">{formatSize(f.size)}</span>
-                          <button type="button" className="od-file-remove" onClick={() => removeFile(f.id)}>
-                            Remove
-                          </button>
+                          <button type="button" className="od-file-remove" onClick={() => removeFile(f.id)}>Remove</button>
                         </li>
                       ))}
                     </ul>
-                    <input
-                      ref={fileInput}
-                      type="file"
-                      className="od-file-input"
-                      onChange={onUpload}
-                      disabled={uploading}
-                    />
+                    <input ref={fileInput} type="file" className="od-file-input" onChange={onUpload} disabled={uploading} />
                     {uploading && <p className="od-uploading">Uploading…</p>}
                     <p className="od-file-hint">PDF, Word, text or image. Up to 10 MB.</p>
                   </div>

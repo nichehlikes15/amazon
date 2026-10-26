@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import './about-us.css'
 
 const values = [
@@ -23,50 +24,62 @@ const stats = [
 
 function AboutUs() {
   return (
-    <>
-      <main>
-        <section className="about-header" aria-labelledby="about-heading">
-          <div className="about-header-content">
-            <p className="eyebrow">About us</p>
-            <h1 id="about-heading">Helping students <span>launch</span> their careers</h1>
-            <p className="about-tagline">
-              Launchpad is built with the Amazon Emerging Talent Programs team to help
-              students discover T Levels, find placements, and connect with the people
-              who can help them get started.
-            </p>
-          </div>
-        </section>
-
-        <section className="content-section">
-          <p className="eyebrow">Our mission</p>
-          <h2>Making the path into tech and business simpler</h2>
-          <p className="section-intro">
-            Choosing what to do after GCSEs is a big decision. We bring clear
-            information, honest advice and real connections together in one place, so
-            every student can make a confident choice about their future.
+    <main className="au">
+      {/* Hero */}
+      <header className="au-hero">
+        <div className="au-hero-inner">
+          <h1>Helping students <span>launch</span> their careers</h1>
+          <p className="au-lead">
+            Launchpad is built with the Amazon Emerging Talent Programs team to help
+            students discover T Levels, find placements, and connect with the people
+            who can help them get started.
           </p>
-          <div className="value-grid">
-            {values.map((value) => (
-              <article className="value-card" key={value.title}>
+        </div>
+      </header>
+
+      {/* Mission */}
+      <section className="au-section">
+        <h2 className="au-h2">Making the path into tech and business simpler</h2>
+        <p className="au-body">
+          Choosing what to do after GCSEs is a big decision. We bring clear information,
+          honest advice and real connections together in one place, so every student can
+          make a confident choice about their future.
+        </p>
+      </section>
+
+      {/* Values - open rows, no boxes */}
+      <section className="au-section">
+        <h2 className="au-h2">Our values</h2>
+        <div className="au-values">
+          {values.map((value, i) => (
+            <div className="au-value" key={value.title}>
+              <span className="au-value-n" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+              <div>
                 <h3>{value.title}</h3>
                 <p>{value.text}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section className="about-stats">
-          <div className="about-stats-inner">
-            {stats.map((stat) => (
-              <div className="about-stat" key={stat.label}>
-                <span className="about-stat-number">{stat.number}</span>
-                <p>{stat.label}</p>
               </div>
-            ))}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Stats - open figures on hairlines */}
+      <section className="au-stats">
+        {stats.map((stat) => (
+          <div className="au-stat" key={stat.label}>
+            <span className="au-stat-num">{stat.number}</span>
+            <span className="au-stat-label">{stat.label}</span>
           </div>
-        </section>
-      </main>
-    </>
+        ))}
+      </section>
+
+      {/* CTA */}
+      <section className="au-cta">
+        <h2>Explore what's on offer</h2>
+        <p>See the five pathways and find the one that fits you.</p>
+        <Link className="au-cta-btn" to="/information">Explore pathways</Link>
+      </section>
+    </main>
   )
 }
 

@@ -178,7 +178,6 @@ function TLevelAdvice() {
       <main>
         <section className="advice-header" aria-labelledby="advice-heading">
           <div className="advice-header-content">
-            <p className="eyebrow">Advice</p>
             <h1 id="advice-heading">Advice for <span>students and schools</span></h1>
             <p className="advice-tagline">
               Practical guidance to help students make the most of their placements, and
@@ -188,7 +187,6 @@ function TLevelAdvice() {
         </section>
 
         <section className="content-section" id="students" aria-labelledby="students-heading">
-          <p className="eyebrow">For students</p>
           <h2 id="students-heading">Student advice</h2>
           <p className="section-intro">
             How to get the most out of your placement and connect with the people around you.
@@ -199,7 +197,6 @@ function TLevelAdvice() {
 
         <section className="advice-band">
           <div className="content-section" id="schools" aria-labelledby="schools-heading">
-            <p className="eyebrow">For schools</p>
             <h2 id="schools-heading">School advice</h2>
             <p className="section-intro">
               How to set up and manage T Level placements, and how to collaborate with Amazon.

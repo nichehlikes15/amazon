@@ -1,7 +1,22 @@
+/* ============================================================
+   Guide page - open editorial layout (no boxes)
+   ============================================================ */
+
 .guide-page {
     min-height: 70vh;
-    background: var(--light);
-    padding: 40px 0 80px;
+    background: var(--white);
+    padding: 0 0 80px;
+}
+
+/* Light lilac hero */
+.guide-hero {
+    background: linear-gradient(180deg, #e3d4f6 0%, #ecdff8 22%, #f3ecfb 46%, var(--white) 82%);
+}
+
+.guide-hero-inner {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 40px 24px 48px;
 }
 
 .guide-wrap {
@@ -23,65 +38,56 @@
 }
 
 .guide-status {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 48px 24px;
     color: var(--muted);
 }
 
-.guide-header {
-    margin-bottom: 24px;
-    padding: 32px;
-    border-radius: 14px;
-    background: var(--white);
-    box-shadow: 0 1px 3px rgb(6 33 66 / 6%);
-}
-
-.guide-eyebrow {
-    margin: 0 0 8px;
-    color: var(--orange);
-    font-size: 0.8125rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-}
-
-.guide-header h1 {
-    margin: 0 0 12px;
+.guide-hero h1 {
+    margin: 0 0 14px;
     color: var(--navy);
-    font-size: clamp(1.6rem, 4vw, 2.25rem);
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
     font-weight: 600;
-    line-height: 1.15;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
 }
 
 .guide-intro {
     margin: 0;
+    max-width: 640px;
     color: var(--ink);
-    font-size: 1.0625rem;
+    font-size: 1.15rem;
     line-height: 1.6;
 }
 
+/* Open sections separated by hairlines, with an orange top-rule */
 .guide-section {
-    margin-bottom: 18px;
-    padding: 26px 28px;
-    border-radius: 14px;
-    background: var(--white);
-    box-shadow: 0 1px 3px rgb(6 33 66 / 6%);
+    margin-top: 36px;
+    padding-top: 28px;
+    border-top: 1px solid var(--line);
 }
 
 .guide-section h2 {
-    margin: 0 0 14px;
+    margin: 0 0 16px;
+    padding-top: 2px;
     color: var(--navy);
-    font-size: 1.25rem;
+    font-size: 1.3rem;
     font-weight: 600;
+    border-top: 2px solid var(--orange);
+    padding-top: 16px;
+    display: inline-block;
 }
 
 .guide-section ul {
     margin: 0;
     padding-left: 20px;
     color: var(--ink);
-    line-height: 1.6;
+    line-height: 1.7;
 }
 
 .guide-section li {
-    margin-bottom: 8px;
+    margin-bottom: 10px;
 }
 
 .guide-section li:last-child {
@@ -89,11 +95,5 @@
 }
 
 @media (max-width: 650px) {
-    .guide-header {
-        padding: 24px;
-    }
-
-    .guide-section {
-        padding: 22px;
-    }
+    .guide-hero-inner { padding: 32px 20px 40px; }
 }

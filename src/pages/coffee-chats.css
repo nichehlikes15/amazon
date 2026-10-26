@@ -1,108 +1,146 @@
-/* Coffee chats header band */
-.cc-header {
-    background: var(--navy);
-    border-bottom: 4px solid var(--orange);
+/* ============================================================
+   Coffee chats - open editorial layout (no boxes)
+   ============================================================ */
+
+.cc { overflow-x: clip; }
+
+/* Hero */
+.cc-hero {
+    background: linear-gradient(180deg, #e3d4f6 0%, #ecdff8 22%, #f3ecfb 46%, var(--white) 82%);
 }
 
-.cc-header-content {
+.cc-hero-inner {
     max-width: 1120px;
     margin: 0 auto;
-    padding: 64px 24px;
+    padding: 84px 24px 60px;
 }
 
-.cc-header h1 {
-    margin-bottom: 0.75rem;
-    color: var(--white);
-    font-size: clamp(2rem, 5vw, 3rem);
-    font-weight: 500;
-    line-height: 1.05;
-}
-
-.cc-header h1 span {
-    color: var(--orange);
-}
-
-.cc-tagline {
-    max-width: 620px;
-    margin: 0;
-    color: #d8dee6;
-    font-size: 1.125rem;
-    line-height: 1.5;
-}
-
-/* Chat cards */
-.chat-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 18px;
-}
-
-.chat-card {
-    display: flex;
-    align-items: center;
-    gap: 18px;
-    padding: 22px;
-    border: 1px solid var(--line);
-    border-radius: 2px;
-    background: var(--white);
-}
-
-.chat-avatar {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 52px;
-    height: 52px;
-    flex-shrink: 0;
-    border-radius: 50%;
-    background: var(--navy);
-    color: var(--white);
-    font-size: 1.25rem;
-    font-weight: 500;
-}
-
-.chat-info {
-    flex: 1;
-}
-
-.chat-info h3 {
-    margin: 0 0 2px;
+.cc-hero h1 {
+    margin: 0 0 14px;
     color: var(--navy);
-    font-size: 1.0625rem;
-    font-weight: 500;
+    font-size: clamp(2.2rem, 5vw, 3.4rem);
+    font-weight: 600;
+    line-height: 1.04;
+    letter-spacing: -0.02em;
 }
 
-.chat-role {
+.cc-hero h1 span { color: var(--orange); }
+
+.cc-lead {
+    max-width: 640px;
     margin: 0;
     color: var(--muted);
-    font-size: 0.875rem;
+    font-size: 1.15rem;
+    line-height: 1.6;
 }
 
-.chat-available {
-    margin: 4px 0 0;
-    color: var(--orange);
-    font-size: 0.8125rem;
-    font-weight: 500;
+/* Section */
+.cc-section {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 56px 24px 90px;
+    border-top: 1px solid var(--line);
 }
 
-.chat-card .primary-button {
+.cc-h2 {
+    margin: 0 0 12px;
+    color: var(--navy);
+    font-size: clamp(1.75rem, 3vw, 2.4rem);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+.cc-intro {
+    max-width: 620px;
+    margin: 0 0 28px;
+    color: var(--muted);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+}
+
+/* People - open rows separated by hairlines */
+.cc-people {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.cc-person {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 20px 0;
+    border-top: 1px solid var(--line);
+}
+
+.cc-person:first-child { border-top: 0; }
+
+.cc-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
     flex-shrink: 0;
-    padding: 10px 16px;
-    font-size: 0.875rem;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--grad-end), var(--orange));
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 600;
 }
 
-/* Coffee chats responsive styles */
-@media (max-width: 650px) {
-    .cc-header-content {
-        padding: 48px 20px;
-    }
+.cc-person-main { flex: 1; min-width: 0; }
 
-    .chat-grid {
-        grid-template-columns: 1fr;
-    }
+.cc-person-main h3 {
+    margin: 0 0 2px;
+    color: var(--navy);
+    font-size: 1.1rem;
+    font-weight: 600;
+}
 
-    .chat-card {
-        flex-direction: column;
-        text-align: center;
+.cc-role {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.9375rem;
+}
+
+.cc-available {
+    color: var(--muted);
+    font-size: 0.875rem;
+    white-space: nowrap;
+}
+
+.cc-request {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    flex-shrink: 0;
+    padding: 10px 18px;
+    border: 0;
+    border-radius: 12px;
+    background: var(--orange);
+    color: #fff;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.cc-request:hover { background: var(--orange-solid-hover); }
+
+/* Responsive */
+@media (max-width: 680px) {
+    .cc-person {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    .cc-available {
+        width: 100%;
+        order: 3;
+    }
+    .cc-request {
+        order: 4;
+        width: 100%;
+        justify-content: center;
     }
 }

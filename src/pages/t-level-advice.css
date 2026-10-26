@@ -1,7 +1,6 @@
 /* Advice header band */
 .advice-header {
-    background: var(--navy);
-    border-bottom: 4px solid var(--orange);
+    background: linear-gradient(180deg, #e3d4f6 0%, #ecdff8 22%, #f3ecfb 46%, var(--white) 82%);
 }
 
 .advice-header-content {
@@ -12,9 +11,9 @@
 
 .advice-header h1 {
     margin-bottom: 0.75rem;
-    color: var(--white);
+    color: var(--navy);
     font-size: clamp(2rem, 5vw, 3rem);
-    font-weight: 500;
+    font-weight: 600;
     line-height: 1.05;
 }
 
@@ -25,7 +24,7 @@
 .advice-tagline {
     max-width: 620px;
     margin: 0;
-    color: #d8dee6;
+    color: var(--muted);
     font-size: 1.125rem;
     line-height: 1.5;
 }
@@ -38,18 +37,17 @@
 }
 
 .advice-card {
-    padding: 26px;
-    border: 1px solid var(--line);
-    border-top: 3px solid var(--orange);
-    border-radius: 2px;
-    background: var(--white);
+    padding: 24px 24px 24px 0;
+    border-top: 2px solid var(--orange);
+    background: transparent;
 }
 
 .advice-card h3 {
     margin: 0 0 10px;
+    padding-top: 16px;
     color: var(--navy);
     font-size: 1.1875rem;
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .advice-card p {
@@ -173,7 +171,6 @@
 
 /* School advice band */
 .advice-band {
-    background: var(--light);
     border-top: 1px solid var(--line);
 }
 

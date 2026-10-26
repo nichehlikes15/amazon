@@ -65,4 +65,12 @@ export const api = {
   fileUrl: (fileId) => `${BASE}/files/${fileId}`,
   explainPathway: (scores) =>
     request('/pathway-explainer', { method: 'POST', body: JSON.stringify({ scores }) }),
+  updateMe: (payload) =>
+    request('/me', { method: 'PUT', body: JSON.stringify(payload) }),
+  changePassword: (currentPassword, newPassword) =>
+    request('/me/password', { method: 'PUT', body: JSON.stringify({ currentPassword, newPassword }) }),
+  deleteMe: () => request('/me', { method: 'DELETE' }),
+  myProgress: () => request('/me/progress'),
+  saveQuizResult: (pathway) =>
+    request('/me/quiz-result', { method: 'POST', body: JSON.stringify({ pathway }) }),
 }
