@@ -47,12 +47,12 @@ CREATE TABLE IF NOT EXISTS saved_opportunities (
 -- Seed a few sample apprenticeships the first time the table is empty.
 INSERT INTO opportunities (title, employer, location, pathway, type, closing_date, apply_url, summary)
 SELECT * FROM (
-    SELECT 'Software Development Engineer Apprentice', 'Amazon', 'London', 'Digital', 'Apprenticeship', '2027-01-31', 'https://amazonapprenticeships.co.uk/our-programmes/software-development-engineer-apprentice', 'Build real software alongside Amazon engineers while you train.'
-    UNION ALL SELECT 'DevOps Engineer Apprentice', 'Amazon', 'Manchester', 'Digital', 'Apprenticeship', '2027-02-15', 'https://amazonapprenticeships.co.uk/our-programmes/devops-engineer-apprentice', 'Connect software and operations, automating how Amazon teams deliver.'
-    UNION ALL SELECT 'Digital Product Manager Apprentice', 'Amazon', 'Leeds', 'Business', 'Apprenticeship', '2027-02-28', 'https://amazonapprenticeships.co.uk/our-programmes/digital-product-manager', 'Shape digital products from idea to launch across Amazon.'
-    UNION ALL SELECT 'Digital Product Manager Apprentice', 'Amazon', 'London', 'Media', 'Apprenticeship', '2027-03-10', 'https://amazonapprenticeships.co.uk/our-programmes/digital-product-manager', 'Work on product, content and user experience across digital channels.'
-    UNION ALL SELECT 'Finance Apprentice', 'Amazon', 'Edinburgh', 'Finance', 'Apprenticeship', '2027-03-20', 'https://amazonapprenticeships.co.uk/our-programmes/finance-apprentice', 'Rotate through accounting, finance and tax in a global business.'
-    UNION ALL SELECT 'OEM Engineering Apprentice', 'Amazon', 'Birmingham', 'Engineering', 'Apprenticeship', '2027-03-31', 'https://amazonapprenticeships.co.uk/oem-apprentice', 'Train as a multi-skilled electrical and mechanical technician.'
+    SELECT 'Software Development Engineer Apprentice', 'Amazon', 'Cupertino, USA', 'Digital', 'Apprenticeship', '2027-03-31', 'https://www.amazon.jobs/en/jobs/3188438/software-development-engineer-apprentice-military-veterans', 'Learn to build software with Amazon engineers. This role is for military veterans.'
+    UNION ALL SELECT 'Automation Engineer Apprentice', 'Amazon', 'Daytona Beach, USA', 'Engineering', 'Apprenticeship', '2027-03-31', 'https://www.amazon.jobs/en/jobs/10553762/automation-engineer-apprentice', 'Learn to look after and improve the automated systems in an Amazon site.'
+    UNION ALL SELECT 'Amazon Youth Apprenticeship Program', 'Amazon', 'Cupertino, USA', 'Business', 'Apprenticeship', '2027-03-31', 'https://www.amazon.jobs/en/jobs/10529804/amazon-youth-apprenticeship-program', 'A paid apprenticeship for young people to learn how a business works.'
+    UNION ALL SELECT 'Graduate Automation Engineer Apprenticeship Program', 'Amazon', 'Kojetin, Czech Republic', 'Engineering', 'Apprenticeship', '2027-03-31', 'https://www.amazon.jobs/en/jobs/10578695/graduate-automation-engineer-apprenticeship-program', 'Train as an automation engineer working with robotics and machines.'
+    UNION ALL SELECT 'Automation Engineer (work and study)', 'Amazon', 'Kaiserslautern, Germany', 'Engineering', 'Apprenticeship', '2027-03-31', 'https://www.amazon.jobs/en/jobs/10586445/duales-studium-automation-engineer', 'Study for a degree while training as an automation engineer.'
+    UNION ALL SELECT 'Mechatronic Apprentice I', 'Amazon', 'San Antonio, USA', 'Engineering', 'Apprenticeship', '2027-03-31', 'https://www.amazon.jobs/en/jobs/10579284/mechatronic-apprentice-i', 'Train to maintain and repair the robotics and machines in Amazon sites.'
 ) AS seed
 WHERE NOT EXISTS (SELECT 1 FROM opportunities);
 
@@ -93,8 +93,8 @@ CREATE TABLE IF NOT EXISTS application_files (
 -- Seed a couple of general prep resources the first time the table is empty.
 INSERT INTO resources (opportunity_id, title, kind, url, description)
 SELECT * FROM (
-    SELECT NULL, 'How to pass an assessment centre', 'Guide', '/guides/assessment-centre', 'What to expect and how to prepare for assessment-centre days.'
-    UNION ALL SELECT NULL, 'Interview preparation tips', 'Guide', '/guides/interview-prep', 'Common questions and how to structure strong answers.'
-    UNION ALL SELECT NULL, 'Writing a great application', 'Guide', '/guides/great-application', 'How to present your skills and experience clearly.'
+    SELECT NULL, 'How to pass an assessment centre', 'PDF guide', '/guides/how-to-pass-an-assessment-centre.pdf', 'What to expect and how to prepare for assessment-centre days.'
+    UNION ALL SELECT NULL, 'Interview preparation tips', 'PDF guide', '/guides/interview-preparation-tips.pdf', 'Common questions and how to structure strong answers.'
+    UNION ALL SELECT NULL, 'Writing a great application', 'PDF guide', '/guides/writing-a-great-application.pdf', 'How to present your skills and experience clearly.'
 ) AS seed
 WHERE NOT EXISTS (SELECT 1 FROM resources);

@@ -139,7 +139,12 @@ function OpportunityDetail() {
               <ul className="od-resources">
                 {resources.map((r) => (
                   <li key={r.id}>
-                    {r.url.startsWith('/') ? (
+                    {r.url.endsWith('.pdf') ? (
+                      <a className="od-res-link" href={r.url} download>
+                        {r.title} (PDF)
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3v12M6 11l6 6 6-6M5 21h14" /></svg>
+                      </a>
+                    ) : r.url.startsWith('/') ? (
                       <Link className="od-res-link" to={r.url}>{r.title} <Arrow /></Link>
                     ) : (
                       <a className="od-res-link" href={r.url} target="_blank" rel="noopener noreferrer">{r.title} <Arrow /></a>

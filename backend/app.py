@@ -68,6 +68,43 @@ def init_db():
         db.execute("ALTER TABLE users ADD COLUMN school TEXT")
     if "email_updates" not in cols:
         db.execute("ALTER TABLE users ADD COLUMN email_updates INTEGER NOT NULL DEFAULT 1")
+    # Point the prep-guide resources at the downloadable PDFs.
+    # Matched by title so older databases with any old link get fixed too.
+    for title, new_url in (
+        ("How to pass an assessment centre", "/guides/how-to-pass-an-assessment-centre.pdf"),
+        ("Interview preparation tips", "/guides/interview-preparation-tips.pdf"),
+        ("Writing a great application", "/guides/writing-a-great-application.pdf"),
+    ):
+        db.execute("UPDATE resources SET url = ?, kind = 'PDF guide' WHERE title = ?", (new_url, title))
+    # Point opportunities at live Amazon job pages (applies to older databases too).
+    for old_title, old_loc, title, loc, pathway, url, summary in (
+        ('Software Development Engineer Apprentice', 'London', 'Software Development Engineer Apprentice', 'Cupertino, USA', 'Digital',
+         'https://www.amazon.jobs/en/jobs/3188438/software-development-engineer-apprentice-military-veterans',
+         'Learn to build software with Amazon engineers. This role is for military veterans.'),
+        ('DevOps Engineer Apprentice', 'Manchester', 'Automation Engineer Apprentice', 'Daytona Beach, USA', 'Engineering',
+         'https://www.amazon.jobs/en/jobs/10553762/automation-engineer-apprentice',
+         'Learn to look after and improve the automated systems in an Amazon site.'),
+        ('Digital Product Manager Apprentice', 'Leeds', 'Amazon Youth Apprenticeship Program', 'Cupertino, USA', 'Business',
+         'https://www.amazon.jobs/en/jobs/10529804/amazon-youth-apprenticeship-program',
+         'A paid apprenticeship for young people to learn how a business works.'),
+        ('Digital Product Manager Apprentice', 'London', 'Graduate Automation Engineer Apprenticeship Program', 'Kojetin, Czech Republic', 'Engineering',
+         'https://www.amazon.jobs/en/jobs/10578695/graduate-automation-engineer-apprenticeship-program',
+         'Train as an automation engineer working with robotics and machines.'),
+        ('Finance Apprentice', 'Edinburgh', 'Automation Engineer (work and study)', 'Kaiserslautern, Germany', 'Engineering',
+         'https://www.amazon.jobs/en/jobs/10586445/duales-studium-automation-engineer',
+         'Study for a degree while training as an automation engineer.'),
+        ('RME Mechatronics Apprentice', 'Northern Ireland', 'Mechatronic Apprentice I', 'San Antonio, USA', 'Engineering',
+         'https://www.amazon.jobs/en/jobs/10579284/mechatronic-apprentice-i',
+         'Train to maintain and repair the robotics and machines in Amazon sites.'),
+        ('OEM Engineering Apprentice', 'Birmingham', 'Mechatronic Apprentice I', 'San Antonio, USA', 'Engineering',
+         'https://www.amazon.jobs/en/jobs/10579284/mechatronic-apprentice-i',
+         'Train to maintain and repair the robotics and machines in Amazon sites.'),
+    ):
+        db.execute(
+            "UPDATE opportunities SET title = ?, location = ?, pathway = ?, apply_url = ?, summary = ? "
+            "WHERE title = ? AND location = ?",
+            (title, loc, pathway, url, summary, old_title, old_loc),
+        )
     if "quiz_pathway" not in cols:
         db.execute("ALTER TABLE users ADD COLUMN quiz_pathway TEXT")
     if "quiz_completed_at" not in cols:
