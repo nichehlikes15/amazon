@@ -216,15 +216,41 @@ function TLevel() {
   const navigate = useNavigate()
   const panelRef = useRef(null)
 
+  // `active` = highlighted tab (updates straight away),
+  // `shown` = content on screen (swaps after the old content fades out).
   const [active, setActive] = useState(() => tabFromHash(hash))
+  const [shown, setShown] = useState(active)
+  const [leaving, setLeaving] = useState(false)
+  const swapTimer = useRef(null)
+
+  const swapTo = (id) => {
+    setActive(id)
+    clearTimeout(swapTimer.current)
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+      document.documentElement.getAttribute('data-reduced-motion') === 'on'
+    if (reduce) {
+      setShown(id)
+      return
+    }
+    setLeaving(true)
+    swapTimer.current = setTimeout(() => {
+      setShown(id)
+      setLeaving(false)
+    }, 200)
+  }
+
+  useEffect(() => () => clearTimeout(swapTimer.current), [])
 
   useEffect(() => {
-    if (hash) setActive(tabFromHash(hash))
-  }, [hash])
+    if (hash) {
+      const id = tabFromHash(hash)
+      if (id !== active) swapTo(id)
+    }
+  }, [hash]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const selectTab = (id) => {
     if (id === active) return
-    setActive(id)
+    swapTo(id)
     navigate({ hash: id }, { replace: true })
     // If you've scrolled down into the content, bring the start of the new tab into view.
     const panel = panelRef.current
@@ -305,14 +331,14 @@ function TLevel() {
         </nav>
 
         <div
-          className="tl-panel"
+          className={leaving ? 'tl-panel is-leaving' : 'tl-panel'}
           id="tl-panel"
           role="tabpanel"
-          aria-labelledby={`tab-${active}`}
+          aria-labelledby={`tab-${shown}`}
           ref={panelRef}
-          key={active}
+          key={shown}
         >
-          {active === 'students' && (
+          {shown === 'students' && (
             <>
             {/* ================= FOR STUDENTS ================= */}
             <section className="tl-band" id="students" aria-labelledby="students-heading">
@@ -398,7 +424,7 @@ function TLevel() {
             </section>
             </>
           )}
-          {active === 'schools' && (
+          {shown === 'schools' && (
             <>
             {/* ================= FOR SCHOOLS ================= */}
             <section className="tl-band" id="schools" aria-labelledby="schools-heading">
@@ -490,7 +516,7 @@ function TLevel() {
             </section>
             </>
           )}
-          {active === 'pathway' && (
+          {shown === 'pathway' && (
             <>
             {/* ================= CAREER PATHWAY ================= */}
             <section className="tl-band tl-band-light" id="pathway" aria-labelledby="pathway-heading">
@@ -558,7 +584,7 @@ function TLevel() {
             </section>
             </>
           )}
-          {active === 'principles' && (
+          {shown === 'principles' && (
             <>
             {/* ================= LEADERSHIP PRINCIPLES ================= */}
             <section className="tl-band" id="principles" aria-labelledby="principles-heading">

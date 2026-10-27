@@ -13,8 +13,9 @@
     --grad-end: #7C3AED;
 
     /* ----- Design system: spacing ----- */
-    --gutter: clamp(20px, 4vw, 40px);
-    --content-max: 1120px;
+    /* Side space roughly halved: wider content, smaller gutters */
+    --gutter: clamp(20px, 3vw, 48px);
+    --content-max: 1600px;
     --hero-top: clamp(104px, 13vw, 168px);
     --hero-bottom: clamp(72px, 9vw, 120px);
     --section-y: clamp(96px, 11vw, 152px);
@@ -41,6 +42,70 @@
     --dur-fast: 0.18s;
     --dur: 0.35s;
     --dur-slow: 0.8s;
+
+    /* ----- Theme helpers (dark mode swaps these) ----- */
+    --hero-gradient: linear-gradient(180deg, #e3d4f6 0%, #ecdff8 22%, #f3ecfb 46%, var(--white) 82%);
+    --navy-solid: #232F3E;        /* dark backgrounds that stay dark in both themes */
+    --glass: rgb(255 255 255 / 72%);
+    --line-strong: #c9d2dd;
+    --sk-a: #eef2f6;
+    --sk-b: #f7f9fb;
+    color-scheme: light;
+}
+
+/* ===== Dark mode ===== */
+html[data-theme="dark"] {
+    --navy: #e9eef5;              /* headings */
+    --ink: #d3dae4;               /* body text */
+    --muted: #9aa8b9;
+    --line: #2b3746;
+    --light: #172230;             /* soft panels */
+    --white: #0d141d;             /* page background */
+    --navy-solid: #1b2735;
+    --orange-solid: #f0801f;
+    --orange-solid-hover: #ff9233;
+    --hero-gradient: linear-gradient(180deg, #2a2142 0%, #211b36 22%, #171a2a 46%, var(--white) 82%);
+    --glass: rgb(23 34 48 / 72%);
+    --line-strong: #3d4b5c;
+    --sk-a: #17212d;
+    --sk-b: #1f2b39;
+    --shadow-soft: 0 1px 2px rgb(0 0 0 / 30%), 0 8px 24px rgb(0 0 0 / 30%);
+    --shadow-lift: 0 2px 4px rgb(0 0 0 / 30%), 0 18px 40px rgb(0 0 0 / 45%);
+    color-scheme: dark;
+}
+
+html[data-theme="dark"][data-colour-blind="on"] {
+    --orange: #ff8a3d;
+    --navy: #f2f5f9;
+    --ink: #e6ebf1;
+    --muted: #b3bfcc;
+    --line: #3a4859;
+}
+
+/* Logos are drawn in navy - show them in white on dark backgrounds */
+html[data-theme="dark"] .brand img { filter: brightness(0) invert(1); }
+
+/* Light pastel status pills / notices: deepen them in dark mode */
+html[data-theme="dark"] :is(.opp-closing.is-soon .opp-closing-pill, .od-tag-soon, .opp-save.saved, .od-save-opp.is-saved, .ccl-status, .cc-option.is-on, .admin-status-select.is-requested) {
+    background-color: #3a2a14;
+    border-color: #5a3d17;
+    color: #ffc27a;
+}
+html[data-theme="dark"] :is(.ccl-status.is-confirmed, .admin-status-select.is-confirmed, .ccl-meeting) { background-color: #172a4a; color: #a9c5ff; }
+html[data-theme="dark"] :is(.ccl-status.is-completed, .admin-status-select.is-completed, .cc-sent-icon) { background-color: #15301f; color: #8fdca6; }
+html[data-theme="dark"] :is(.ccl-status.is-cancelled, .admin-status-select.is-cancelled, .opp-closing.is-closed .opp-closing-pill, .od-tag-closed) { background-color: #222b36; color: #9aa8b9; }
+html[data-theme="dark"] :is(.auth-error, .od-error, .cc-error, .pf-error, .ccl-yes, [class$="-error"][role="alert"]) { background-color: #3a1717; border-color: #5c2424; color: #ffb4ab; }
+html[data-theme="dark"] .ccl-when { color: var(--navy); }
+html[data-theme="dark"] .od-drop:hover,
+html[data-theme="dark"] .od-drop.is-dragging { background: #2a1f12; }
+html[data-theme="dark"] ::selection { background: #5a3d17; color: #fff; }
+
+/* Fade colours when switching theme (class added briefly by accessibility.js) */
+html.theme-fade,
+html.theme-fade *,
+html.theme-fade *::before,
+html.theme-fade *::after {
+    transition: background-color 0.4s ease, border-color 0.4s ease, color 0.4s ease, fill 0.4s ease !important;
 }
 
 @font-face {
@@ -65,6 +130,15 @@
 
 html {
     scroll-behavior: smooth;
+}
+
+/* Site-wide zoom: on laptops and desktops the whole site renders at 75%,
+   the same as zooming the browser out to 75%. Phones and tablets stay at
+   100% so text stays readable. Change 0.75 to adjust. */
+@media (min-width: 1200px) {
+    html {
+        zoom: 0.75;
+    }
 }
 
 body {
@@ -170,7 +244,7 @@ p {
 }
 
 .secondary-button:hover {
-    border-color: #c9d2dd;
+    border-color: var(--line-strong);
     background: var(--light);
     color: var(--navy);
     transform: translateY(-2px);
@@ -202,7 +276,7 @@ p {
 .page-transition input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):hover,
 .page-transition select:hover,
 .page-transition textarea:hover {
-    border-color: #c9d2dd;
+    border-color: var(--line-strong);
 }
 
 .page-transition input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus,
@@ -228,14 +302,89 @@ p {
 }
 
 /* ===== Motion ===== */
+/* Safety net: anything clickable eases between states instead of snapping.
+   :where() keeps this at zero specificity, so any component that sets its
+   own transition still wins. */
+:where(a, button, summary, label, select, input, textarea, [role="tab"], [role="button"]) {
+    transition-property: color, background-color, border-color, box-shadow, opacity,
+        transform, text-decoration-color, outline-color, fill, stroke;
+    transition-duration: var(--dur);
+    transition-timing-function: var(--ease-out);
+}
+
+:where(a, button, summary, [role="tab"]) svg {
+    transition: transform var(--dur) var(--ease-out), color var(--dur) ease, opacity var(--dur) ease;
+}
+
 /* Page fade on route change */
 .page-transition {
     animation: page-in 0.6s var(--ease-out) both;
 }
 
+/* Old page fades out before the new one comes in */
+.page-transition.is-leaving {
+    animation: page-out 0.24s ease-in both;
+    pointer-events: none;
+}
+
 @keyframes page-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: none; }
+}
+
+@keyframes page-out {
+    from { opacity: 1; transform: none; }
+    to { opacity: 0; transform: translateY(-6px); }
+}
+
+/* Messages, errors and confirmations fade in instead of popping */
+.page-transition [role="alert"],
+.page-transition [role="status"] {
+    animation: msg-in 0.45s var(--ease-out) both;
+}
+
+@keyframes msg-in {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: none; }
+}
+
+/* Content that swaps in place (quiz questions, results) slides in */
+.qz-swap {
+    animation: swap-in 0.55s var(--ease-out) both;
+}
+
+@keyframes swap-in {
+    from { opacity: 0; transform: translateX(18px); }
+    to { opacity: 1; transform: none; }
+}
+
+/* Quiz score bars grow from the left */
+.qz-bar-fill {
+    transform-origin: left center;
+    animation: bar-grow 1s var(--ease-out) 0.2s both;
+}
+
+@keyframes bar-grow {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+}
+
+/* FAQ / <details>: the height glides open and closed where the browser
+   supports it (Chrome, Edge); elsewhere the answer still fades in. */
+@supports (interpolate-size: allow-keywords) {
+    :root {
+        interpolate-size: allow-keywords;
+    }
+
+    .page-transition details::details-content {
+        block-size: 0;
+        overflow: hidden;
+        transition: block-size 0.45s var(--ease-out), content-visibility 0.45s allow-discrete;
+    }
+
+    .page-transition details[open]::details-content {
+        block-size: auto;
+    }
 }
 
 /* Hero content rises in, staggered (delays set in motion.jsx) */
@@ -348,6 +497,15 @@ html[data-reduced-motion="on"] *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
+}
+
+/* At the 75% site zoom (screens 1200px+), nudge text up a little so it stays
+   readable. Layout and spacing still render at 75%; only rem-based text grows. */
+@media (min-width: 1200px) {
+    html,
+    html[data-text-size="medium"] { font-size: 106.25%; }
+    html[data-text-size="small"] { font-size: 93.75%; }
+    html[data-text-size="large"] { font-size: 122%; }
 }
 
 /* Respect the OS-level preference too, as a sensible default. */

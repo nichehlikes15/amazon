@@ -1,10 +1,22 @@
 <!doctype html>
-<html lang="en">
+<html lang="en-GB">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>amazon</title>
+    <meta name="description" content="Launchpad helps students discover T Levels, find Amazon apprenticeships and placements, and talk to people who have been there." />
+    <meta name="theme-color" content="#000000" />
+    <title>Launchpad</title>
+    <script>
+      // Set light/dark before the page draws, so there's no white flash in dark mode.
+      try {
+        var s = JSON.parse(localStorage.getItem('launchpad-accessibility') || '{}')
+        var dark = s.theme ? s.theme === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches
+        document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light')
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

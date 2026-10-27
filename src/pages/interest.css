@@ -1,10 +1,10 @@
 /* Interest header band */
 .interest-header {
-    background: linear-gradient(180deg, #e3d4f6 0%, #ecdff8 22%, #f3ecfb 46%, var(--white) 82%);
+    background: var(--hero-gradient);
 }
 
 .interest-header-content {
-    max-width: 1120px;
+    max-width: var(--content-max);
     margin: 0 auto;
     padding: var(--hero-top) var(--gutter) var(--hero-bottom);
 }

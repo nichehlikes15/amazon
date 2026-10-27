@@ -1,7 +1,7 @@
 .site-footer {
     margin-top: 0;
-    background: var(--navy);
-    color: var(--white);
+    background: var(--navy-solid);
+    color: #fff;
 }
 
 .footer-main {
@@ -18,7 +18,7 @@
 
 .footer-column h3 {
     margin: 0 0 20px;
-    color: var(--white);
+    color: #fff;
     font-size: 1rem;
     font-weight: 500;
 }

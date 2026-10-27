@@ -8,6 +8,8 @@ Security notes (prototype level):
 """
 
 import json
+import time
+from datetime import datetime
 import os
 import sqlite3
 import uuid
@@ -18,6 +20,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
 from cv_reviewer import extract_text, review_cv
+from interview_coach import question_set, review_answer, review_interview, spoken_feedback
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "launchpad.db")
@@ -38,10 +41,40 @@ PATHWAYS = {"Digital", "Business", "Media", "Finance", "Engineering"}
 app = Flask(__name__)
 # In production, load this from an environment variable, never hard-code it.
 app.secret_key = os.environ.get("LAUNCHPAD_SECRET", "dev-secret-change-me")
+if app.secret_key == "dev-secret-change-me":
+    print("WARNING: using the default LAUNCHPAD_SECRET. Set a long random value before going live.")
+# Session cookie hardening. Set LAUNCHPAD_SECURE_COOKIES=1 once the site runs on HTTPS.
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+app.config["SESSION_COOKIE_SECURE"] = os.environ.get("LAUNCHPAD_SECURE_COOKIES") == "1"
 app.config["MAX_CONTENT_LENGTH"] = MAX_UPLOAD_BYTES
 
 # Allow the Vite dev server to call the API and send session cookies.
-CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
+# Comma-separated list in LAUNCHPAD_ORIGINS for a live site, e.g. https://launchpad.example.com
+ALLOWED_ORIGINS = [
+    o.strip() for o in os.environ.get("LAUNCHPAD_ORIGINS", "http://localhost:5173").split(",") if o.strip()
+]
+CORS(app, supports_credentials=True, origins=ALLOWED_ORIGINS)
+
+
+# ---------- Simple rate limiting ----------
+# In-memory, per IP address. Good enough for one server process; a live site
+# with several processes should use a shared store (e.g. Redis) instead.
+_hits = {}
+
+
+def rate_limited(key, limit, window_seconds):
+    """True if this IP has gone over `limit` requests for `key` in the window."""
+    now = time.time()
+    ip = request.headers.get("X-Forwarded-For", request.remote_addr or "?").split(",")[0].strip()
+    bucket = [t for t in _hits.get((key, ip), []) if now - t < window_seconds]
+    bucket.append(now)
+    _hits[(key, ip)] = bucket
+    return len(bucket) > limit
+
+
+def too_many():
+    return jsonify({"error": "Too many attempts. Please wait a few minutes and try again."}), 429
 
 
 # ---------- Database helpers ----------
@@ -112,6 +145,12 @@ def init_db():
         db.execute("ALTER TABLE users ADD COLUMN quiz_pathway TEXT")
     if "quiz_completed_at" not in cols:
         db.execute("ALTER TABLE users ADD COLUMN quiz_completed_at TEXT")
+    # Newer coffee chat columns (confirmed time + meeting link).
+    chat_cols = {r[1] for r in db.execute("PRAGMA table_info(coffee_chat_requests)").fetchall()}
+    if "confirmed_time" not in chat_cols:
+        db.execute("ALTER TABLE coffee_chat_requests ADD COLUMN confirmed_time TEXT")
+    if "meeting_link" not in chat_cols:
+        db.execute("ALTER TABLE coffee_chat_requests ADD COLUMN meeting_link TEXT")
     db.commit()
     db.close()
 
@@ -142,6 +181,8 @@ def current_user():
 
 @app.post("/api/signup")
 def signup():
+    if rate_limited("signup", 10, 900):
+        return too_many()
     data = request.get_json(silent=True) or {}
     full_name = (data.get("fullName") or "").strip()
     email = (data.get("email") or "").strip().lower()
@@ -173,6 +214,8 @@ def signup():
 
 @app.post("/api/login")
 def login():
+    if rate_limited("login", 10, 900):
+        return too_many()
     data = request.get_json(silent=True) or {}
     email = (data.get("email") or "").strip().lower()
     password = data.get("password") or ""
@@ -207,6 +250,8 @@ def me():
 
 @app.post("/api/interest")
 def create_interest():
+    if rate_limited("interest", 10, 3600):
+        return too_many()
     data = request.get_json(silent=True) or {}
     full_name = (data.get("fullName") or "").strip()
     email = (data.get("email") or "").strip().lower()
@@ -256,6 +301,248 @@ def list_interest():
         for r in rows
     ]
     return jsonify({"items": items, "count": len(items)})
+
+
+# ---------- Coffee chats ----------
+
+# People students can request a chat with. Keep in sync with
+# src/modules/mentors.js on the frontend.
+MENTORS = {
+    "Amara": ["Monday", "Wednesday"],
+    "Jay": ["Tuesday afternoon"],
+    "Priya": ["Thursday"],
+    "Sam": ["Friday morning"],
+}
+# Status a coffee chat request can be in (admins move it along).
+CHAT_STATUSES = ["Requested", "Confirmed", "Completed", "Cancelled"]
+
+CHAT_TOPICS = {
+    "Choosing a pathway", "What a placement is like", "Applying and interviews",
+    "Apprenticeships after T Levels", "Something else",
+}
+
+
+def coffee_chat_to_dict(r):
+    return {
+        "id": r["id"],
+        "mentor": r["mentor"],
+        "fullName": r["full_name"],
+        "email": r["email"],
+        "preferredTime": r["preferred_time"],
+        "topic": r["topic"],
+        "message": r["message"],
+        "status": r["status"],
+        "createdAt": r["created_at"],
+        "confirmedTime": r["confirmed_time"] if "confirmed_time" in r.keys() else None,
+        "meetingLink": r["meeting_link"] if "meeting_link" in r.keys() else None,
+    }
+
+
+@app.post("/api/coffee-chats")
+def create_coffee_chat():
+    """Request a coffee chat. Works signed in or out."""
+    if rate_limited("coffee-chat", 10, 3600):
+        return too_many()
+    data = request.get_json(silent=True) or {}
+    mentor = (data.get("mentor") or "").strip()
+    full_name = (data.get("fullName") or "").strip()
+    email = (data.get("email") or "").strip().lower()
+    preferred_time = (data.get("preferredTime") or "").strip()
+    topic = (data.get("topic") or "").strip()
+    message = (data.get("message") or "").strip()
+
+    if mentor not in MENTORS:
+        return jsonify({"error": "Please choose someone to chat with."}), 400
+    if not full_name or not email or not preferred_time:
+        return jsonify({"error": "Name, email and a preferred time are required."}), 400
+    if "@" not in email or "." not in email.split("@")[-1]:
+        return jsonify({"error": "Please enter a valid email address."}), 400
+    if preferred_time not in MENTORS[mentor]:
+        return jsonify({"error": "Please choose one of the available times."}), 400
+    if topic and topic not in CHAT_TOPICS:
+        return jsonify({"error": "Please choose a valid topic."}), 400
+    if len(full_name) > 120 or len(message) > 1000:
+        return jsonify({"error": "Your name or message is too long."}), 400
+
+    db = get_db()
+    cur = db.execute(
+        """INSERT INTO coffee_chat_requests
+           (user_id, mentor, full_name, email, preferred_time, topic, message)
+           VALUES (?, ?, ?, ?, ?, ?, ?)""",
+        (session.get("user_id"), mentor, full_name, email, preferred_time, topic, message),
+    )
+    db.commit()
+    row = db.execute("SELECT * FROM coffee_chat_requests WHERE id = ?", (cur.lastrowid,)).fetchone()
+    return jsonify({"ok": True, "request": coffee_chat_to_dict(row)}), 201
+
+
+@app.get("/api/me/coffee-chats")
+def my_coffee_chats():
+    """The signed-in user's own coffee chat requests."""
+    user = current_user()
+    if user is None:
+        return jsonify({"items": []})
+    rows = get_db().execute(
+        "SELECT * FROM coffee_chat_requests WHERE user_id = ? ORDER BY created_at DESC, id DESC",
+        (user["id"],),
+    ).fetchall()
+    return jsonify({"items": [coffee_chat_to_dict(r) for r in rows]})
+
+
+@app.get("/api/coffee-chats")
+def list_coffee_chats():
+    """Admin view - all coffee chat requests."""
+    user = current_user()
+    if user is None:
+        return jsonify({"error": "You must be signed in."}), 401
+    if not user["is_admin"]:
+        return jsonify({"error": "You do not have permission to view this."}), 403
+    rows = get_db().execute(
+        "SELECT * FROM coffee_chat_requests ORDER BY created_at DESC, id DESC"
+    ).fetchall()
+    items = [coffee_chat_to_dict(r) for r in rows]
+    return jsonify({"items": items, "count": len(items)})
+
+
+@app.put("/api/coffee-chats/<int:chat_id>/status")
+def update_coffee_chat_status(chat_id):
+    """Admin only - change the status of a coffee chat request."""
+    user = current_user()
+    if user is None:
+        return jsonify({"error": "You must be signed in."}), 401
+    if not user["is_admin"]:
+        return jsonify({"error": "You do not have permission to do this."}), 403
+    data = request.get_json(silent=True) or {}
+    status = (data.get("status") or "").strip()
+    if status not in CHAT_STATUSES:
+        return jsonify({"error": "Please choose a valid status."}), 400
+    db = get_db()
+    row = db.execute("SELECT id FROM coffee_chat_requests WHERE id = ?", (chat_id,)).fetchone()
+    if row is None:
+        return jsonify({"error": "Request not found."}), 404
+    db.execute("UPDATE coffee_chat_requests SET status = ? WHERE id = ?", (status, chat_id))
+    db.commit()
+    row = db.execute("SELECT * FROM coffee_chat_requests WHERE id = ?", (chat_id,)).fetchone()
+    return jsonify({"ok": True, "request": coffee_chat_to_dict(row)})
+
+
+@app.put("/api/coffee-chats/<int:chat_id>/details")
+def update_coffee_chat_details(chat_id):
+    """Admin only - set the confirmed date/time and meeting link.
+    Send empty strings to clear them. Saving a time on a request that is
+    still 'Requested' moves it to 'Confirmed'."""
+    user = current_user()
+    if user is None:
+        return jsonify({"error": "You must be signed in."}), 401
+    if not user["is_admin"]:
+        return jsonify({"error": "You do not have permission to do this."}), 403
+    data = request.get_json(silent=True) or {}
+    confirmed_time = (data.get("confirmedTime") or "").strip()
+    meeting_link = (data.get("meetingLink") or "").strip()
+
+    if confirmed_time:
+        try:
+            # From an <input type="datetime-local">, e.g. 2026-11-03T15:30
+            datetime.fromisoformat(confirmed_time)
+        except ValueError:
+            return jsonify({"error": "Please choose a valid date and time."}), 400
+    if meeting_link and (not meeting_link.startswith("https://") or len(meeting_link) > 500 or " " in meeting_link):
+        return jsonify({"error": "The meeting link must be a full https:// address."}), 400
+
+    db = get_db()
+    row = db.execute("SELECT * FROM coffee_chat_requests WHERE id = ?", (chat_id,)).fetchone()
+    if row is None:
+        return jsonify({"error": "Request not found."}), 404
+    status = row["status"]
+    if confirmed_time and status == "Requested":
+        status = "Confirmed"
+    db.execute(
+        "UPDATE coffee_chat_requests SET confirmed_time = ?, meeting_link = ?, status = ? WHERE id = ?",
+        (confirmed_time or None, meeting_link or None, status, chat_id),
+    )
+    db.commit()
+    row = db.execute("SELECT * FROM coffee_chat_requests WHERE id = ?", (chat_id,)).fetchone()
+    return jsonify({"ok": True, "request": coffee_chat_to_dict(row)})
+
+
+@app.post("/api/me/coffee-chats/<int:chat_id>/cancel")
+def cancel_my_coffee_chat(chat_id):
+    """A student cancels their own request while it is still waiting."""
+    user = current_user()
+    if user is None:
+        return jsonify({"error": "You must be signed in."}), 401
+    db = get_db()
+    row = db.execute(
+        "SELECT * FROM coffee_chat_requests WHERE id = ? AND user_id = ?",
+        (chat_id, user["id"]),
+    ).fetchone()
+    if row is None:
+        return jsonify({"error": "Request not found."}), 404
+    if row["status"] != "Requested":
+        return jsonify({"error": "Only requests that are still waiting can be cancelled."}), 400
+    db.execute("UPDATE coffee_chat_requests SET status = 'Cancelled' WHERE id = ?", (chat_id,))
+    db.commit()
+    row = db.execute("SELECT * FROM coffee_chat_requests WHERE id = ?", (chat_id,)).fetchone()
+    return jsonify({"ok": True, "request": coffee_chat_to_dict(row)})
+
+
+# ---------- Interview practice ----------
+
+@app.get("/api/interview/questions")
+def interview_questions():
+    """Five practice questions for a pathway (?pathway=Digital)."""
+    pathway = (request.args.get("pathway") or "").strip()
+    return jsonify({"pathway": pathway if pathway in PATHWAYS else "Digital",
+                    "questions": question_set(pathway)})
+
+
+@app.post("/api/interview/review-answer")
+def interview_review_answer():
+    """Quick feedback on one answer, straight after it's given. Not stored."""
+    if rate_limited("interview-answer", 200, 3600):
+        return too_many()
+    data = request.get_json(silent=True) or {}
+    seconds = data.get("seconds")
+    try:
+        seconds = float(seconds) if seconds is not None else None
+    except (TypeError, ValueError):
+        seconds = None
+    review = review_answer(
+        str(data.get("id") or "")[:40],
+        str(data.get("answer") or "")[:4000],
+        seconds,
+    )
+    if review is None:
+        return jsonify({"error": "That question wasn't recognised."}), 400
+    review["say"] = spoken_feedback(review)
+    return jsonify(review)
+
+
+@app.post("/api/interview/review")
+def interview_review():
+    """Feedback on a practice interview. Answers are checked locally and not stored."""
+    if rate_limited("interview", 60, 3600):
+        return too_many()
+    data = request.get_json(silent=True) or {}
+    answers = data.get("answers")
+    if not isinstance(answers, list) or not answers or len(answers) > 10:
+        return jsonify({"error": "No answers were sent."}), 400
+    clean = []
+    for a in answers:
+        if not isinstance(a, dict):
+            continue
+        seconds = a.get("seconds")
+        try:
+            seconds = float(seconds) if seconds is not None else None
+        except (TypeError, ValueError):
+            seconds = None
+        clean.append({"id": str(a.get("id") or "")[:40],
+                      "answer": str(a.get("answer") or "")[:4000],
+                      "seconds": seconds})
+    result = review_interview(clean)
+    if result is None:
+        return jsonify({"error": "Those questions weren't recognised."}), 400
+    return jsonify(result)
 
 
 # ---------- Opportunities ----------
@@ -773,11 +1060,45 @@ def delete_me():
     db.execute("DELETE FROM application_files WHERE user_id = ?", (user["id"],))
     db.execute("DELETE FROM application_progress WHERE user_id = ?", (user["id"],))
     db.execute("DELETE FROM saved_opportunities WHERE user_id = ?", (user["id"],))
+    db.execute("DELETE FROM coffee_chat_requests WHERE user_id = ?", (user["id"],))
     db.execute("UPDATE expressions_of_interest SET user_id = NULL WHERE user_id = ?", (user["id"],))
     db.execute("DELETE FROM users WHERE id = ?", (user["id"],))
     db.commit()
     session.clear()
     return jsonify({"ok": True})
+
+
+@app.get("/api/me/export")
+def export_me():
+    """Everything stored about the signed-in user, as JSON (UK GDPR right of access)."""
+    user = current_user()
+    if user is None:
+        return jsonify({"error": "You must be signed in."}), 401
+    db = get_db()
+    uid = user["id"]
+    hidden = {"password_hash", "stored_name"}
+
+    def rows(sql, args):
+        out = []
+        for r in db.execute(sql, args).fetchall():
+            out.append({k: r[k] for k in r.keys() if k not in hidden})
+        return out
+
+    account = {k: user[k] for k in user.keys() if k not in hidden}
+    return jsonify({
+        "account": account,
+        "savedOpportunities": rows(
+            """SELECT o.id, o.title, o.employer, o.location, s.created_at AS saved_at
+               FROM saved_opportunities s JOIN opportunities o ON o.id = s.opportunity_id
+               WHERE s.user_id = ?""", (uid,)),
+        "applicationProgress": rows("SELECT * FROM application_progress WHERE user_id = ?", (uid,)),
+        "applicationFiles": rows("SELECT * FROM application_files WHERE user_id = ?", (uid,)),
+        "cv": rows("SELECT * FROM user_cvs WHERE user_id = ?", (uid,)),
+        "expressionsOfInterest": rows(
+            "SELECT * FROM expressions_of_interest WHERE user_id = ? OR lower(email) = ?",
+            (uid, (user["email"] or "").lower())),
+        "coffeeChatRequests": rows("SELECT * FROM coffee_chat_requests WHERE user_id = ?", (uid,)),
+    })
 
 
 @app.get("/api/me/progress")

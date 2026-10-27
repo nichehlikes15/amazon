@@ -2,7 +2,8 @@
 // credentials: 'include' sends the session cookie so the server
 // knows who is logged in.
 
-const BASE = 'http://localhost:5000/api'
+// Set VITE_API_URL in .env for a live site; falls back to the local backend.
+const BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
 async function request(path, options = {}) {
   const res = await fetch(`${BASE}${path}`, {
@@ -42,6 +43,21 @@ export const api = {
   submitInterest: (payload) =>
     request('/interest', { method: 'POST', body: JSON.stringify(payload) }),
   listInterest: () => request('/interest'),
+  requestCoffeeChat: (payload) =>
+    request('/coffee-chats', { method: 'POST', body: JSON.stringify(payload) }),
+  myCoffeeChats: () => request('/me/coffee-chats'),
+  exportMe: () => request('/me/export'),
+  interviewQuestions: (pathway) => request(`/interview/questions?pathway=${encodeURIComponent(pathway || '')}`),
+  reviewAnswer: (payload) =>
+    request('/interview/review-answer', { method: 'POST', body: JSON.stringify(payload) }),
+  reviewInterview: (answers) =>
+    request('/interview/review', { method: 'POST', body: JSON.stringify({ answers }) }),
+  listCoffeeChats: () => request('/coffee-chats'),
+  updateCoffeeChatStatus: (id, status) =>
+    request(`/coffee-chats/${id}/status`, { method: 'PUT', body: JSON.stringify({ status }) }),
+  updateCoffeeChatDetails: (id, payload) =>
+    request(`/coffee-chats/${id}/details`, { method: 'PUT', body: JSON.stringify(payload) }),
+  cancelMyCoffeeChat: (id) => request(`/me/coffee-chats/${id}/cancel`, { method: 'POST' }),
   listOpportunities: () => request('/opportunities'),
   listSavedOpportunities: () => request('/saved-opportunities'),
   saveOpportunity: (id) =>

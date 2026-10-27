@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import './quiz.css'
 import { api } from '../modules/api'
 import { useAuth } from '../modules/auth'
+import { Icon, PathwayIcon } from '../modules/icons'
 
 const PATHWAYS = ['Digital', 'Business', 'Media', 'Finance', 'Engineering']
 
@@ -136,6 +137,7 @@ function Quiz() {
     <main className="qz">
       <header className="qz-hero">
         <div className="qz-hero-inner">
+          <p className="qz-kicker">Career quiz</p>
           <h1>Find your <span>pathway</span></h1>
           <p className="qz-lead">
             Answer a few quick questions. We'll only show your result once you've finished.
@@ -155,7 +157,8 @@ function Quiz() {
             </div>
 
             {currentQuestion && (
-              <>
+              // Keyed by question so each new one slides in instead of swapping instantly.
+              <div className="qz-swap" key={currentQuestion.id}>
                 <h2 className="qz-question">{currentQuestion.text}</h2>
                 <div className="qz-answers">
                   {ANSWERS.map((a) => (
@@ -165,16 +168,23 @@ function Quiz() {
                       className="qz-answer"
                       onClick={() => answer(a.factor)}
                     >
-                      {a.label}
+                      <span>{a.label}</span>
+                      <Icon name="arrowRight" size={16} />
                     </button>
                   ))}
                 </div>
-              </>
+              </div>
             )}
           </section>
         ) : (
-          <section className="qz-result">
-            <h2 className="qz-result-title">{topPathway}</h2>
+          <section className="qz-result qz-swap">
+            <div className="qz-result-head">
+              <p className="qz-kicker">Your best match</p>
+              <span className="qz-result-icon" aria-hidden="true">
+                <PathwayIcon pathway={topPathway} size={28} />
+              </span>
+              <h2 className="qz-result-title">{topPathway}</h2>
+            </div>
 
             <div className="qz-why">
               <h3>Why this fits you</h3>
@@ -187,7 +197,7 @@ function Quiz() {
                 const top = Math.max(1, scores[topPathway])
                 const pct = Math.max(0, Math.round((scores[p] / top) * 100))
                 return (
-                  <div className="qz-bar-row" key={p}>
+                  <div className={p === topPathway ? 'qz-bar-row is-top' : 'qz-bar-row'} key={p}>
                     <span className="qz-bar-label">{p}</span>
                     <div className="qz-bar"><div className="qz-bar-fill" style={{ width: `${pct}%` }} /></div>
                   </div>
@@ -196,13 +206,13 @@ function Quiz() {
             </div>
 
             <div className="qz-actions">
-              <Link className="qz-link" to="/information">
+              <Link className="primary-button" to={`/information#${String(topPathway).toLowerCase()}`}>
                 Explore {topPathway}
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
+                <Icon name="arrowRight" size={15} />
               </Link>
-              <Link className="qz-link qz-link-muted" to="/opportunities">See opportunities</Link>
-              <button type="button" className="qz-restart" onClick={restart}>Start again</button>
+              <Link className="secondary-button" to="/opportunities">See opportunities</Link>
             </div>
+            <button type="button" className="qz-restart" onClick={restart}>Start again</button>
           </section>
         )}
       </div>

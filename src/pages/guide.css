@@ -1,103 +1,194 @@
 /* ============================================================
-   Guide page - open editorial layout (no boxes)
+   Guide page - centred hero, narrow reading column (no boxes)
    ============================================================ */
 
 .guide-page {
     min-height: 70vh;
+    overflow-x: clip;
     background: var(--white);
-    padding: 0 0 var(--section-y);
 }
 
-/* Light lilac hero */
+/* Small quiet label above headings (neutral, not orange) */
+.guide-kicker {
+    margin: 0 0 14px;
+    color: var(--muted);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+/* ---------- Hero ---------- */
 .guide-hero {
-    background: linear-gradient(180deg, #e3d4f6 0%, #ecdff8 22%, #f3ecfb 46%, var(--white) 82%);
+    background: var(--hero-gradient);
 }
 
 .guide-hero-inner {
-    max-width: 760px;
+    max-width: var(--content-max);
     margin: 0 auto;
-    padding: calc(var(--hero-top) * 0.55) var(--gutter) var(--hero-bottom);
+    padding: calc(var(--hero-top) * 0.7) var(--gutter) var(--hero-bottom);
+    text-align: center;
 }
 
-.guide-wrap {
-    max-width: 760px;
-    margin: 0 auto;
-    padding: 0 24px;
-}
-
+/* Quiet back link with an arrow that nudges left on hover */
 .guide-back {
-    display: inline-block;
-    margin-bottom: 20px;
-    color: var(--muted);
-    font-size: 0.9375rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 40px;
+    padding: 8px 16px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--glass);
+    color: var(--navy);
+    font-size: 0.875rem;
+    font-weight: 500;
     text-decoration: none;
+    transition: border-color var(--dur) ease, background var(--dur) ease, color var(--dur) ease;
+}
+
+.guide-back svg {
+    color: var(--muted);
+    transition: transform var(--dur) var(--ease-out), color var(--dur) ease;
 }
 
 .guide-back:hover {
-    color: var(--orange);
+    border-color: var(--line-strong);
+    background: var(--white);
 }
 
-.guide-status {
-    max-width: 760px;
-    margin: 0 auto;
-    padding: 48px 24px;
-    color: var(--muted);
+.guide-back:hover svg {
+    color: var(--navy);
+    transform: translateX(-3px);
 }
 
 .guide-hero h1 {
-    margin: 0 0 20px;
+    max-width: 860px;
+    margin: 0 auto 24px;
     color: var(--navy);
-    font-size: var(--h1-compact);
+    font-size: var(--h1);
     font-weight: 600;
-    line-height: 1.08;
-    letter-spacing: -0.02em;
+    line-height: 1.04;
+    letter-spacing: -0.025em;
 }
 
 .guide-intro {
-    margin: 0;
     max-width: 640px;
-    color: var(--ink);
+    margin: 0 auto;
+    color: var(--muted);
     font-size: var(--lead);
     line-height: 1.65;
 }
 
-/* Open sections separated by hairlines, with an orange top-rule */
+.guide-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 40px;
+}
+
+/* Download icon nudges down instead of sideways */
+.guide-download:hover svg { transform: translateY(2px); }
+
+/* Back button arrow nudges left */
+.guide-back-btn:hover svg { transform: translateX(-3px); }
+
+/* ---------- Reading column ---------- */
+.guide-wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: var(--block-gap) var(--gutter) var(--section-y);
+}
+
+/* Each section under a 2px orange rule */
 .guide-section {
-    margin-top: var(--block-gap);
-    padding-top: 36px;
-    border-top: 1px solid var(--line);
+    margin-bottom: var(--block-gap);
+    padding-top: 32px;
+    border-top: 2px solid var(--orange);
+}
+
+.guide-section:last-child { margin-bottom: 0; }
+
+.guide-section-head {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.guide-section-n {
+    flex-shrink: 0;
+    color: transparent;
+    font-size: 2.75rem;
+    font-weight: 700;
+    line-height: 1;
+    -webkit-text-stroke: 1.5px var(--orange);
 }
 
 .guide-section h2 {
-    margin: 0 0 16px;
-    padding-top: 2px;
+    margin: 0;
     color: var(--navy);
     font-size: var(--h3);
     font-weight: 600;
-    border-top: 2px solid var(--orange);
-    padding-top: 16px;
-    display: inline-block;
+    line-height: 1.25;
 }
 
 .guide-section ul {
     margin: 0;
-    padding-left: 20px;
-    color: var(--ink);
-    line-height: 1.7;
+    padding: 0;
+    list-style: none;
 }
 
 .guide-section li {
-    margin-bottom: 14px;
+    position: relative;
+    padding: 14px 0 14px 26px;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink);
+    font-size: 1.0625rem;
+    line-height: 1.7;
 }
 
-.guide-section li:last-child {
-    margin-bottom: 0;
+.guide-section li:last-child { border-bottom: 0; }
+
+/* Small orange dot instead of a default bullet */
+.guide-section li::before {
+    content: "";
+    position: absolute;
+    top: calc(14px + 0.85em - 3px);
+    left: 4px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--orange);
 }
 
-.guide-download {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 20px;
-  text-decoration: none;
+/* ---------- Closing links ---------- */
+.guide-end {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: var(--section-y) var(--gutter);
+    border-top: 1px solid var(--line);
+    text-align: center;
+}
+
+.guide-end h2 {
+    margin: 0 0 14px;
+    color: var(--navy);
+    font-size: var(--h2);
+    font-weight: 600;
+    line-height: 1.1;
+}
+
+.guide-end > p:not(.guide-kicker) {
+    margin: 0;
+    color: var(--muted);
+    font-size: var(--lead);
+}
+
+.guide-end .guide-actions { margin-top: 32px; }
+
+@media (max-width: 560px) {
+    .guide-section-head { gap: 14px; }
+    .guide-section-n { font-size: 2.25rem; }
 }

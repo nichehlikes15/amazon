@@ -1,0 +1,221 @@
+/* ============================================================
+   Career quiz - open editorial layout (no boxes)
+   ============================================================ */
+
+.qz { overflow-x: clip; }
+
+/* Light lilac hero */
+.qz-hero {
+    background: linear-gradient(180deg, #e3d4f6 0%, #ecdff8 22%, #f3ecfb 46%, var(--white) 82%);
+}
+
+.qz-hero-inner {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: var(--hero-top) var(--gutter) var(--hero-bottom);
+    text-align: center;
+}
+
+.qz-hero h1 {
+    margin: 0 0 24px;
+    color: var(--navy);
+    font-size: var(--h1);
+    font-weight: 600;
+    line-height: 1.04;
+    letter-spacing: -0.025em;
+}
+
+.qz-hero h1 span { color: var(--orange); }
+
+.qz-lead {
+    max-width: 520px;
+    margin: 0 auto;
+    color: var(--muted);
+    font-size: var(--lead);
+    line-height: 1.65;
+}
+
+.qz-body {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: var(--block-gap) var(--gutter) var(--section-y);
+}
+
+/* Progress */
+.qz-progress-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 10px;
+}
+
+.qz-qnum {
+    color: var(--navy);
+    font-size: 0.9375rem;
+    font-weight: 600;
+}
+
+.qz-qmax {
+    color: var(--muted);
+    font-size: 0.875rem;
+}
+
+.qz-progress {
+    height: 4px;
+    background: var(--line);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.qz-progress-fill {
+    height: 100%;
+    background: var(--orange);
+    transition: width 0.3s ease;
+}
+
+/* Question */
+.qz-question {
+    margin: 40px 0 28px;
+    color: var(--navy);
+    font-size: clamp(1.6rem, 3.5vw, 2.25rem);
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+}
+
+/* Answers - open rows on hairlines, no boxes */
+.qz-answers {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--line);
+}
+
+.qz-answer {
+    padding: 18px 4px;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    background: none;
+    color: var(--ink);
+    font: inherit;
+    font-size: 1.0625rem;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    transition: color var(--dur-fast) ease, padding-left var(--dur-fast) ease;
+}
+
+.qz-answer:hover,
+.qz-answer:focus-visible {
+    color: var(--orange);
+    padding-left: 14px;
+    outline: none;
+}
+
+/* Result */
+.qz-result-title {
+    margin: 0 0 32px;
+    color: var(--navy);
+    font-size: clamp(2.4rem, 5vw, 3.2rem);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
+.qz-why,
+.qz-breakdown {
+    padding-top: 20px;
+    margin-bottom: 36px;
+    border-top: 2px solid var(--orange);
+}
+
+.qz-why h3,
+.qz-breakdown h3 {
+    margin: 0 0 12px;
+    color: var(--navy);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.qz-why p {
+    margin: 0;
+    color: var(--ink);
+    font-size: 1.0625rem;
+    line-height: 1.7;
+}
+
+.qz-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 8px 0;
+}
+
+.qz-bar-label {
+    width: 100px;
+    flex-shrink: 0;
+    color: var(--ink);
+    font-size: 0.9375rem;
+}
+
+.qz-bar {
+    flex: 1;
+    height: 6px;
+    background: var(--light);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.qz-bar-fill {
+    height: 100%;
+    background: var(--orange);
+    transition: width 0.4s ease;
+}
+
+/* Actions - inline links */
+.qz-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 24px;
+}
+
+.qz-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--orange);
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 4px;
+}
+
+.qz-link:hover { text-decoration-color: currentColor; }
+
+.qz-link-muted { color: var(--navy); }
+.qz-link-muted:hover { color: var(--orange); }
+
+.qz-restart {
+    margin-left: auto;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--muted);
+    font: inherit;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.qz-restart:hover { color: var(--orange); }
+
+@media (max-width: 560px) {
+    .qz-restart { margin-left: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .qz-progress-fill,
+    .qz-bar-fill,
+    .qz-answer { transition: none; }
+}

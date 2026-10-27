@@ -1,10 +1,10 @@
 /* T Level header band */
 .tl-header {
-    background: linear-gradient(180deg, #e3d4f6 0%, #ecdff8 22%, #f3ecfb 46%, var(--white) 82%);
+    background: var(--hero-gradient);
 }
 
 .tl-header-content {
-    max-width: 1120px;
+    max-width: var(--content-max);
     margin: 0 auto;
     padding: var(--hero-top) var(--gutter) var(--hero-bottom);
 }
@@ -12,14 +12,25 @@
 .tl-header h1 {
     margin-bottom: 24px;
     color: var(--navy);
-    font-size: var(--h1);
+    /* Sized to the screen width so the heading always fits on one line */
+    font-size: clamp(2.2rem, 5.2vw, 3.75rem);
     font-weight: 600;
     line-height: 1.04;
     letter-spacing: -0.025em;
+    white-space: nowrap;
+    text-wrap: nowrap;
 }
 
 .tl-header h1 span {
     color: var(--orange);
+}
+
+/* On phones there isn't room for one line, so let it wrap */
+@media (max-width: 650px) {
+    .tl-header h1 {
+        white-space: normal;
+        text-wrap: balance;
+    }
 }
 
 .tl-tagline {
@@ -68,7 +79,7 @@
 }
 
 .tl-steps-inner {
-    max-width: 1120px;
+    max-width: var(--content-max);
     margin: 0 auto;
     padding: var(--section-y) var(--gutter);
 }
@@ -93,8 +104,8 @@
     height: 36px;
     margin-bottom: 14px;
     border-radius: 50%;
-    background: var(--navy);
-    color: var(--white);
+    background: var(--navy-solid);
+    color: #fff;
     font-weight: 500;
 }
 
@@ -129,7 +140,7 @@
     top: 0;
     z-index: 5;
     border-bottom: 1px solid var(--line);
-    background: rgb(255 255 255 / 88%);
+    background: var(--glass);
     -webkit-backdrop-filter: saturate(180%) blur(12px);
     backdrop-filter: saturate(180%) blur(12px);
 }
@@ -209,6 +220,17 @@
 .tl-panel > .tl-band,
 .tl-panel > .tl-steps {
     background: var(--light);
+}
+
+/* Old tab content fades out first */
+.tl-panel.is-leaving {
+    animation: tl-panel-out 0.2s ease-in both;
+    pointer-events: none;
+}
+
+@keyframes tl-panel-out {
+    from { opacity: 1; transform: none; }
+    to { opacity: 0; transform: translateY(-8px); }
 }
 
 @keyframes tl-panel-in {
@@ -447,7 +469,7 @@
 }
 
 .download-button:hover {
-    border-color: #c9d2dd;
+    border-color: var(--line-strong);
     background: var(--light);
     transform: translateY(-2px);
 }
@@ -481,7 +503,7 @@
     display: block;
     margin-bottom: 8px;
     color: var(--muted);
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     font-weight: 500;
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -545,6 +567,7 @@
     padding: 22px 0 0;
     border-top: 2px solid var(--orange);
     background: transparent;
+    transition: transform var(--dur) var(--ease-out);
 }
 
 .role-card:hover {
@@ -592,8 +615,8 @@
 }
 
 .tl-table thead th {
-    background: var(--navy);
-    color: var(--white);
+    background: var(--navy-solid);
+    color: #fff;
     font-weight: 500;
 }
 
@@ -620,14 +643,14 @@
     margin-top: calc(var(--row-y) + 24px);
     padding: clamp(28px, 4vw, 48px);
     border-left: 4px solid var(--orange);
-    background: var(--navy);
+    background: var(--navy-solid);
     color: #d8dee6;
     border-radius: var(--radius);
 }
 
 .framework-box h3 {
     margin: 0 0 12px;
-    color: var(--white);
+    color: #fff;
     font-size: 1.5rem;
     font-weight: 600;
 }
@@ -647,7 +670,7 @@
 }
 
 .framework-box .tl-link:hover {
-    color: var(--white);
+    color: #fff;
 }
 
 /* Career timeline */
@@ -689,8 +712,8 @@
     height: 44px;
     margin-bottom: 16px;
     border-radius: 50%;
-    background: var(--navy);
-    color: var(--white);
+    background: var(--navy-solid);
+    color: #fff;
     font-weight: 500;
 }
 

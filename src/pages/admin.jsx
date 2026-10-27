@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import './admin.css'
 import { api } from '../modules/api'
 import { useAuth } from '../modules/auth'
+import { CHAT_STATUSES, formatChatTime } from '../modules/mentors'
 
 const PATHWAYS = ['Digital', 'Business', 'Media', 'Finance', 'Engineering']
 const FILTER_PATHWAYS = ['All', ...PATHWAYS]
@@ -28,6 +29,16 @@ function Admin() {
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('All')
 
+  // Coffee chat requests
+  const [chats, setChats] = useState([])
+  const [chatsError, setChatsError] = useState('')
+  const [chatsLoading, setChatsLoading] = useState(true)
+  const [chatFilter, setChatFilter] = useState('All')
+  const [chatBusy, setChatBusy] = useState(null)
+  const [chatSaved, setChatSaved] = useState(null)
+  const [editingChat, setEditingChat] = useState(null)
+  const [chatDraft, setChatDraft] = useState({ confirmedTime: '', meetingLink: '' })
+
   // Opportunities management
   const [opps, setOpps] = useState([])
   const [oppsError, setOppsError] = useState('')
@@ -49,6 +60,11 @@ function Admin() {
     api.listOpportunities()
       .then((data) => setOpps(data.items || []))
       .catch((err) => setOppsError(err.message))
+
+    api.listCoffeeChats()
+      .then((data) => setChats(data.items || []))
+      .catch((err) => setChatsError(err.message))
+      .finally(() => setChatsLoading(false))
   }, [isAdmin])
 
   // Wait for the session check, then require an admin account.
@@ -77,6 +93,44 @@ function Admin() {
     }
   }
 
+  const updateChatStatus = async (id, status) => {
+    setChatsError('')
+    setChatBusy(id)
+    try {
+      const data = await api.updateCoffeeChatStatus(id, status)
+      setChats((prev) => prev.map((c) => (c.id === id ? data.request : c)))
+      setChatSaved(id)
+      setTimeout(() => setChatSaved((cur) => (cur === id ? null : cur)), 1800)
+    } catch (err) {
+      setChatsError(err.message)
+    } finally {
+      setChatBusy(null)
+    }
+  }
+
+  const startEditChat = (c) => {
+    setChatsError('')
+    setEditingChat(c.id)
+    setChatDraft({ confirmedTime: c.confirmedTime || '', meetingLink: c.meetingLink || '' })
+  }
+
+  const saveChatDetails = async (e, id) => {
+    e.preventDefault()
+    setChatsError('')
+    setChatBusy(id)
+    try {
+      const data = await api.updateCoffeeChatDetails(id, chatDraft)
+      setChats((prev) => prev.map((c) => (c.id === id ? data.request : c)))
+      setEditingChat(null)
+      setChatSaved(id)
+      setTimeout(() => setChatSaved((cur) => (cur === id ? null : cur)), 1800)
+    } catch (err) {
+      setChatsError(err.message)
+    } finally {
+      setChatBusy(null)
+    }
+  }
+
   const removeOpportunity = async (id) => {
     setOppsError('')
     try {
@@ -88,6 +142,7 @@ function Admin() {
   }
 
   const shown = filter === 'All' ? items : items.filter((i) => i.pathway === filter)
+  const shownChats = chatFilter === 'All' ? chats : chats.filter((c) => c.status === chatFilter)
 
   return (
     <>
@@ -231,6 +286,144 @@ function Admin() {
                       <td className="admin-message">{item.message || '—'}</td>
                       <td className="admin-date">{item.createdAt}</td>
                     </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+
+        {/* Coffee chat requests */}
+        <section className="content-section admin-eoi-section">
+          <h2 className="admin-section-title">Coffee chat requests</h2>
+          <div className="admin-toolbar">
+            <span className="admin-count">
+              {chats.length} total {chats.length === 1 ? 'request' : 'requests'}
+              {chats.some((c) => c.status === 'Requested') && (
+                <> · {chats.filter((c) => c.status === 'Requested').length} waiting</>
+              )}
+            </span>
+            <div className="admin-filter">
+              <label htmlFor="chat-filter">Filter by status</label>
+              <select id="chat-filter" value={chatFilter} onChange={(e) => setChatFilter(e.target.value)}>
+                {['All', ...CHAT_STATUSES].map((s) => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+          </div>
+
+          {chatsLoading && <p className="admin-status">Loading…</p>}
+          {chatsError && <div className="auth-error" role="alert">{chatsError}</div>}
+
+          {!chatsLoading && !chatsError && chats.length === 0 && (
+            <p className="admin-status">No coffee chat requests yet.</p>
+          )}
+
+          {!chatsLoading && chats.length > 0 && shownChats.length === 0 && (
+            <p className="admin-status">No requests with this status.</p>
+          )}
+
+          {!chatsLoading && shownChats.length > 0 && (
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>With</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Asked for</th>
+                    <th>Topic</th>
+                    <th>Message</th>
+                    <th>Received</th>
+                    <th>Status</th>
+                    <th>Meeting</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {shownChats.map((c) => (
+                    <Fragment key={c.id}>
+                    <tr className={editingChat === c.id ? 'is-editing' : ''}>
+                      <td><span className="admin-pathway">{c.mentor}</span></td>
+                      <td>{c.fullName}</td>
+                      <td>{c.email}</td>
+                      <td>{c.preferredTime}</td>
+                      <td>{c.topic || '-'}</td>
+                      <td className="admin-message">{c.message || '-'}</td>
+                      <td className="admin-date">{c.createdAt}</td>
+                      <td>
+                        <div className="admin-status-cell">
+                          <select
+                            className={`admin-status-select is-${c.status.toLowerCase()}`}
+                            value={c.status}
+                            onChange={(e) => updateChatStatus(c.id, e.target.value)}
+                            disabled={chatBusy === c.id}
+                            aria-label={`Status for ${c.fullName}'s chat with ${c.mentor}`}
+                          >
+                            {CHAT_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+                          </select>
+                          {chatSaved === c.id && <span className="admin-saved" role="status">Saved</span>}
+                        </div>
+                      </td>
+                      <td className="admin-meeting">
+                        {c.confirmedTime || c.meetingLink ? (
+                          <span className="admin-meeting-info">
+                            {c.confirmedTime && <span>{formatChatTime(c.confirmedTime)}</span>}
+                            {c.meetingLink && (
+                              <a href={c.meetingLink} target="_blank" rel="noopener noreferrer">Meeting link</a>
+                            )}
+                          </span>
+                        ) : (
+                          <span className="admin-muted">Not set</span>
+                        )}
+                        <button
+                          type="button"
+                          className="admin-edit"
+                          onClick={() => (editingChat === c.id ? setEditingChat(null) : startEditChat(c))}
+                          aria-expanded={editingChat === c.id}
+                        >
+                          {editingChat === c.id ? 'Close' : c.confirmedTime || c.meetingLink ? 'Edit' : 'Set time'}
+                        </button>
+                      </td>
+                    </tr>
+                    {editingChat === c.id && (
+                      <tr className="admin-edit-row">
+                        <td colSpan={9}>
+                          <form className="admin-chat-form" onSubmit={(e) => saveChatDetails(e, c.id)}>
+                            <div className="admin-field">
+                              <label htmlFor={`chat-time-${c.id}`}>Date and time</label>
+                              <input
+                                id={`chat-time-${c.id}`}
+                                type="datetime-local"
+                                value={chatDraft.confirmedTime}
+                                onChange={(e) => setChatDraft({ ...chatDraft, confirmedTime: e.target.value })}
+                              />
+                            </div>
+                            <div className="admin-field admin-field-grow">
+                              <label htmlFor={`chat-link-${c.id}`}>Meeting link</label>
+                              <input
+                                id={`chat-link-${c.id}`}
+                                type="url"
+                                placeholder="https://"
+                                value={chatDraft.meetingLink}
+                                onChange={(e) => setChatDraft({ ...chatDraft, meetingLink: e.target.value })}
+                              />
+                            </div>
+                            <div className="admin-chat-actions">
+                              <button type="submit" className="primary-button" disabled={chatBusy === c.id}>
+                                {chatBusy === c.id ? 'Saving…' : 'Save'}
+                              </button>
+                              <button type="button" className="secondary-button" onClick={() => setEditingChat(null)}>
+                                Cancel
+                              </button>
+                            </div>
+                            <p className="admin-chat-hint">
+                              {c.fullName} will see this on their Coffee chats page and profile. Saving a time
+                              on a waiting request marks it as Confirmed. Leave both empty to clear them.
+                            </p>
+                          </form>
+                        </td>
+                      </tr>
+                    )}
+                    </Fragment>
                   ))}
                 </tbody>
               </table>

@@ -109,3 +109,20 @@ CREATE TABLE IF NOT EXISTS user_cvs (
     uploaded_at    TEXT    NOT NULL DEFAULT (datetime('now')),
     FOREIGN KEY (user_id) REFERENCES users (id)
 );
+
+-- Coffee chat requests from the Coffee chats page.
+CREATE TABLE IF NOT EXISTS coffee_chat_requests (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id        INTEGER,                   -- NULL if sent while signed out
+    mentor         TEXT    NOT NULL,          -- who they want to chat with
+    full_name      TEXT    NOT NULL,
+    email          TEXT    NOT NULL,
+    preferred_time TEXT    NOT NULL,
+    topic          TEXT,
+    message        TEXT,
+    status         TEXT    NOT NULL DEFAULT 'Requested',
+    confirmed_time TEXT,                      -- set by an admin, e.g. 2026-11-03T15:30
+    meeting_link   TEXT,                      -- https:// link set by an admin
+    created_at     TEXT    NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (user_id) REFERENCES users (id)
+);

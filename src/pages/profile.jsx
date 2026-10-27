@@ -3,6 +3,8 @@ import { Link, Navigate } from 'react-router-dom'
 import './profile.css'
 import { useAuth } from '../modules/auth'
 import { api } from '../modules/api'
+import { CoffeeChatList } from '../modules/coffee-chat-list'
+import { Icon, PathwayIcon, closingLabel, daysUntil } from '../modules/icons'
 
 const Arrow = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -21,6 +23,8 @@ function Profile() {
   const [cvBusy, setCvBusy] = useState(false)
   const [cvError, setCvError] = useState('')
   const fileInput = useRef(null)
+  const [chats, setChats] = useState([])
+  const [chatsLoading, setChatsLoading] = useState(true)
 
   // Load the user's saved opportunities from the backend.
   useEffect(() => {
@@ -35,6 +39,10 @@ function Profile() {
     api.getCv()
       .then((data) => setCv(data.cv))
       .catch(() => {})
+    api.myCoffeeChats()
+      .then((data) => setChats(data.items || []))
+      .catch(() => {})
+      .finally(() => setChatsLoading(false))
   }, [loading, user])
 
   const removeSaved = async (id) => {
@@ -88,6 +96,11 @@ function Profile() {
     },
     { label: 'Register your interest with Amazon', done: progress.interestRegistered, to: '/register-interest' },
   ]
+  // Saved opportunities closing in the next 14 days (soonest first).
+  const closingSoon = saved
+    .filter((o) => { const d = daysUntil(o.closingDate); return d !== null && d >= 0 && d <= 14 })
+    .sort((a, b) => daysUntil(a.closingDate) - daysUntil(b.closingDate))
+
   const completion = Math.round((checklist.filter((c) => c.done).length / checklist.length) * 100)
 
   return (
@@ -122,6 +135,28 @@ function Profile() {
 
             {savedError && <div className="pf-error" role="alert">{savedError}</div>}
 
+            {/* Heads-up for saved opportunities that close soon */}
+            {closingSoon.length > 0 && (
+              <div className="pf-alert" role="status">
+                <span className="pf-alert-icon"><Icon name="clock" size={18} /></span>
+                <div>
+                  <strong>
+                    {closingSoon.length === 1
+                      ? '1 saved opportunity closes soon'
+                      : `${closingSoon.length} saved opportunities close soon`}
+                  </strong>
+                  <span>
+                    {closingSoon.map((o, i) => (
+                      <span key={o.id}>
+                        {i > 0 && ', '}
+                        <Link to={`/opportunities/${o.id}`}>{o.title}</Link> ({closingLabel(o.closingDate).text.toLowerCase()})
+                      </span>
+                    ))}
+                  </span>
+                </div>
+              </div>
+            )}
+
             {savedLoading ? (
               <p className="pf-empty">Loading…</p>
             ) : saved.length === 0 ? (
@@ -129,23 +164,43 @@ function Profile() {
                 You haven't saved anything yet. <Link to="/opportunities">Browse opportunities</Link>
               </p>
             ) : (
-              <ul className="pf-saved">
-                {saved.map((item) => (
-                  <li key={item.id}>
-                    <div className="pf-saved-main">
-                      <Link className="pf-saved-title" to={`/opportunities/${item.id}`}>{item.title}</Link>
-                      <p>{item.employer} · {item.location}</p>
-                    </div>
-                    <div className="pf-saved-actions">
-                      <a className="pf-link" href={item.applyUrl} target="_blank" rel="noopener noreferrer">
-                        Apply <Arrow />
-                      </a>
-                      <button type="button" className="pf-remove" onClick={() => removeSaved(item.id)}>
-                        Remove
-                      </button>
-                    </div>
-                  </li>
-                ))}
+              <ul className="pf-saved-grid">
+                {saved.map((item) => {
+                  const closing = closingLabel(item.closingDate)
+                  return (
+                    <li className="pf-card" key={item.id}>
+                      <div className="pf-card-top">
+                        <span className="pf-card-icon"><PathwayIcon pathway={item.pathway} size={18} /></span>
+                        <button
+                          type="button"
+                          className="pf-card-remove"
+                          onClick={() => removeSaved(item.id)}
+                          aria-label={`Remove ${item.title} from saved`}
+                          title="Remove from saved"
+                        >
+                          <Icon name="bookmark" size={16} data-filled />
+                        </button>
+                      </div>
+                      <p className="pf-card-type">{item.pathway} · {item.type}</p>
+                      <Link className="pf-card-title" to={`/opportunities/${item.id}`}>{item.title}</Link>
+                      <ul className="pf-card-meta">
+                        <li><Icon name="building" size={13} />{item.employer}</li>
+                        <li><Icon name="pin" size={13} />{item.location}</li>
+                      </ul>
+                      {closing && (
+                        <span className={`pf-card-closing is-${closing.tone}`}>{closing.text}</span>
+                      )}
+                      <div className="pf-card-actions">
+                        <Link className="pf-card-view" to={`/opportunities/${item.id}`}>
+                          View details <Icon name="arrowRight" size={14} />
+                        </Link>
+                        <a className="pf-card-apply" href={item.applyUrl} target="_blank" rel="noopener noreferrer">
+                          Apply <Icon name="external" size={14} />
+                        </a>
+                      </div>
+                    </li>
+                  )
+                })}
               </ul>
             )}
           </section>
@@ -175,6 +230,26 @@ function Profile() {
             </ul>
           </aside>
         </div>
+
+        {/* Coffee chat requests */}
+        <section className="pf-section pf-chats" id="coffee-chats">
+          <div className="pf-section-head">
+            <h2>Coffee chats <span className="pf-count">{chats.length}</span></h2>
+            <Link className="pf-link" to="/alumni/coffee-chats">Book a chat <Arrow /></Link>
+          </div>
+          {chatsLoading ? (
+            <p className="pf-empty">Loading…</p>
+          ) : chats.length === 0 ? (
+            <p className="pf-empty">
+              You haven't requested a coffee chat yet. <Link to="/alumni/coffee-chats">Book a chat</Link>
+            </p>
+          ) : (
+            <CoffeeChatList
+              items={chats}
+              onUpdate={(req) => setChats((prev) => prev.map((r) => (r.id === req.id ? req : r)))}
+            />
+          )}
+        </section>
 
         {/* CV upload and review */}
         <section className="pf-section pf-cv" id="cv">

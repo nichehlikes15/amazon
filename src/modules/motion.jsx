@@ -1,5 +1,6 @@
-import { useEffect, useLayoutEffect, useRef } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { Routes, useLocation } from 'react-router-dom'
+import { titleFor } from './page-title'
 
 /*
   Site-wide motion
@@ -16,7 +17,7 @@ import { useLocation } from 'react-router-dom'
   Respects the OS "reduce motion" setting and the in-app setting.
 */
 
-const SKIP = '[data-no-reveal], .home, .pw-row, nav, form, .nav-menu, .profile-dropdown'
+const SKIP = '[data-no-reveal], .home, .pw-row, nav, form, .nav-menu, .profile-dropdown, .iv, .pf-saved-grid, .ccl, .advice-carousel-track'
 const TARGETS = 'section, article, aside, li, [data-reveal]'
 const MAX_STAGGER = 6
 
@@ -27,14 +28,40 @@ function motionAllowed() {
   return 'IntersectionObserver' in window
 }
 
+// How long the old page takes to fade out before the new one comes in.
+const LEAVE_MS = 240
+
+// Wraps the <Route>s. On a new page the old one fades out, then the new one
+// fades in. Hash-only changes (tabs, #digital links) don't trigger a fade.
 export function PageTransition({ children }) {
-  const { pathname, hash } = useLocation()
+  const location = useLocation()
+  const [shown, setShown] = useState(location)
+  const [leaving, setLeaving] = useState(false)
+  const { pathname, hash } = shown
   const ref = useRef(null)
 
-  // New page: jump to the top before paint (keep #anchor links working).
+  useEffect(() => {
+    if (location.pathname === shown.pathname) {
+      if (location !== shown) setShown(location)
+      return undefined
+    }
+    if (!motionAllowed()) {
+      setShown(location)
+      return undefined
+    }
+    setLeaving(true)
+    const t = setTimeout(() => {
+      setShown(location)
+      setLeaving(false)
+    }, LEAVE_MS)
+    return () => clearTimeout(t)
+  }, [location]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // New page: back to the top while it's still invisible (keeps #anchor links working).
   useLayoutEffect(() => {
     if (!hash) window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
-  }, [pathname, hash])
+    document.title = titleFor(pathname)
+  }, [pathname]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const root = ref.current
@@ -124,8 +151,8 @@ export function PageTransition({ children }) {
   }, [pathname])
 
   return (
-    <div className="page-transition" key={pathname} ref={ref}>
-      {children}
+    <div className={leaving ? 'page-transition is-leaving' : 'page-transition'} key={pathname} ref={ref}>
+      <Routes location={shown}>{children}</Routes>
     </div>
   )
 }

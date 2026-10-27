@@ -1,10 +1,10 @@
 /* Admin header band */
 .admin-header {
-    background: linear-gradient(180deg, #e3d4f6 0%, #ecdff8 22%, #f3ecfb 46%, var(--white) 82%);
+    background: var(--hero-gradient);
 }
 
 .admin-header-content {
-    max-width: 1120px;
+    max-width: var(--content-max);
     margin: 0 auto;
     padding: calc(var(--hero-top) * 0.55) var(--gutter) var(--hero-bottom);
 }
@@ -105,7 +105,7 @@
 .admin-delete:hover {
     background: #b42318;
     border-color: #b42318;
-    color: var(--white);
+    color: #fff;
 }
 
 /* Toolbar */
@@ -217,3 +217,144 @@
     font-size: 0.875rem;
 }
 
+/* Coffee chat status picker - colour shows the status at a glance */
+.admin-status-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.admin-status-select {
+    padding: 6px 30px 6px 12px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background: var(--light)
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16' fill='none' stroke='%23536174' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E")
+        no-repeat right 10px center;
+    color: var(--navy);
+    font: inherit;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    transition: background-color var(--dur) ease, color var(--dur) ease, border-color var(--dur) ease;
+}
+
+.admin-status-select:hover { border-color: var(--line-strong); }
+.admin-status-select:disabled { opacity: 0.6; cursor: progress; }
+
+.admin-status-select.is-requested { background-color: #fff4e6; color: #b25e00; }
+.admin-status-select.is-confirmed { background-color: #e8f0fe; color: #1d4ed8; }
+.admin-status-select.is-completed { background-color: #e8f6ec; color: #1e7e34; }
+.admin-status-select.is-cancelled { background-color: #f1f2f4; color: #6b7480; }
+
+.admin-saved {
+    color: #1e7e34;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* Coffee chat meeting column + inline editor */
+.admin-meeting {
+    min-width: 170px;
+}
+
+.admin-meeting-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-bottom: 6px;
+    color: var(--navy);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.admin-meeting-info a {
+    color: #1d4ed8;
+    font-size: 0.8125rem;
+}
+
+.admin-muted {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--muted);
+    font-size: 0.8125rem;
+}
+
+.admin-edit {
+    padding: 4px 12px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--white);
+    color: var(--navy);
+    font: inherit;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background var(--dur) ease, border-color var(--dur) ease;
+}
+
+.admin-edit:hover {
+    border-color: var(--line-strong);
+    background: var(--light);
+}
+
+.admin-table tr.is-editing td {
+    background: #fbfcfe;
+}
+
+.admin-edit-row td {
+    padding: 0 !important;
+    border-top: 0 !important;
+    background: var(--light);
+}
+
+.admin-chat-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 16px 20px;
+    padding: 22px 24px;
+    animation: admin-slide-down 0.35s var(--ease-out) both;
+}
+
+.admin-field-grow {
+    flex: 1 1 280px;
+}
+
+.admin-chat-form .admin-field input {
+    width: 100%;
+}
+
+.admin-chat-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.admin-chat-actions .primary-button,
+.admin-chat-actions .secondary-button {
+    padding: 10px 18px;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.admin-chat-actions .primary-button:disabled {
+    opacity: 0.7;
+    cursor: progress;
+    transform: none;
+}
+
+.admin-chat-hint {
+    flex-basis: 100%;
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.8125rem;
+}
+
+@keyframes admin-slide-down {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: none; }
+}
