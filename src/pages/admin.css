@@ -6,31 +6,32 @@
 .admin-header-content {
     max-width: 1120px;
     margin: 0 auto;
-    padding: 48px 24px;
+    padding: calc(var(--hero-top) * 0.55) var(--gutter) var(--hero-bottom);
 }
 
 .admin-header h1 {
-    margin-bottom: 0.5rem;
+    margin-bottom: 16px;
     color: var(--navy);
-    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-size: var(--h1-compact);
     font-weight: 600;
-    line-height: 1.05;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
 }
 
 .admin-tagline {
-    max-width: 600px;
+    max-width: 640px;
     margin: 0;
     color: var(--muted);
-    font-size: 1.0625rem;
-    line-height: 1.5;
+    font-size: var(--lead);
+    line-height: 1.65;
 }
 
 /* Section titles */
 .admin-section-title {
-    margin: 0 0 20px;
+    margin: 0 0 28px;
     color: var(--navy);
-    font-size: 1.5rem;
-    font-weight: 500;
+    font-size: var(--h3);
+    font-weight: 600;
 }
 
 .admin-eoi-section {
@@ -39,18 +40,18 @@
 
 /* Add-opportunity form */
 .admin-opp-form {
-    margin-bottom: 32px;
-    padding: 24px;
+    margin-bottom: var(--block-gap);
+    padding: clamp(24px, 3vw, 36px);
     border: 1px solid var(--line);
-    border-radius: 2px;
+    border-radius: var(--radius);
     background: var(--white);
 }
 
 .admin-form-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-    margin-bottom: 18px;
+    gap: 20px;
+    margin-bottom: 24px;
 }
 
 .admin-field {
@@ -73,7 +74,7 @@
 .admin-field select {
     padding: 10px 12px;
     border: 1px solid var(--line);
-    border-radius: 2px;
+    border-radius: var(--radius-sm);
     background: var(--white);
     color: var(--ink);
     font-family: inherit;
@@ -92,12 +93,13 @@
 .admin-delete {
     padding: 6px 12px;
     border: 1px solid #e0b4b4;
-    border-radius: 2px;
+    border-radius: 8px;
     background: transparent;
     color: #b42318;
     font-size: 0.8125rem;
     font-weight: 500;
     white-space: nowrap;
+    transition: background var(--dur-fast) ease, color var(--dur-fast) ease, border-color var(--dur-fast) ease;
 }
 
 .admin-delete:hover {
@@ -113,7 +115,7 @@
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 14px;
-    margin-bottom: 20px;
+    margin-bottom: 28px;
 }
 
 .admin-count {
@@ -136,7 +138,7 @@
 .admin-filter select {
     padding: 8px 12px;
     border: 1px solid var(--line);
-    border-radius: 2px;
+    border-radius: var(--radius-sm);
     background: var(--white);
     color: var(--ink);
     font-family: inherit;
@@ -155,7 +157,7 @@
 .admin-table-wrap {
     overflow-x: auto;
     border: 1px solid var(--line);
-    border-radius: 2px;
+    border-radius: var(--radius);
 }
 
 .admin-table {
@@ -165,7 +167,7 @@
 }
 
 .admin-table th {
-    padding: 14px 16px;
+    padding: 16px 20px;
     background: var(--light);
     color: var(--navy);
     font-size: 0.8125rem;
@@ -177,7 +179,7 @@
 }
 
 .admin-table td {
-    padding: 14px 16px;
+    padding: 18px 20px;
     border-top: 1px solid var(--line);
     color: var(--ink);
     vertical-align: top;
@@ -209,14 +211,9 @@
     margin-bottom: 18px;
     padding: 12px 14px;
     border: 1px solid #f0c2c2;
-    border-radius: 2px;
+    border-radius: var(--radius-sm);
     background: #fdeaea;
     color: #b42318;
     font-size: 0.875rem;
 }
 
-@media (max-width: 650px) {
-    .admin-header-content {
-        padding: 40px 20px;
-    }
-}

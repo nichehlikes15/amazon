@@ -1,0 +1,351 @@
+/* ============================================================
+   Homepage - fresh redesign with animations
+   Palette reused: navy, orange, teal/blue/purple gradient
+   ============================================================ */
+
+.home {
+    overflow-x: clip;
+}
+
+.h-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 13px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    text-decoration: none;
+    transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.h-btn:active { transform: translateY(1px); }
+
+.h-btn-primary {
+    background: var(--navy);
+    color: #fff;
+}
+.h-btn-primary:hover { background: #11161d; transform: translateY(-2px); }
+
+.h-btn-ghost {
+    border: 1px solid var(--navy);
+    background: var(--white);
+    color: var(--navy);
+}
+.h-btn-ghost:hover { background: var(--light); }
+
+.h-btn-light {
+    background: #fff;
+    color: var(--navy);
+}
+.h-btn-light:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgb(0 0 0 / 18%); }
+
+/* ---------- Hero ---------- */
+.h-hero {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(180deg, #e3d4f6 0%, #ecdff8 18%, #f3ecfb 38%, var(--white) 70%);
+    color: var(--navy);
+}
+
+.h-hero-glow {
+    display: none;
+}
+
+.h-hero-inner {
+    position: relative;
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 120px 24px 110px;
+    text-align: center;
+}
+
+.h-title {
+    margin: 0 0 20px;
+    color: var(--navy);
+    font-size: clamp(2.8rem, 8vw, 5.5rem);
+    font-weight: 600;
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+}
+
+.h-title span { display: inline-block; }
+
+.h-accent {
+    color: var(--orange);
+}
+
+.h-hero-sub {
+    max-width: 620px;
+    margin: 0 auto 32px;
+    color: var(--muted);
+    font-size: 1.2rem;
+    line-height: 1.6;
+}
+
+.h-hero-actions {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 44px;
+}
+
+/* floating pathway chips */
+.h-chips {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.h-chip {
+    padding: 8px 18px;
+    border-radius: 999px;
+    background: var(--light);
+    border: 1px solid var(--line);
+    color: var(--navy);
+    font-size: 0.875rem;
+    font-weight: 500;
+    animation: h-float 4s ease-in-out infinite;
+}
+
+@keyframes h-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-7px); }
+}
+
+/* hero entrance: rise + fade */
+.h-rise {
+    opacity: 0;
+    transform: translateY(22px);
+    animation: h-rise-in 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+}
+
+@keyframes h-rise-in {
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- Stats band (count-up) ---------- */
+.h-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    max-width: 1080px;
+    margin: -44px auto 0;
+    padding: 36px 32px;
+    position: relative;
+    z-index: 2;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    box-shadow: 0 16px 40px rgb(6 33 66 / 10%);
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.h-stats.is-shown { opacity: 1; transform: translateY(0); }
+
+.h-stat { text-align: center; }
+
+.h-stat-num {
+    display: block;
+    color: var(--navy);
+    font-size: clamp(1.8rem, 3vw, 2.4rem);
+    font-weight: 700;
+    line-height: 1;
+}
+
+.h-stat-label {
+    display: block;
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 0.8125rem;
+    line-height: 1.4;
+}
+
+/* ---------- Generic section ---------- */
+.h-section {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 96px 24px;
+}
+
+.h-section-head { max-width: 620px; margin: 0 auto 44px; text-align: center; }
+
+.h-section-head h2 {
+    margin: 0 0 14px;
+    color: var(--navy);
+    font-size: clamp(2rem, 4vw, 2.75rem);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+.h-lead { margin: 0; color: var(--muted); font-size: 1.1rem; line-height: 1.6; }
+
+/* ---------- Pathways ---------- */
+.h-path-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+}
+
+.h-path-card {
+    position: relative;
+    display: block;
+    padding: 26px 22px 54px;
+    border-radius: 16px;
+    background: #fff;
+    border: 1px solid var(--line);
+    text-decoration: none;
+    opacity: 0;
+    transform: translateY(26px);
+    transition: opacity 0.5s ease, transform 0.5s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.h-path-card.is-shown { opacity: 1; transform: translateY(0); }
+.h-path-card:hover {
+    transform: translateY(-6px);
+    border-color: transparent;
+    box-shadow: 0 16px 36px rgb(6 33 66 / 12%);
+}
+
+.h-path-dot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 14px;
+    color: var(--orange);
+}
+
+.h-path-card h3 { margin: 0 0 6px; color: var(--navy); font-size: 1.1875rem; font-weight: 600; }
+.h-path-card p { margin: 0; color: var(--muted); font-size: 0.9375rem; line-height: 1.5; }
+
+.h-path-go {
+    position: absolute;
+    left: 22px;
+    bottom: 20px;
+    color: var(--orange);
+    transform: translateX(-4px);
+    opacity: 0;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+.h-path-card:hover .h-path-go { transform: translateX(0); opacity: 1; }
+
+/* ---------- Steps ---------- */
+.h-steps-wrap {
+    background: var(--light);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    padding: 96px 24px;
+}
+
+.h-steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.h-step {
+    padding: 30px;
+    border-radius: 16px;
+    background: #fff;
+    border: 1px solid var(--line);
+    opacity: 0;
+    transform: translateY(26px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.h-step.is-shown { opacity: 1; transform: translateY(0); }
+
+.h-step-n {
+    display: inline-block;
+    margin-bottom: 14px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    background: linear-gradient(120deg, var(--grad-mid), var(--grad-end));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.h-step h3 { margin: 0 0 8px; color: var(--navy); font-size: 1.25rem; font-weight: 600; }
+.h-step p { margin: 0; color: var(--muted); line-height: 1.6; }
+
+/* ---------- Gradient CTA ---------- */
+.h-cta {
+    position: relative;
+    margin: 0;
+    background: none;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+}
+.h-cta.is-shown { opacity: 1; }
+
+.h-cta-inner {
+    position: relative;
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 86px 24px;
+    text-align: center;
+    color: var(--navy);
+}
+
+.h-cta-inner h2 { margin: 0 0 12px; color: var(--navy); font-size: clamp(2rem, 4vw, 2.75rem); font-weight: 600; }
+.h-cta-inner p { margin: 0 0 28px; font-size: 1.15rem; line-height: 1.6; color: var(--muted); }
+
+.h-cta .h-btn-light { background: var(--orange-solid); color: #fff; }
+.h-cta .h-btn-light:hover { background: var(--orange-solid-hover); box-shadow: 0 10px 24px rgb(236 114 17 / 25%); }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+    .h-stats { grid-template-columns: repeat(2, 1fr); }
+    .h-path-grid { grid-template-columns: repeat(2, 1fr); }
+    .h-steps { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 560px) {
+    .h-hero-inner { padding: 92px 20px 80px; }
+    .h-stats { grid-template-columns: 1fr; margin-top: -28px; }
+    .h-path-grid { grid-template-columns: 1fr; }
+}
+
+/* ---------- Respect reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+    .h-hero-glow,
+    .h-chip,
+    .h-cta { animation: none; }
+
+    .h-rise {
+        opacity: 1;
+        transform: none;
+        animation: none;
+    }
+
+    .h-stats,
+    .h-path-card,
+    .h-step {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+}
+
+/* Also honour the in-app "reduce motion" setting (data attribute on <html>) */
+html[data-reduced-motion="on"] .h-hero-glow,
+html[data-reduced-motion="on"] .h-chip,
+html[data-reduced-motion="on"] .h-cta { animation: none; }
+
+html[data-reduced-motion="on"] .h-rise {
+    opacity: 1;
+    transform: none;
+    animation: none;
+}
+
+html[data-reduced-motion="on"] .h-stats,
+html[data-reduced-motion="on"] .h-path-card,
+html[data-reduced-motion="on"] .h-step {
+    opacity: 1;
+    transform: none;
+    transition: none;
+}

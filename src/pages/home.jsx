@@ -194,7 +194,6 @@ function Home() {
         className={`h-cta ${ctaShown ? 'is-shown' : ''}`}
         ref={ctaRef}
       >
-        <div className="h-cta-shimmer" aria-hidden="true" />
         <div className="h-cta-inner">
           <h2>Your next step starts here</h2>
           <p>Take the two-minute quiz and we'll point you to the pathway that fits.</p>

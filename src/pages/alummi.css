@@ -12,26 +12,26 @@
 .al-hero-inner {
     max-width: 1120px;
     margin: 0 auto;
-    padding: 84px 24px 60px;
+    padding: var(--hero-top) var(--gutter) var(--hero-bottom);
 }
 
 .al-hero h1 {
-    margin: 0 0 14px;
+    margin: 0 0 24px;
     color: var(--navy);
-    font-size: clamp(2.2rem, 5vw, 3.4rem);
+    font-size: var(--h1);
     font-weight: 600;
     line-height: 1.04;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.025em;
 }
 
 .al-hero h1 span { color: var(--orange); }
 
 .al-lead {
     max-width: 640px;
-    margin: 0 0 24px;
+    margin: 0 0 40px;
     color: var(--muted);
-    font-size: 1.15rem;
-    line-height: 1.6;
+    font-size: var(--lead);
+    line-height: 1.65;
 }
 
 .al-link {
@@ -49,16 +49,17 @@
 .al-section {
     max-width: 1120px;
     margin: 0 auto;
-    padding: 56px 24px;
+    padding: var(--section-y) var(--gutter);
     border-top: 1px solid var(--line);
 }
 
 .al-h2 {
     margin: 0 0 28px;
     color: var(--navy);
-    font-size: clamp(1.75rem, 3vw, 2.4rem);
+    font-size: var(--h2);
     font-weight: 600;
     letter-spacing: -0.01em;
+    line-height: 1.1;
 }
 
 /* Journey - open numbered columns separated by hairlines */
@@ -134,7 +135,7 @@
 .al-cta {
     max-width: 760px;
     margin: 0 auto;
-    padding: 56px 24px 90px;
+    padding: var(--section-y) var(--gutter);
     text-align: center;
     border-top: 1px solid var(--line);
 }
@@ -142,8 +143,9 @@
 .al-cta h2 {
     margin: 0 0 12px;
     color: var(--navy);
-    font-size: clamp(1.8rem, 3vw, 2.4rem);
+    font-size: var(--h2);
     font-weight: 600;
+    line-height: 1.1;
 }
 
 .al-cta p {

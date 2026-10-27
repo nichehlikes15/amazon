@@ -12,17 +12,17 @@
 .qz-hero-inner {
     max-width: 760px;
     margin: 0 auto;
-    padding: 80px 24px 48px;
+    padding: var(--hero-top) var(--gutter) var(--hero-bottom);
     text-align: center;
 }
 
 .qz-hero h1 {
-    margin: 0 0 14px;
+    margin: 0 0 24px;
     color: var(--navy);
-    font-size: clamp(2.2rem, 5vw, 3.4rem);
+    font-size: var(--h1);
     font-weight: 600;
     line-height: 1.04;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.025em;
 }
 
 .qz-hero h1 span { color: var(--orange); }
@@ -31,14 +31,14 @@
     max-width: 520px;
     margin: 0 auto;
     color: var(--muted);
-    font-size: 1.125rem;
-    line-height: 1.6;
+    font-size: var(--lead);
+    line-height: 1.65;
 }
 
 .qz-body {
     max-width: 760px;
     margin: 0 auto;
-    padding: 24px 24px 90px;
+    padding: var(--block-gap) var(--gutter) var(--section-y);
 }
 
 /* Progress */
@@ -208,7 +208,6 @@
 .qz-restart:hover { color: var(--orange); }
 
 @media (max-width: 560px) {
-    .qz-hero-inner { padding: 56px 20px 36px; }
     .qz-restart { margin-left: 0; }
 }
 

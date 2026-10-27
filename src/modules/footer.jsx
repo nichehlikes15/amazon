@@ -1,16 +1,8 @@
 import './footer.css'
 
 function Footer() {
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
-
   return (
     <footer className="site-footer">
-      <button type="button" className="footer-top" onClick={scrollToTop}>
-        Back to top
-      </button>
-
       <div className="footer-main">
         <div className="footer-columns">
           <div className="footer-column">

@@ -8,19 +8,19 @@
 }
 
 .opps-hero-inner {
-    max-width: 1180px;
+    max-width: var(--content-max);
     margin: 0 auto;
-    padding: 80px 24px 52px;
+    padding: var(--hero-top) var(--gutter) var(--hero-bottom);
     text-align: center;
 }
 
 .opps-hero h1 {
-    margin: 0 0 14px;
+    margin: 0 0 24px;
     color: var(--navy);
-    font-size: clamp(2.2rem, 5vw, 3.4rem);
+    font-size: var(--h1);
     font-weight: 600;
     line-height: 1.04;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.025em;
 }
 
 .opps-hero h1 span { color: var(--orange); }
@@ -29,18 +29,19 @@
     max-width: 600px;
     margin: 0 auto;
     color: var(--muted);
-    font-size: 1.15rem;
-    line-height: 1.6;
+    font-size: var(--lead);
+    line-height: 1.65;
 }
 
 /* Two-column body: filter sidebar + results */
 .opps-body {
     display: grid;
-    grid-template-columns: 240px 1fr;
-    gap: 40px;
-    max-width: 1180px;
+    grid-template-columns: 260px 1fr;
+    gap: clamp(32px, 4vw, 56px);
+    /* Wider than the other pages so the filters and cards have room */
+    max-width: 1440px;
     margin: 0 auto;
-    padding: 48px 24px 80px;
+    padding: var(--block-gap) clamp(20px, 3vw, 48px) var(--section-y);
 }
 
 /* Sidebar */
@@ -49,7 +50,7 @@
     top: 96px;
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 32px;
 }
 
 .opps-field {
@@ -131,7 +132,7 @@
 .opps-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 18px;
+    gap: clamp(20px, 2.4vw, 28px);
 }
 
 .opp-card {
@@ -281,6 +282,5 @@
 }
 
 @media (max-width: 560px) {
-    .opps-hero-inner { padding: 56px 20px 40px; }
     .opps-grid { grid-template-columns: 1fr; }
 }

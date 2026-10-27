@@ -98,3 +98,14 @@ SELECT * FROM (
     UNION ALL SELECT NULL, 'Writing a great application', 'PDF guide', '/guides/writing-a-great-application.pdf', 'How to present your skills and experience clearly.'
 ) AS seed
 WHERE NOT EXISTS (SELECT 1 FROM resources);
+
+CREATE TABLE IF NOT EXISTS user_cvs (
+    user_id        INTEGER PRIMARY KEY,      -- one CV per user
+    original_name  TEXT    NOT NULL,
+    stored_name    TEXT    NOT NULL,
+    size_bytes     INTEGER NOT NULL,
+    score          INTEGER NOT NULL,
+    review_json    TEXT    NOT NULL,
+    uploaded_at    TEXT    NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (user_id) REFERENCES users (id)
+);

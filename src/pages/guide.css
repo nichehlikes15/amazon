@@ -5,7 +5,7 @@
 .guide-page {
     min-height: 70vh;
     background: var(--white);
-    padding: 0 0 80px;
+    padding: 0 0 var(--section-y);
 }
 
 /* Light lilac hero */
@@ -16,7 +16,7 @@
 .guide-hero-inner {
     max-width: 760px;
     margin: 0 auto;
-    padding: 40px 24px 48px;
+    padding: calc(var(--hero-top) * 0.55) var(--gutter) var(--hero-bottom);
 }
 
 .guide-wrap {
@@ -45,26 +45,26 @@
 }
 
 .guide-hero h1 {
-    margin: 0 0 14px;
+    margin: 0 0 20px;
     color: var(--navy);
-    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    font-size: var(--h1-compact);
     font-weight: 600;
-    line-height: 1.1;
-    letter-spacing: -0.01em;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
 }
 
 .guide-intro {
     margin: 0;
     max-width: 640px;
     color: var(--ink);
-    font-size: 1.15rem;
-    line-height: 1.6;
+    font-size: var(--lead);
+    line-height: 1.65;
 }
 
 /* Open sections separated by hairlines, with an orange top-rule */
 .guide-section {
-    margin-top: 36px;
-    padding-top: 28px;
+    margin-top: var(--block-gap);
+    padding-top: 36px;
     border-top: 1px solid var(--line);
 }
 
@@ -72,7 +72,7 @@
     margin: 0 0 16px;
     padding-top: 2px;
     color: var(--navy);
-    font-size: 1.3rem;
+    font-size: var(--h3);
     font-weight: 600;
     border-top: 2px solid var(--orange);
     padding-top: 16px;
@@ -87,15 +87,11 @@
 }
 
 .guide-section li {
-    margin-bottom: 10px;
+    margin-bottom: 14px;
 }
 
 .guide-section li:last-child {
     margin-bottom: 0;
-}
-
-@media (max-width: 650px) {
-    .guide-hero-inner { padding: 32px 20px 40px; }
 }
 
 .guide-download {

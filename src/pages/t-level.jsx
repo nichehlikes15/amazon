@@ -1,3 +1,5 @@
+import { useEffect, useRef, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import './t-level.css'
 
 /* ------------------------------------------------------------------
@@ -7,11 +9,11 @@ import './t-level.css'
    Without one, a grey placeholder is shown instead.
 ------------------------------------------------------------------- */
 
-const pageLinks = [
-  { href: '#students', label: 'For students' },
-  { href: '#schools', label: 'For schools' },
-  { href: '#pathway', label: 'Career pathway' },
-  { href: '#principles', label: 'Leadership Principles' },
+const tabs = [
+  { id: 'students', label: 'For students' },
+  { id: 'schools', label: 'For schools' },
+  { id: 'pathway', label: 'Career pathway' },
+  { id: 'principles', label: 'Leadership Principles' },
 ]
 
 const facts = [
@@ -203,7 +205,46 @@ function DownloadButton({ filename, headers, rows }) {
    Page
 ------------------------------------------------------------------- */
 
+// The tab comes from the URL (#students, #schools...) so links can open a tab directly.
+function tabFromHash(hash) {
+  const id = (hash || '').replace('#', '')
+  return tabs.some((tab) => tab.id === id) ? id : tabs[0].id
+}
+
 function TLevel() {
+  const { hash } = useLocation()
+  const navigate = useNavigate()
+  const panelRef = useRef(null)
+
+  const [active, setActive] = useState(() => tabFromHash(hash))
+
+  useEffect(() => {
+    if (hash) setActive(tabFromHash(hash))
+  }, [hash])
+
+  const selectTab = (id) => {
+    if (id === active) return
+    setActive(id)
+    navigate({ hash: id }, { replace: true })
+    // If you've scrolled down into the content, bring the start of the new tab into view.
+    const panel = panelRef.current
+    if (panel) {
+      const nav = document.querySelector('.tl-subnav')
+      const offset = nav ? nav.offsetHeight : 0
+      const top = panel.getBoundingClientRect().top + window.scrollY - offset
+      if (window.scrollY > top) window.scrollTo({ top, behavior: 'smooth' })
+    }
+  }
+
+  // Left/right arrow keys move between tabs.
+  const onTabKeyDown = (e) => {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return
+    const i = tabs.findIndex((tab) => tab.id === active)
+    const next = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length].id
+    selectTab(next)
+    document.getElementById(`tab-${next}`)?.focus()
+  }
+
   return (
     <>
       <main>
@@ -222,15 +263,6 @@ function TLevel() {
             </div>
           </div>
         </section>
-
-        {/* Jump links */}
-        <nav className="tl-subnav" aria-label="On this page">
-          <ul>
-            {pageLinks.map((link) => (
-              <li key={link.href}><a href={link.href}>{link.label}</a></li>
-            ))}
-          </ul>
-        </nav>
 
         {/* Intro */}
         <section className="content-section tl-split" aria-labelledby="tl-intro-heading">
@@ -251,292 +283,335 @@ function TLevel() {
           <Media alt="T Level students at an Amazon site" />
         </section>
 
-        {/* ================= FOR STUDENTS ================= */}
-        <section className="tl-band" id="students" aria-labelledby="students-heading">
-          <div className="content-section">
-            <h2 id="students-heading">What is a T Level?</h2>
-            <p className="section-intro">
-              T Levels are designed with employers, so what you learn matches what the
-              workplace actually needs.
-            </p>
-            <div className="fact-grid">
-              {facts.map((fact) => (
-                <article className="fact-card" key={fact.title}>
-                  <h3>{fact.title}</h3>
-                  <p>{fact.text}</p>
-                </article>
-              ))}
-            </div>
-
-            <h2 className="tl-subheading" id="phases-heading">Your placement in three phases</h2>
-            <p className="section-intro">
-              Your 45 days at Amazon build up step by step, from learning the basics to
-              working on real challenges with an Amazon team.
-            </p>
-            <ol className="phase-list" aria-labelledby="phases-heading">
-              {phases.map((item) => (
-                <li className="phase-card" key={item.title}>
-                  <Media image={item.image} alt={item.imageAlt} className="phase-media" />
-                  <div className="phase-body">
-                    <span className="phase-label">{item.phase}</span>
-                    <h3>{item.title}</h3>
-                    <p>{item.text}</p>
-                    <ul>
-                      {item.points.map((point) => (
-                        <li key={point}>{point}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </li>
-              ))}
-            </ol>
-
-            <h2 className="tl-subheading">Skills you will gain</h2>
-            <div className="skill-grid">
-              {skills.map((item) => (
-                <article className="skill-item" key={item.title}>
-                  <h3>{item.title}</h3>
-                  <p>{item.text}</p>
-                </article>
-              ))}
-            </div>
-
-            <h2 className="tl-subheading" id="student-faq-heading">Frequently asked questions</h2>
-            <div className="tl-faq" aria-labelledby="student-faq-heading">
-              {studentFaqs.map((item) => (
-                <details className="tl-faq-item" key={item.question}>
-                  <summary>{item.question}</summary>
-                  <p>{item.answer}</p>
-                </details>
-              ))}
-            </div>
-
-            <div className="tl-section-actions">
-              <a className="primary-button" href="/register-interest">Register your interest</a>
-              <a className="secondary-button" href="/t-level/advice#students">Student advice</a>
-            </div>
-          </div>
-        </section>
-
-        {/* Your journey (original four steps) */}
-        <section className="tl-steps" aria-labelledby="steps-heading">
-          <div className="tl-steps-inner">
-            <h2 id="steps-heading">From curious to placement in four steps</h2>
-            <div className="step-grid">
-              {steps.map((item) => (
-                <article className="step-card" key={item.step}>
-                  <span className="step-number">{item.step}</span>
-                  <h3>{item.title}</h3>
-                  <p>{item.text}</p>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ================= FOR SCHOOLS ================= */}
-        <section className="tl-band" id="schools" aria-labelledby="schools-heading">
-          <div className="content-section">
-            <h2 id="schools-heading">Why partner with Amazon?</h2>
-            <p className="section-intro">
-              An Amazon placement helps your students build the skills for employability
-              while supporting your curriculum and careers programme.
-            </p>
-
-            <div className="tl-split tl-split-flush">
-              <div className="reason-list">
-                {schoolReasons.map((item) => (
-                  <article className="reason-item" key={item.title}>
-                    <h3>{item.title}</h3>
-                    <p>{item.text}</p>
-                  </article>
-                ))}
-              </div>
-              <Media alt="Teacher and Amazon mentor reviewing a student's progress" />
-            </div>
-
-            <div className="tl-heading-row">
-              <h2 className="tl-subheading" id="benefits-heading">How placement activities map to your curriculum</h2>
-              <DownloadButton
-                filename="amazon-t-level-curriculum-map.csv"
-                headers={['Placement activity', 'Curriculum link', 'Gatsby Benchmarks']}
-                rows={benefitsTable.map((row) => [row.activity, row.curriculum, row.gatsby])}
-              />
-            </div>
-            <ul className="map-list" aria-labelledby="benefits-heading">
-              {benefitsTable.map((row, index) => (
-                <li className="map-item" key={row.activity}>
-                  <span className="map-index" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
-                  <div className="map-main">
-                    <h3>{row.activity}</h3>
-                    <p>{row.curriculum}</p>
-                  </div>
-                  <div className="map-tags">
-                    <span className="tag-label">Gatsby Benchmarks</span>
-                    <ul className="tag-list">
-                      {splitTags(row.gatsby).map((tag) => (
-                        <li className="tag" key={tag}>{tag}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </li>
-              ))}
-            </ul>
-
-            <h2 className="tl-subheading">Support from Amazon</h2>
-            <div className="fact-grid fact-grid-3">
-              {amazonSupport.map((item) => (
-                <article className="fact-card" key={item.title}>
-                  <h3>{item.title}</h3>
-                  <p>{item.text}</p>
-                </article>
-              ))}
-            </div>
-
-            <aside className="framework-box" aria-labelledby="framework-heading">
-              <h3 id="framework-heading">The new industry placement framework</h3>
-              <p>
-                The Department for Education updated its industry placement guidance for
-                2026, giving schools and colleges more freedom to shape placements around
-                their students and local employers. Amazon's three-phase placement is built
-                around this framework.
-              </p>
-              <ul>
-                {frameworkPoints.map((point) => (
-                  <li key={point}>{point}</li>
-                ))}
-              </ul>
-              <a
-                className="tl-link"
-                href="https://www.gov.uk/government/publications/t-level-industry-placements-guidance-for-providers--2/t-level-industry-placements-guidance-for-education-providers"
-                target="_blank"
-                rel="noopener noreferrer"
+        {/* Tabs: only the selected audience's content is shown below */}
+        <nav className="tl-subnav" aria-label="T Level topics">
+          <div className="tl-tabs" role="tablist" aria-label="Choose a topic" onKeyDown={onTabKeyDown}>
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                id={`tab-${tab.id}`}
+                type="button"
+                role="tab"
+                className={active === tab.id ? 'tl-tab is-active' : 'tl-tab'}
+                aria-selected={active === tab.id}
+                aria-controls="tl-panel"
+                tabIndex={active === tab.id ? 0 : -1}
+                onClick={() => selectTab(tab.id)}
               >
-                Read the full guidance on GOV.UK (opens in a new tab) →
-              </a>
-            </aside>
-
-            <div className="tl-section-actions">
-              <a className="primary-button" href="/register-interest">Start a partnership</a>
-              <a className="secondary-button" href="/t-level/advice#schools">School advice</a>
-            </div>
+                {tab.label}
+              </button>
+            ))}
           </div>
-        </section>
+        </nav>
 
-        {/* ================= CAREER PATHWAY ================= */}
-        <section className="tl-band tl-band-light" id="pathway" aria-labelledby="pathway-heading">
-          <div className="content-section">
-            <h2 id="pathway-heading">From T Level to a career at Amazon</h2>
-            <p className="section-intro">
-              Your placement can be the first step on a fast-track route into an Amazon
-              apprenticeship and a permanent role.
-            </p>
-
-            <ol className="timeline">
-              {timeline.map((item) => (
-                <li className="timeline-step" key={item.step}>
-                  <span className="timeline-number" aria-hidden="true">{item.step}</span>
-                  <h3>{item.title}</h3>
-                  <p>{item.text}</p>
-                </li>
-              ))}
-            </ol>
-
-            <div className="earn-callout">
-              <div>
-                <h3>Earn while you learn</h3>
-                <p>
-                  Amazon apprentices are paid a salary while they train and gain a
-                  recognised qualification, with <strong>zero tuition fees</strong>.
-                  Students who complete a T Level placement at Amazon already know the
-                  teams, the tools and the Leadership Principles, giving them a head
-                  start when they apply.
+        <div
+          className="tl-panel"
+          id="tl-panel"
+          role="tabpanel"
+          aria-labelledby={`tab-${active}`}
+          ref={panelRef}
+          key={active}
+        >
+          {active === 'students' && (
+            <>
+            {/* ================= FOR STUDENTS ================= */}
+            <section className="tl-band" id="students" aria-labelledby="students-heading">
+              <div className="content-section">
+                <h2 id="students-heading">What is a T Level?</h2>
+                <p className="section-intro">
+                  T Levels are designed with employers, so what you learn matches what the
+                  workplace actually needs.
                 </p>
-              </div>
-              <Media alt="Amazon apprentice at work" className="earn-media" />
-            </div>
+                <div className="fact-grid">
+                  {facts.map((fact) => (
+                    <article className="fact-card" key={fact.title}>
+                      <h3>{fact.title}</h3>
+                      <p>{fact.text}</p>
+                    </article>
+                  ))}
+                </div>
 
-            <div className="tl-heading-row">
-              <h2 className="tl-subheading" id="apprenticeships-heading">Amazon apprenticeships you could progress into</h2>
-              <DownloadButton
-                filename="amazon-apprenticeships.csv"
-                headers={['Apprenticeship', 'What you would do', 'Related T Level route']}
-                rows={apprenticeships.map((row) => [row.role, row.work, row.fit])}
-              />
-            </div>
-            <ul className="role-grid" aria-labelledby="apprenticeships-heading">
-              {apprenticeships.map((row) => (
-                <li className="role-card" key={row.role}>
-                  <h3>{row.role}</h3>
-                  <p>{row.work}</p>
-                  <ul className="tag-list">
-                    {splitTags(row.fit).map((tag) => (
-                      <li className="tag" key={tag}>{tag}</li>
+                <h2 className="tl-subheading" id="phases-heading">Your placement in three phases</h2>
+                <p className="section-intro">
+                  Your 45 days at Amazon build up step by step, from learning the basics to
+                  working on real challenges with an Amazon team.
+                </p>
+                <ol className="phase-list" aria-labelledby="phases-heading">
+                  {phases.map((item) => (
+                    <li className="phase-card" key={item.title}>
+                      <Media image={item.image} alt={item.imageAlt} className="phase-media" />
+                      <div className="phase-body">
+                        <span className="phase-label">{item.phase}</span>
+                        <h3>{item.title}</h3>
+                        <p>{item.text}</p>
+                        <ul>
+                          {item.points.map((point) => (
+                            <li key={point}>{point}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+
+                <h2 className="tl-subheading">Skills you will gain</h2>
+                <div className="skill-grid">
+                  {skills.map((item) => (
+                    <article className="skill-item" key={item.title}>
+                      <h3>{item.title}</h3>
+                      <p>{item.text}</p>
+                    </article>
+                  ))}
+                </div>
+
+                <h2 className="tl-subheading" id="student-faq-heading">Frequently asked questions</h2>
+                <div className="tl-faq" aria-labelledby="student-faq-heading">
+                  {studentFaqs.map((item) => (
+                    <details className="tl-faq-item" key={item.question}>
+                      <summary>{item.question}</summary>
+                      <p>{item.answer}</p>
+                    </details>
+                  ))}
+                </div>
+
+                <div className="tl-section-actions">
+                  <a className="primary-button" href="/register-interest">Register your interest</a>
+                  <a className="secondary-button" href="/t-level/advice#students">Student advice</a>
+                </div>
+              </div>
+            </section>
+
+            {/* Your journey (original four steps) */}
+            <section className="tl-steps" aria-labelledby="steps-heading">
+              <div className="tl-steps-inner">
+                <h2 id="steps-heading">From curious to placement in four steps</h2>
+                <div className="step-grid">
+                  {steps.map((item) => (
+                    <article className="step-card" key={item.step}>
+                      <span className="step-number">{item.step}</span>
+                      <h3>{item.title}</h3>
+                      <p>{item.text}</p>
+                    </article>
+                  ))}
+                </div>
+              </div>
+            </section>
+            </>
+          )}
+          {active === 'schools' && (
+            <>
+            {/* ================= FOR SCHOOLS ================= */}
+            <section className="tl-band" id="schools" aria-labelledby="schools-heading">
+              <div className="content-section">
+                <h2 id="schools-heading">Why partner with Amazon?</h2>
+                <p className="section-intro">
+                  An Amazon placement helps your students build the skills for employability
+                  while supporting your curriculum and careers programme.
+                </p>
+
+                <div className="tl-split tl-split-flush">
+                  <div className="reason-list">
+                    {schoolReasons.map((item) => (
+                      <article className="reason-item" key={item.title}>
+                        <h3>{item.title}</h3>
+                        <p>{item.text}</p>
+                      </article>
+                    ))}
+                  </div>
+                  <Media alt="Teacher and Amazon mentor reviewing a student's progress" />
+                </div>
+
+                <div className="tl-heading-row">
+                  <h2 className="tl-subheading" id="benefits-heading">How placement activities map to your curriculum</h2>
+                  <DownloadButton
+                    filename="amazon-t-level-curriculum-map.csv"
+                    headers={['Placement activity', 'Curriculum link', 'Gatsby Benchmarks']}
+                    rows={benefitsTable.map((row) => [row.activity, row.curriculum, row.gatsby])}
+                  />
+                </div>
+                <ul className="map-list" aria-labelledby="benefits-heading">
+                  {benefitsTable.map((row, index) => (
+                    <li className="map-item" key={row.activity}>
+                      <span className="map-index" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+                      <div className="map-main">
+                        <h3>{row.activity}</h3>
+                        <p>{row.curriculum}</p>
+                      </div>
+                      <div className="map-tags">
+                        <span className="tag-label">Gatsby Benchmarks</span>
+                        <ul className="tag-list">
+                          {splitTags(row.gatsby).map((tag) => (
+                            <li className="tag" key={tag}>{tag}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+
+                <h2 className="tl-subheading">Support from Amazon</h2>
+                <div className="fact-grid fact-grid-3">
+                  {amazonSupport.map((item) => (
+                    <article className="fact-card" key={item.title}>
+                      <h3>{item.title}</h3>
+                      <p>{item.text}</p>
+                    </article>
+                  ))}
+                </div>
+
+                <aside className="framework-box" aria-labelledby="framework-heading">
+                  <h3 id="framework-heading">The new industry placement framework</h3>
+                  <p>
+                    The Department for Education updated its industry placement guidance for
+                    2026, giving schools and colleges more freedom to shape placements around
+                    their students and local employers. Amazon's three-phase placement is built
+                    around this framework.
+                  </p>
+                  <ul>
+                    {frameworkPoints.map((point) => (
+                      <li key={point}>{point}</li>
                     ))}
                   </ul>
-                </li>
-              ))}
-            </ul>
-            <a
-              className="tl-link"
-              href="https://amazonapprenticeships.co.uk/our-programmes"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              See all Amazon apprenticeship programmes (opens in a new tab) →
-            </a>
-          </div>
-        </section>
+                  <a
+                    className="tl-link"
+                    href="https://www.gov.uk/government/publications/t-level-industry-placements-guidance-for-providers--2/t-level-industry-placements-guidance-for-education-providers"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Read the full guidance on GOV.UK (opens in a new tab) →
+                  </a>
+                </aside>
 
-        {/* ================= LEADERSHIP PRINCIPLES ================= */}
-        <section className="tl-band" id="principles" aria-labelledby="principles-heading">
-          <div className="content-section">
-            <h2 id="principles-heading">How Amazon works, and how you will too</h2>
-            <p className="section-intro">
-              Amazon's Leadership Principles guide how every employee works. Here are ten
-              of them in plain language, and how you will use each one on your placement.
-            </p>
+                <div className="tl-section-actions">
+                  <a className="primary-button" href="/register-interest">Start a partnership</a>
+                  <a className="secondary-button" href="/t-level/advice#schools">School advice</a>
+                </div>
+              </div>
+            </section>
+            </>
+          )}
+          {active === 'pathway' && (
+            <>
+            {/* ================= CAREER PATHWAY ================= */}
+            <section className="tl-band tl-band-light" id="pathway" aria-labelledby="pathway-heading">
+              <div className="content-section">
+                <h2 id="pathway-heading">From T Level to a career at Amazon</h2>
+                <p className="section-intro">
+                  Your placement can be the first step on a fast-track route into an Amazon
+                  apprenticeship and a permanent role.
+                </p>
 
-            <div className="principle-grid">
-              {principles.map((item, index) => (
-                <article className="principle-card" key={item.name}>
-                  <span className="principle-number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
-                  <h3>{item.name}</h3>
-                  <p>{item.meaning}</p>
-                  <p className="principle-placement">
-                    <strong>On your placement:</strong> {item.placement}
-                  </p>
-                </article>
-              ))}
-            </div>
-
-            <h2 className="tl-subheading" id="principle-skills-heading">Skills that work in any industry</h2>
-            <p className="section-intro">
-              Each principle builds an employability skill that employers value, whether
-              or not you stay at Amazon.
-            </p>
-            <div className="tl-table-wrap">
-              <table className="tl-table" aria-labelledby="principle-skills-heading">
-                <thead>
-                  <tr>
-                    <th scope="col">Leadership Principle</th>
-                    <th scope="col">Transferable skill</th>
-                    <th scope="col">Where it is valued</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {principleSkills.map((row) => (
-                    <tr key={row.name}>
-                      <th scope="row">{row.name}</th>
-                      <td>{row.skill}</td>
-                      <td>{row.industries}</td>
-                    </tr>
+                <ol className="timeline">
+                  {timeline.map((item) => (
+                    <li className="timeline-step" key={item.step}>
+                      <span className="timeline-number" aria-hidden="true">{item.step}</span>
+                      <h3>{item.title}</h3>
+                      <p>{item.text}</p>
+                    </li>
                   ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
+                </ol>
+
+                <div className="earn-callout">
+                  <div>
+                    <h3>Earn while you learn</h3>
+                    <p>
+                      Amazon apprentices are paid a salary while they train and gain a
+                      recognised qualification, with <strong>zero tuition fees</strong>.
+                      Students who complete a T Level placement at Amazon already know the
+                      teams, the tools and the Leadership Principles, giving them a head
+                      start when they apply.
+                    </p>
+                  </div>
+                  <Media alt="Amazon apprentice at work" className="earn-media" />
+                </div>
+
+                <div className="tl-heading-row">
+                  <h2 className="tl-subheading" id="apprenticeships-heading">Amazon apprenticeships you could progress into</h2>
+                  <DownloadButton
+                    filename="amazon-apprenticeships.csv"
+                    headers={['Apprenticeship', 'What you would do', 'Related T Level route']}
+                    rows={apprenticeships.map((row) => [row.role, row.work, row.fit])}
+                  />
+                </div>
+                <ul className="role-grid" aria-labelledby="apprenticeships-heading">
+                  {apprenticeships.map((row) => (
+                    <li className="role-card" key={row.role}>
+                      <h3>{row.role}</h3>
+                      <p>{row.work}</p>
+                      <ul className="tag-list">
+                        {splitTags(row.fit).map((tag) => (
+                          <li className="tag" key={tag}>{tag}</li>
+                        ))}
+                      </ul>
+                    </li>
+                  ))}
+                </ul>
+                <a
+                  className="tl-link"
+                  href="https://amazonapprenticeships.co.uk/our-programmes"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  See all Amazon apprenticeship programmes (opens in a new tab) →
+                </a>
+              </div>
+            </section>
+            </>
+          )}
+          {active === 'principles' && (
+            <>
+            {/* ================= LEADERSHIP PRINCIPLES ================= */}
+            <section className="tl-band" id="principles" aria-labelledby="principles-heading">
+              <div className="content-section">
+                <h2 id="principles-heading">How Amazon works, and how you will too</h2>
+                <p className="section-intro">
+                  Amazon's Leadership Principles guide how every employee works. Here are ten
+                  of them in plain language, and how you will use each one on your placement.
+                </p>
+
+                <div className="principle-grid">
+                  {principles.map((item, index) => (
+                    <article className="principle-card" key={item.name}>
+                      <span className="principle-number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+                      <h3>{item.name}</h3>
+                      <p>{item.meaning}</p>
+                      <p className="principle-placement">
+                        <strong>On your placement:</strong> {item.placement}
+                      </p>
+                    </article>
+                  ))}
+                </div>
+
+                <h2 className="tl-subheading" id="principle-skills-heading">Skills that work in any industry</h2>
+                <p className="section-intro">
+                  Each principle builds an employability skill that employers value, whether
+                  or not you stay at Amazon.
+                </p>
+                <div className="tl-table-wrap">
+                  <table className="tl-table" aria-labelledby="principle-skills-heading">
+                    <thead>
+                      <tr>
+                        <th scope="col">Leadership Principle</th>
+                        <th scope="col">Transferable skill</th>
+                        <th scope="col">Where it is valued</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {principleSkills.map((row) => (
+                        <tr key={row.name}>
+                          <th scope="row">{row.name}</th>
+                          <td>{row.skill}</td>
+                          <td>{row.industries}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+            </>
+          )}
+        </div>
       </main>
     </>
   )

@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 
 import Navbar from "./modules/navbar";
 import Footer from "./modules/footer";
+import { PageTransition } from "./modules/motion";
 
 import Home from "./pages/home";
 import AboutUs from "./pages/about-us";
@@ -26,6 +27,7 @@ function App() {
     <div className="App">
       <Navbar />
 
+      <PageTransition>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about-us" element={<AboutUs />} />
@@ -45,6 +47,7 @@ function App() {
         <Route path="/opportunities/:id" element={<OpportunityDetail />} />
         <Route path="/guides/:slug" element={<Guide />} />
       </Routes>
+      </PageTransition>
 
       <Footer />
     </div>

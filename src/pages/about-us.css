@@ -12,16 +12,16 @@
 .au-hero-inner {
     max-width: 1120px;
     margin: 0 auto;
-    padding: 84px 24px 60px;
+    padding: var(--hero-top) var(--gutter) var(--hero-bottom);
 }
 
 .au-hero h1 {
-    margin: 0 0 14px;
+    margin: 0 0 24px;
     color: var(--navy);
-    font-size: clamp(2.2rem, 5vw, 3.4rem);
+    font-size: var(--h1);
     font-weight: 600;
     line-height: 1.04;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.025em;
 }
 
 .au-hero h1 span { color: var(--orange); }
@@ -30,15 +30,15 @@
     max-width: 640px;
     margin: 0;
     color: var(--muted);
-    font-size: 1.15rem;
-    line-height: 1.6;
+    font-size: var(--lead);
+    line-height: 1.65;
 }
 
 /* Sections */
 .au-section {
     max-width: 1120px;
     margin: 0 auto;
-    padding: 56px 24px;
+    padding: var(--section-y) var(--gutter);
     border-top: 1px solid var(--line);
 }
 
@@ -47,10 +47,11 @@
 .au-h2 {
     margin: 0 0 16px;
     color: var(--navy);
-    font-size: clamp(1.75rem, 3vw, 2.4rem);
+    font-size: var(--h2);
     font-weight: 600;
     letter-spacing: -0.01em;
     max-width: 720px;
+    line-height: 1.1;
 }
 
 .au-body {
@@ -71,8 +72,8 @@
 .au-value {
     display: grid;
     grid-template-columns: 64px 1fr;
-    gap: 20px;
-    padding: 28px 0;
+    gap: 32px;
+    padding: 40px 0;
     border-top: 1px solid var(--line);
 }
 
@@ -138,15 +139,16 @@
 .au-cta {
     max-width: 760px;
     margin: 0 auto;
-    padding: 24px 24px 90px;
+    padding: var(--section-y) var(--gutter);
     text-align: center;
 }
 
 .au-cta h2 {
     margin: 0 0 12px;
     color: var(--navy);
-    font-size: clamp(1.8rem, 3vw, 2.4rem);
+    font-size: var(--h2);
     font-weight: 600;
+    line-height: 1.1;
 }
 
 .au-cta p {

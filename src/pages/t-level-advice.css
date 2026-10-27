@@ -6,15 +6,16 @@
 .advice-header-content {
     max-width: 1120px;
     margin: 0 auto;
-    padding: 64px 24px;
+    padding: var(--hero-top) var(--gutter) var(--hero-bottom);
 }
 
 .advice-header h1 {
-    margin-bottom: 0.75rem;
+    margin-bottom: 24px;
     color: var(--navy);
-    font-size: clamp(2rem, 5vw, 3rem);
+    font-size: var(--h1);
     font-weight: 600;
-    line-height: 1.05;
+    line-height: 1.04;
+    letter-spacing: -0.025em;
 }
 
 .advice-header h1 span {
@@ -22,18 +23,18 @@
 }
 
 .advice-tagline {
-    max-width: 620px;
+    max-width: 640px;
     margin: 0;
     color: var(--muted);
-    font-size: 1.125rem;
-    line-height: 1.5;
+    font-size: var(--lead);
+    line-height: 1.65;
 }
 
 /* Advice cards */
 .advice-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 18px;
+    gap: var(--grid-gap);
 }
 
 .advice-card {
@@ -60,14 +61,14 @@
 .advice-carousel {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 20px;
 }
 
 .advice-carousel-track {
     flex: 1;
     min-width: 0;
     display: flex;
-    gap: 18px;
+    gap: 24px;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     scrollbar-width: none;
@@ -85,7 +86,7 @@
 
 /* Three cards visible at a time on desktop */
 .advice-carousel-track .advice-card {
-    flex: 0 0 calc((100% - 36px) / 3);
+    flex: 0 0 calc((100% - 48px) / 3);
     scroll-snap-align: start;
 }
 
@@ -93,17 +94,20 @@
     flex: 0 0 auto;
     width: 44px;
     height: 44px;
-    border: 1px solid var(--navy);
+    border: 1px solid var(--line);
     border-radius: 50%;
     background: var(--white);
     color: var(--navy);
     font-size: 1.25rem;
     cursor: pointer;
+    transition: background var(--dur-fast) ease, color var(--dur-fast) ease, border-color var(--dur-fast) ease, transform var(--dur-fast) var(--ease-out);
 }
 
 .advice-carousel-button:hover:not(:disabled) {
-    background: var(--navy);
-    color: var(--white);
+    background: var(--light);
+    color: var(--orange-solid);
+    border-color: #c9d2dd;
+    transform: scale(1.06);
 }
 
 .advice-carousel-button:focus-visible {
@@ -120,14 +124,14 @@
 .advice-details {
     display: flex;
     flex-direction: column;
-    gap: 56px;
-    margin-top: 64px;
+    gap: var(--row-y);
+    margin-top: calc(var(--row-y) + 24px);
 }
 
 .advice-detail {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 40px;
+    gap: clamp(48px, 6vw, 96px);
     align-items: center;
 }
 
@@ -139,7 +143,7 @@
 .advice-detail-media {
     width: 100%;
     aspect-ratio: 4 / 3;
-    border-radius: 2px;
+    border-radius: var(--radius);
     object-fit: cover;
 }
 
@@ -153,10 +157,10 @@
 }
 
 .advice-detail-text h3 {
-    margin: 0 0 12px;
+    margin: 0 0 16px;
     color: var(--navy);
-    font-size: 1.5rem;
-    font-weight: 500;
+    font-size: var(--h3);
+    font-weight: 600;
 }
 
 .advice-detail-text p {
@@ -176,9 +180,6 @@
 
 /* Advice responsive styles */
 @media (max-width: 650px) {
-    .advice-header-content {
-        padding: 48px 20px;
-    }
 
     .advice-grid {
         grid-template-columns: 1fr;
@@ -198,10 +199,6 @@
         flex-basis: 100%;
     }
 
-    .advice-details {
-        gap: 40px;
-        margin-top: 48px;
-    }
 
     .advice-detail {
         grid-template-columns: 1fr;

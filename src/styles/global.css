@@ -11,6 +11,36 @@
     --grad-start: #0FB8C9;
     --grad-mid: #2563EB;
     --grad-end: #7C3AED;
+
+    /* ----- Design system: spacing ----- */
+    --gutter: clamp(20px, 4vw, 40px);
+    --content-max: 1120px;
+    --hero-top: clamp(104px, 13vw, 168px);
+    --hero-bottom: clamp(72px, 9vw, 120px);
+    --section-y: clamp(96px, 11vw, 152px);
+    --row-y: clamp(64px, 7vw, 96px);
+    --block-gap: clamp(40px, 5vw, 64px);
+    --grid-gap: clamp(24px, 3vw, 40px);
+    --stack: 20px;
+
+    /* ----- Design system: type ----- */
+    --h1: clamp(2.6rem, 6vw, 4.25rem);
+    --h1-compact: clamp(2.2rem, 4.5vw, 3.25rem);
+    --h2: clamp(2rem, 3.6vw, 2.75rem);
+    --h3: clamp(1.25rem, 1.8vw, 1.5rem);
+    --lead: clamp(1.125rem, 1.6vw, 1.3rem);
+
+    /* ----- Design system: shape + motion ----- */
+    --radius-sm: 10px;
+    --radius: 14px;
+    --radius-lg: 20px;
+    --shadow-soft: 0 1px 2px rgb(6 33 66 / 4%), 0 8px 24px rgb(6 33 66 / 6%);
+    --shadow-lift: 0 2px 4px rgb(6 33 66 / 4%), 0 18px 40px rgb(6 33 66 / 12%);
+    --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+    --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+    --dur-fast: 0.18s;
+    --dur: 0.35s;
+    --dur-slow: 0.8s;
 }
 
 @font-face {
@@ -43,6 +73,10 @@ body {
     color: var(--ink);
     font-family: "Amazon Ember Display", Arial, sans-serif;
     font-size: 16px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
 }
 
 a, button {
@@ -61,38 +95,59 @@ h1, h2, h3, p {
     margin-top: 0;
 }
 
+h1, h2, h3 {
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+}
+
+p {
+    text-wrap: pretty;
+}
+
+::selection {
+    background: #ffe2b8;
+    color: var(--navy);
+}
+
 /* ===== Shared layout ===== */
 .content-section {
-    max-width: 1120px;
+    max-width: var(--content-max);
     margin: 0 auto;
-    padding: 88px 24px;
+    padding: var(--section-y) var(--gutter);
 }
 
 .content-section h2 {
-    max-width: 570px;
-    margin-bottom: 18px;
+    max-width: 640px;
+    margin-bottom: 24px;
     color: var(--navy);
-    font-size: 38px;
-    font-weight: 500;
+    font-size: var(--h2);
+    font-weight: 600;
     line-height: 1.1;
 }
 
 .section-intro {
-    max-width: 570px;
-    margin-bottom: 38px;
+    max-width: 640px;
+    margin-bottom: var(--block-gap);
     color: var(--muted);
-    line-height: 1.5;
+    font-size: var(--lead);
+    line-height: 1.65;
 }
 
-/* ===== Shared buttons (Amazon style) ===== */
+/* ===== Shared buttons ===== */
 .primary-button,
 .secondary-button {
-    display: inline-block;
-    padding: 13px 22px;
-    border-radius: 2px;
-    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 26px;
+    border-radius: 12px;
+    font-weight: 600;
     text-decoration: none;
     text-align: center;
+    transition: background var(--dur-fast) ease, border-color var(--dur-fast) ease,
+        color var(--dur-fast) ease, transform var(--dur-fast) var(--ease-out),
+        box-shadow var(--dur) ease;
 }
 
 .primary-button {
@@ -104,27 +159,152 @@ h1, h2, h3, p {
 .primary-button:hover {
     background: var(--orange-solid-hover);
     border-color: var(--orange-solid-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgb(236 114 17 / 24%);
 }
 
 .secondary-button {
-    border: 1px solid var(--navy);
-    background: transparent;
+    border: 1px solid var(--line);
+    background: var(--white);
     color: var(--navy);
 }
 
 .secondary-button:hover {
-    background: var(--navy);
-    color: var(--white);
+    border-color: #c9d2dd;
+    background: var(--light);
+    color: var(--navy);
+    transform: translateY(-2px);
+}
+
+.primary-button:active,
+.secondary-button:active {
+    transform: translateY(0) scale(0.98);
+}
+
+.primary-button svg,
+.secondary-button svg {
+    transition: transform var(--dur) var(--ease-out);
+}
+
+.primary-button:hover svg,
+.secondary-button:hover svg {
+    transform: translateX(3px);
+}
+
+/* ===== Shared form fields (all forms use the same look) ===== */
+.page-transition input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.page-transition select,
+.page-transition textarea {
+    border-radius: var(--radius-sm);
+    transition: border-color var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
+}
+
+.page-transition input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):hover,
+.page-transition select:hover,
+.page-transition textarea:hover {
+    border-color: #c9d2dd;
+}
+
+.page-transition input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus,
+.page-transition select:focus,
+.page-transition textarea:focus {
+    outline: none;
+    border-color: var(--orange);
+    box-shadow: 0 0 0 4px rgb(255 153 0 / 18%);
+}
+
+/* Inline text links inside page content get a soft underline that grows */
+.page-transition p a:not([class]) {
+    text-decoration: underline;
+    text-decoration-color: rgb(255 153 0 / 45%);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+    transition: text-decoration-color var(--dur-fast) ease, color var(--dur-fast) ease;
+}
+
+.page-transition p a:not([class]):hover {
+    color: var(--orange-solid);
+    text-decoration-color: var(--orange);
+}
+
+/* ===== Motion ===== */
+/* Page fade on route change */
+.page-transition {
+    animation: page-in 0.6s var(--ease-out) both;
+}
+
+@keyframes page-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Hero content rises in, staggered (delays set in motion.jsx) */
+.hero-rise {
+    animation: hero-rise 0.9s var(--ease-out) both;
+}
+
+@keyframes hero-rise {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: none; }
+}
+
+/* Sign-in / sign-up card */
+.auth-card {
+    animation: hero-rise 0.9s var(--ease-out) 0.1s both;
+}
+
+/* FAQ / expandable answers slide open */
+.page-transition details > summary {
+    transition: color var(--dur-fast) ease;
+}
+
+.page-transition details > summary:hover {
+    color: var(--orange-solid);
+}
+
+.page-transition details[open] > :not(summary) {
+    animation: details-open 0.45s var(--ease-out) both;
+}
+
+@keyframes details-open {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: none; }
+}
+
+/* Images settle in gently and zoom slightly on hover inside links */
+.page-transition a img {
+    transition: transform 0.6s var(--ease-out);
+}
+
+.page-transition a:hover img {
+    transform: scale(1.03);
+}
+
+/* Keyboard focus ring, consistent everywhere */
+.page-transition :is(a, button, summary):focus-visible {
+    outline: 2px solid var(--orange);
+    outline-offset: 3px;
+    border-radius: 6px;
+}
+
+/* Scroll reveal (classes added in motion.jsx, removed again once the
+   element has finished appearing so its own hover styles take over) */
+.page-transition .reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity var(--dur-slow) var(--ease-out) var(--reveal-delay, 0s),
+        transform var(--dur-slow) var(--ease-out) var(--reveal-delay, 0s);
+}
+
+.page-transition .reveal.is-visible {
+    opacity: 1;
+    transform: none;
 }
 
 /* Responsive shared layout */
 @media (max-width: 650px) {
-    .content-section {
-        padding: 64px 20px;
-    }
-
     .content-section h2 {
-        font-size: 32px;
+        font-size: var(--h2);
     }
 }
 

@@ -13,16 +13,16 @@
 .info2-hero-inner {
     max-width: 1120px;
     margin: 0 auto;
-    padding: 84px 24px 60px;
+    padding: var(--hero-top) var(--gutter) var(--hero-bottom);
 }
 
 .info2-hero h1 {
-    margin: 0 0 14px;
+    margin: 0 0 24px;
     color: var(--navy);
-    font-size: clamp(2.2rem, 5vw, 3.4rem);
+    font-size: var(--h1);
     font-weight: 600;
     line-height: 1.04;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.025em;
 }
 
 .info2-hero h1 span { color: var(--orange); }
@@ -31,18 +31,18 @@
     max-width: 640px;
     margin: 0;
     color: var(--muted);
-    font-size: 1.15rem;
-    line-height: 1.6;
+    font-size: var(--lead);
+    line-height: 1.65;
 }
 
 /* ---------- Body: rail + sections ---------- */
 .info2-body {
     display: grid;
     grid-template-columns: 220px 1fr;
-    gap: 56px;
+    gap: clamp(48px, 6vw, 96px);
     max-width: 1120px;
     margin: 0 auto;
-    padding: 24px 24px 40px;
+    padding: var(--block-gap) var(--gutter) var(--section-y);
 }
 
 /* Sticky scroll-spy rail */
@@ -99,8 +99,8 @@
 .pw-row {
     display: grid;
     grid-template-columns: 64px 1fr;
-    gap: 20px;
-    padding: 56px 0;
+    gap: 32px;
+    padding: var(--row-y) 0;
     border-top: 1px solid var(--line);
     scroll-margin-top: 90px;
     opacity: 0;
@@ -129,9 +129,10 @@
 .pw-head h2 {
     margin: 0;
     color: var(--navy);
-    font-size: clamp(1.75rem, 3vw, 2.25rem);
+    font-size: var(--h2);
     font-weight: 600;
     letter-spacing: -0.01em;
+    line-height: 1.1;
 }
 
 .pw-soon {
@@ -156,7 +157,7 @@
 .pw-cols {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 32px;
+    gap: var(--grid-gap);
     margin-bottom: 28px;
 }
 
@@ -211,15 +212,16 @@
 .info2-cta {
     max-width: 760px;
     margin: 0 auto;
-    padding: 72px 24px 90px;
+    padding: var(--section-y) var(--gutter);
     text-align: center;
 }
 
 .info2-cta h2 {
     margin: 0 0 12px;
     color: var(--navy);
-    font-size: clamp(1.8rem, 3vw, 2.4rem);
+    font-size: var(--h2);
     font-weight: 600;
+    line-height: 1.1;
 }
 
 .info2-cta p {

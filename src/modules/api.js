@@ -71,6 +71,14 @@ export const api = {
     request('/me/password', { method: 'PUT', body: JSON.stringify({ currentPassword, newPassword }) }),
   deleteMe: () => request('/me', { method: 'DELETE' }),
   myProgress: () => request('/me/progress'),
+  getCv: () => request('/me/cv'),
+  uploadCv: (file) => {
+    const form = new FormData()
+    form.append('file', file)
+    return uploadRequest('/me/cv', form)
+  },
+  deleteCv: () => request('/me/cv', { method: 'DELETE' }),
+  cvFileUrl: () => `${BASE}/me/cv/file`,
   saveQuizResult: (pathway) =>
     request('/me/quiz-result', { method: 'POST', body: JSON.stringify({ pathway }) }),
 }

@@ -11,16 +11,16 @@
 .st-hero-inner {
     max-width: 1120px;
     margin: 0 auto;
-    padding: 80px 24px 52px;
+    padding: var(--hero-top) var(--gutter) var(--hero-bottom);
 }
 
 .st-hero h1 {
-    margin: 0 0 14px;
+    margin: 0 0 24px;
     color: var(--navy);
-    font-size: clamp(2.2rem, 5vw, 3.4rem);
+    font-size: var(--h1);
     font-weight: 600;
     line-height: 1.04;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.025em;
 }
 
 .st-hero h1 span { color: var(--orange); }
@@ -29,18 +29,18 @@
     max-width: 600px;
     margin: 0;
     color: var(--muted);
-    font-size: 1.125rem;
-    line-height: 1.6;
+    font-size: var(--lead);
+    line-height: 1.65;
 }
 
 /* Body: side rail + sections */
 .st-body {
     display: grid;
     grid-template-columns: 200px 1fr;
-    gap: 56px;
+    gap: clamp(48px, 6vw, 96px);
     max-width: 1120px;
     margin: 0 auto;
-    padding: 24px 24px 90px;
+    padding: var(--block-gap) var(--gutter) var(--section-y);
 }
 
 .st-rail {
@@ -83,7 +83,7 @@
 .st-sections { min-width: 0; }
 
 .st-row {
-    padding: 48px 0;
+    padding: var(--row-y) 0;
     border-top: 1px solid var(--line);
     scroll-margin-top: 90px;
 }
@@ -98,7 +98,7 @@
 }
 
 .st-intro {
-    margin: 0 0 24px;
+    margin: 0 0 36px;
     color: var(--muted);
     line-height: 1.6;
 }
@@ -107,7 +107,7 @@
 .st-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 18px 24px;
+    gap: 24px 32px;
     margin-bottom: 8px;
 }
 

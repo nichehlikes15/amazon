@@ -1,11 +1,11 @@
 :root {
     --navy: #062142;
-    --orange: #e7900e;
-    --ink: #172235;
+    --orange: #FF9900;
+    --ink: #333E48;
     --muted: #536174;
     --line: #dce3eb;
     --light: #f3f7fb;
-    --white: #ffffff;
+    --white: #FFFFFF;
 }
 
 @font-face {

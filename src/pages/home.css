@@ -28,11 +28,14 @@
 .h-btn-primary:hover { background: #11161d; transform: translateY(-2px); }
 
 .h-btn-ghost {
-    border: 1px solid var(--navy);
+    border: 1px solid var(--line);
     background: var(--white);
     color: var(--navy);
 }
-.h-btn-ghost:hover { background: var(--light); }
+.h-btn-ghost:hover { background: var(--light);
+    border-color: #c9d2dd;
+    transform: translateY(-2px);
+}
 
 .h-btn-light {
     background: #fff;
@@ -56,7 +59,7 @@
     position: relative;
     max-width: 920px;
     margin: 0 auto;
-    padding: 120px 24px 110px;
+    padding: var(--hero-top) var(--gutter) calc(var(--hero-bottom) + 44px);
     text-align: center;
 }
 
@@ -77,10 +80,10 @@
 
 .h-hero-sub {
     max-width: 620px;
-    margin: 0 auto 32px;
+    margin: 0 auto 44px;
     color: var(--muted);
-    font-size: 1.2rem;
-    line-height: 1.6;
+    font-size: var(--lead);
+    line-height: 1.65;
 }
 
 .h-hero-actions {
@@ -130,10 +133,10 @@
 .h-stats {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
+    gap: 32px;
     max-width: 1080px;
     margin: -44px auto 0;
-    padding: 36px 32px;
+    padding: clamp(32px, 4vw, 48px) clamp(24px, 4vw, 48px);
     position: relative;
     z-index: 2;
     background: #fff;
@@ -168,26 +171,26 @@
 .h-section {
     max-width: 1120px;
     margin: 0 auto;
-    padding: 96px 24px;
+    padding: var(--section-y) var(--gutter);
 }
 
-.h-section-head { max-width: 620px; margin: 0 auto 44px; text-align: center; }
+.h-section-head { max-width: 620px; margin: 0 auto var(--block-gap); text-align: center; }
 
 .h-section-head h2 {
-    margin: 0 0 14px;
+    margin: 0 0 18px;
     color: var(--navy);
-    font-size: clamp(2rem, 4vw, 2.75rem);
+    font-size: var(--h2);
     font-weight: 600;
     letter-spacing: -0.01em;
 }
 
-.h-lead { margin: 0; color: var(--muted); font-size: 1.1rem; line-height: 1.6; }
+.h-lead { margin: 0; color: var(--muted); font-size: var(--lead); line-height: 1.6; }
 
 /* ---------- Pathways ---------- */
 .h-path-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    gap: 16px;
+    gap: 20px;
 }
 
 .h-path-card {
@@ -236,19 +239,19 @@
     background: var(--light);
     border-top: 1px solid var(--line);
     border-bottom: 1px solid var(--line);
-    padding: 96px 24px;
+    padding: var(--section-y) var(--gutter);
 }
 
 .h-steps {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
+    gap: var(--grid-gap);
     max-width: 1000px;
     margin: 0 auto;
 }
 
 .h-step {
-    padding: 30px;
+    padding: clamp(28px, 3vw, 40px);
     border-radius: 16px;
     background: #fff;
     border: 1px solid var(--line);
@@ -275,40 +278,27 @@
 /* ---------- Gradient CTA ---------- */
 .h-cta {
     position: relative;
-    overflow: hidden;
     margin: 0;
-    background: linear-gradient(120deg, var(--grad-start), var(--grad-mid), var(--grad-end));
-    background-size: 200% 200%;
-    animation: h-grad 12s ease infinite;
+    background: none;
     opacity: 0;
     transition: opacity 0.6s ease;
 }
 .h-cta.is-shown { opacity: 1; }
 
-@keyframes h-grad {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-
-.h-cta-shimmer {
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(60% 120% at 50% 0%, rgba(255,255,255,0.25), transparent 60%);
-    pointer-events: none;
-}
-
 .h-cta-inner {
     position: relative;
     max-width: 680px;
     margin: 0 auto;
-    padding: 86px 24px;
+    padding: var(--section-y) var(--gutter);
     text-align: center;
-    color: #fff;
+    color: var(--navy);
 }
 
-.h-cta-inner h2 { margin: 0 0 12px; font-size: clamp(2rem, 4vw, 2.75rem); font-weight: 600; }
-.h-cta-inner p { margin: 0 0 28px; font-size: 1.15rem; line-height: 1.6; color: rgba(255,255,255,0.92); }
+.h-cta-inner h2 { margin: 0 0 16px; color: var(--navy); font-size: var(--h2); font-weight: 600; }
+.h-cta-inner p { margin: 0 0 36px; font-size: var(--lead); line-height: 1.6; color: var(--muted); }
+
+.h-cta .h-btn-light { background: var(--orange-solid); color: #fff; }
+.h-cta .h-btn-light:hover { background: var(--orange-solid-hover); box-shadow: 0 10px 24px rgb(236 114 17 / 25%); }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 900px) {
@@ -318,7 +308,6 @@
 }
 
 @media (max-width: 560px) {
-    .h-hero-inner { padding: 92px 20px 80px; }
     .h-stats { grid-template-columns: 1fr; margin-top: -28px; }
     .h-path-grid { grid-template-columns: 1fr; }
 }

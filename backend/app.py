@@ -7,6 +7,7 @@ Security notes (prototype level):
     stronger session storage, and email verification.
 """
 
+import json
 import os
 import sqlite3
 import uuid
@@ -15,6 +16,8 @@ from flask import Flask, g, jsonify, request, session, send_from_directory
 from flask_cors import CORS
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
+
+from cv_reviewer import extract_text, review_cv
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "launchpad.db")
@@ -760,6 +763,13 @@ def delete_me():
             os.remove(os.path.join(UPLOAD_DIR, f["stored_name"]))
         except OSError:
             pass
+    cv = db.execute("SELECT stored_name FROM user_cvs WHERE user_id = ?", (user["id"],)).fetchone()
+    if cv:
+        try:
+            os.remove(os.path.join(UPLOAD_DIR, cv["stored_name"]))
+        except OSError:
+            pass
+    db.execute("DELETE FROM user_cvs WHERE user_id = ?", (user["id"],))
     db.execute("DELETE FROM application_files WHERE user_id = ?", (user["id"],))
     db.execute("DELETE FROM application_progress WHERE user_id = ?", (user["id"],))
     db.execute("DELETE FROM saved_opportunities WHERE user_id = ?", (user["id"],))
@@ -804,6 +814,105 @@ def save_quiz_result():
         (pathway, user["id"]),
     )
     db.commit()
+    return jsonify({"ok": True})
+
+
+# ---------- CV upload and review ----------
+
+CV_EXTENSIONS = {".pdf", ".docx", ".txt"}
+
+
+def _cv_payload(row):
+    return {
+        "name": row["original_name"],
+        "size": row["size_bytes"],
+        "uploadedAt": row["uploaded_at"],
+        "review": json.loads(row["review_json"]),
+    }
+
+
+@app.get("/api/me/cv")
+def get_cv():
+    user = current_user()
+    if user is None:
+        return jsonify({"error": "You must be signed in."}), 401
+    row = get_db().execute("SELECT * FROM user_cvs WHERE user_id = ?", (user["id"],)).fetchone()
+    return jsonify({"cv": _cv_payload(row) if row else None})
+
+
+@app.post("/api/me/cv")
+def upload_cv():
+    """Save the user's CV (replacing any old one) and review it."""
+    user = current_user()
+    if user is None:
+        return jsonify({"error": "You must be signed in."}), 401
+    f = request.files.get("file")
+    if f is None or not f.filename:
+        return jsonify({"error": "Please choose a file."}), 400
+    original = secure_filename(f.filename)
+    ext = os.path.splitext(original)[1].lower()
+    if ext not in CV_EXTENSIONS:
+        return jsonify({"error": "Please upload your CV as a PDF, Word (.docx) or text file."}), 400
+
+    stored = f"cv_{uuid.uuid4().hex}{ext}"
+    path = os.path.join(UPLOAD_DIR, stored)
+    f.save(path)
+    try:
+        text = extract_text(path, ext)
+    except Exception:
+        text = ""
+    if len(text.split()) < 30:
+        os.remove(path)
+        return jsonify({"error": "We could not read the text in this file. If it is a scanned image, "
+                                 "save your CV as a Word document or a text-based PDF and try again."}), 400
+
+    review = review_cv(text)
+    db = get_db()
+    old = db.execute("SELECT stored_name FROM user_cvs WHERE user_id = ?", (user["id"],)).fetchone()
+    if old:
+        try:
+            os.remove(os.path.join(UPLOAD_DIR, old["stored_name"]))
+        except OSError:
+            pass
+    db.execute(
+        """INSERT INTO user_cvs (user_id, original_name, stored_name, size_bytes, score, review_json, uploaded_at)
+           VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
+           ON CONFLICT(user_id) DO UPDATE SET original_name = excluded.original_name,
+             stored_name = excluded.stored_name, size_bytes = excluded.size_bytes,
+             score = excluded.score, review_json = excluded.review_json, uploaded_at = excluded.uploaded_at""",
+        (user["id"], original, stored, os.path.getsize(path), review["score"], json.dumps(review)),
+    )
+    db.commit()
+    row = db.execute("SELECT * FROM user_cvs WHERE user_id = ?", (user["id"],)).fetchone()
+    return jsonify({"cv": _cv_payload(row)}), 201
+
+
+@app.get("/api/me/cv/file")
+def download_cv():
+    user = current_user()
+    if user is None:
+        return jsonify({"error": "You must be signed in."}), 401
+    row = get_db().execute("SELECT * FROM user_cvs WHERE user_id = ?", (user["id"],)).fetchone()
+    if row is None:
+        return jsonify({"error": "No CV uploaded."}), 404
+    return send_from_directory(UPLOAD_DIR, row["stored_name"], as_attachment=True,
+                               download_name=row["original_name"])
+
+
+@app.delete("/api/me/cv")
+def delete_cv():
+    user = current_user()
+    if user is None:
+        return jsonify({"error": "You must be signed in."}), 401
+    db = get_db()
+    row = db.execute("SELECT stored_name FROM user_cvs WHERE user_id = ?", (user["id"],)).fetchone()
+    if row:
+        try:
+            os.remove(os.path.join(UPLOAD_DIR, row["stored_name"]))
+        except OSError:
+            pass
+        db.execute("DELETE FROM user_cvs WHERE user_id = ?", (user["id"],))
+        db.commit()
     return jsonify({"ok": True})
 
 
