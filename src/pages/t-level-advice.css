@@ -169,6 +169,21 @@
     margin-bottom: 0;
 }
 
+.advice-source {
+    margin: 48px 0 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.advice-source a {
+    color: var(--navy);
+    font-weight: 500;
+}
+
+.advice-source a:hover {
+    color: var(--orange-solid);
+}
+
 /* School advice band */
 .advice-band {
     border-top: 1px solid var(--line);

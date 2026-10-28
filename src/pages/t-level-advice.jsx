@@ -6,37 +6,39 @@ const studentAdvice = [
   { title: 'Get the most out of your placement', text: 'Ask questions, take notes, and treat every task as a chance to learn something new.' },
   { title: 'Connect with people at work', text: 'Introduce yourself to your team, find a buddy or mentor, and stay curious about what everyone does.' },
   { title: 'Build good habits early', text: 'Be on time, communicate clearly, and ask for feedback so you keep improving.' },
-  { title: 'Lorem ipsum dolor', text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.' },
-  { title: 'Consectetur adipiscing', text: 'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo.' },
-  { title: 'Sed do eiusmod', text: 'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.' },
+  { title: 'Keep your logbook up to date', text: 'Every T Level student must keep a placement logbook. Write in it regularly while what you did is still fresh.' },
+  { title: 'Know your learning goals', text: 'You will have at least three technical and three employability goals. Check them each week and track your progress.' },
+  { title: 'Speak up early', text: 'If something is not working, such as your travel, your workload or your health, tell your tutor or mentor straight away.' },
 ]
 
-// Placeholder content shown under the student cards. Replace text and add an
-// `image` path (e.g. '/assets/images/placement.jpg') when real photos are ready.
+// Text sections shown under the student cards, each with a photo alongside.
 const studentDetails = [
   {
     title: 'Before your placement starts',
     paragraphs: [
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante venenatis dapibus. Vestibulum id ligula porta felis euismod semper. Maecenas faucibus mollis interdum.',
-      'Curabitur blandit tempus porttitor. Nullam quis risus eget urna mollis ornare vel eu leo. Donec ullamcorper nulla non metus auctor fringilla.',
+      'Your school or college arranges the placement with Amazon. Before it starts, you and Amazon sign a placement agreement that sets out your objectives, learning goals, working hours and who to contact. Read it carefully and ask about anything you are unsure of.',
+      'Plan your journey, check what to wear and what to bring, and read about the Amazon Leadership Principles. Phase 1 in the Skills Hub is there to teach you the tools and ways of working, so you do not need any experience before you start.',
     ],
-    imageAlt: 'Student preparing for their first day of placement',
+    image: '/assets/images/advice-before-placement.jpg',
+    imageAlt: 'Two students preparing at an outdoor table, one typing on a laptop and the other writing notes',
   },
   {
     title: 'During your placement',
     paragraphs: [
-      'Sed posuere consectetur est at lobortis. Aenean eu leo quam. Pellentesque ornare sem lacinia quam venenatis vestibulum. Cras mattis consectetur purus sit amet fermentum.',
-      'Etiam porta sem malesuada magna mollis euismod. Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Praesent commodo cursus magna, vel scelerisque nisl consectetur et.',
+      'You will work towards your learning goals with support from your Amazon mentor. Record what you did, what you learned and the feedback you received in your logbook, along with your hours on the timesheet.',
+      'Your school or college will hold at least three review meetings with you and Amazon, and at least one of them will take place at your workplace. Use these meetings to talk honestly about what is going well and what you need help with.',
     ],
-    imageAlt: 'Student working alongside an Amazon team member',
+    image: '/assets/images/advice-during-placement.jpg',
+    imageAlt: 'A team member stands beside a young woman at an office desk, guiding her through printed documents as others work nearby',
   },
   {
     title: 'After your placement',
     paragraphs: [
-      'Nulla vitae elit libero, a pharetra augue. Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh.',
-      'Donec id elit non mi porta gravida at eget metus. Aenean lacinia bibendum nulla sed consectetur. Maecenas sed diam eget risus varius blandit sit amet non magna.',
+      'At your final review meeting, your school or college and Amazon confirm that you have completed at least 315 hours and met the completion criteria. Amazon also writes an appraisal of how you progressed towards your learning goals.',
+      'Use your logbook and appraisal to update your CV and prepare examples for interviews. Then look at what comes next: an Amazon apprenticeship, other skilled work, or further study.',
     ],
-    imageAlt: 'Student reflecting on their placement experience',
+    image: '/assets/images/advice-after-placement.jpg',
+    imageAlt: 'A student sketches ideas in a notebook while two classmates lean in to look and give feedback',
   },
 ]
 
@@ -45,36 +47,39 @@ const schoolAdvice = [
   { title: 'Setting up placements', text: 'Learn how to plan and arrange T Level placements with employers like Amazon.' },
   { title: 'Managing placements', text: 'Keep track of student progress, employer contacts and paperwork in one place.' },
   { title: 'Collaborating with Amazon', text: 'Find out how your school or college can work with Amazon on T Level opportunities.' },
-  { title: 'Lorem ipsum dolor', text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.' },
-  { title: 'Consectetur adipiscing', text: 'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo.' },
-  { title: 'Sed do eiusmod', text: 'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.' },
+  { title: 'Agree objectives and goals', text: 'Agree up to three high-level objectives with the employer, and at least three technical and three employability learning goals for each student.' },
+  { title: 'Plan review meetings', text: 'Schedule at least three review meetings for each student, with at least one held at the workplace.' },
+  { title: 'Prepare students in advance', text: 'Use enrichment, employability and work taster activities earlier in the course to build confidence before the placement begins.' },
 ]
 
-// Placeholder content shown under the school cards. Add an `image` path when ready.
+// Text sections shown under the school cards, each with a photo alongside.
 const schoolDetails = [
   {
     title: 'Planning placements with employers',
     paragraphs: [
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean lacinia bibendum nulla sed consectetur. Cras justo odio, dapibus ac facilisis in, egestas eget quam.',
-      'Vestibulum id ligula porta felis euismod semper. Integer posuere erat a ante venenatis dapibus posuere velit aliquet. Donec sed odio dui.',
+      'Every T Level student must complete an industry placement of at least 315 hours, about 45 days, to receive their full T Level certificate. Start planning early so that placement hours fit around teaching across the two years.',
+      'Record the placement objectives, learning goals and typical activities in a placement agreement. The student and employer must sign it before the placement starts, and you must keep a signed copy for at least three years. The Department for Education\'s Connect service can also help you find local employers.',
     ],
-    imageAlt: 'Teacher planning T Level placements with an employer',
+    image: '/assets/images/advice-planning-placements.jpg',
+    imageAlt: 'A man points to a page in an open folder as two colleagues read along and plan together',
   },
   {
     title: 'Supporting students on placement',
     paragraphs: [
-      'Maecenas faucibus mollis interdum. Nullam id dolor id nibh ultricies vehicula ut id elit. Morbi leo risus, porta ac consectetur ac, vestibulum at eros.',
-      'Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod.',
+      'Check at regular intervals that students are completing their logbooks, and keep in regular contact with the employer so that any attendance, behaviour or wellbeing concerns are dealt with quickly.',
+      'You can help students by finding out early about anything that could affect their placement, such as caring responsibilities, health needs or a long journey. Then agree support with the employer, such as adjusted hours or reasonable adjustments. Help each student prepare by practising workplace skills, setting goals they understand and checking in with them often, so they know who to talk to if they need help.'
     ],
-    imageAlt: 'School staff checking in with a student during placement',
+    image: '/assets/images/advice-supporting-students.jpg',
+    imageAlt: 'A teacher stands by a chalkboard talking with a small group of students seated around a table',
   },
   {
     title: 'Building a partnership with Amazon',
     paragraphs: [
-      'Cras mattis consectetur purus sit amet fermentum. Praesent commodo cursus magna, vel scelerisque nisl consectetur et. Sed posuere consectetur est at lobortis.',
-      'Curabitur blandit tempus porttitor. Donec ullamcorper nulla non metus auctor fringilla. Nulla vitae elit libero, a pharetra augue.',
+      'Amazon\'s nine-week placement starts with an onboarding week in a Skills Hub. A group project then runs in weeks 2 to 4, alongside team-based challenges that continue until week 9. Each student is paired with an Amazon mentor, and your staff receive progress feedback at every review meeting.',
+      'To get started, register your interest and tell us which T Level routes your students are studying and how many students you have. We will then work with you to agree dates, objectives and the reporting you need.',
     ],
-    imageAlt: 'School and Amazon representatives meeting together',
+    image: '/assets/images/advice-partnership.jpg',
+    imageAlt: 'A presenter beside a whiteboard leads a meeting with colleagues seated around a boardroom table',
   },
 ]
 
@@ -147,7 +152,7 @@ function AdviceCarousel({ items, label }) {
   )
 }
 
-// Text sections with an image (or grey placeholder) alongside, no boxes.
+// Text sections with an image alongside (a grey box shows if no image is set).
 function AdviceDetails({ items }) {
   return (
     <div className="advice-details">
@@ -203,6 +208,16 @@ function TLevelAdvice() {
             </p>
             <AdviceCarousel items={schoolAdvice} label="School advice" />
             <AdviceDetails items={schoolDetails} />
+            <p className="advice-source">
+              Source:{' '}
+              <a
+                href="https://www.gov.uk/government/publications/t-level-industry-placements-guidance-for-providers--2/t-level-industry-placements-guidance-for-education-providers"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                T Level industry placements: guidance for education providers, Department for Education (opens in a new tab)
+              </a>
+            </p>
           </div>
         </section>
       </main>

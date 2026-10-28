@@ -24,24 +24,30 @@ const facts = [
 const phases = [
   {
     phase: 'Phase 1',
-    title: 'Skills Hub immersion',
+    weeks: 'Week 1',
+    title: 'Onboarding week',
     text: 'Start in an Amazon Skills Hub, a supported space where you learn the tools, systems and ways of working used across Amazon teams before you take on live work.',
     points: ['Induction, safety and workplace basics', 'Hands-on training with Amazon tools', 'Meet your mentor and set learning goals'],
-    imageAlt: 'Students training together in an Amazon Skills Hub',
+    image: '/assets/images/tl-skills-hub.jpg',
+    imageAlt: 'Students at a workbench wiring circuit boards and taking notes, while one uses a laptop to follow the session',
   },
   {
     phase: 'Phase 2',
-    title: 'Charity group project',
-    text: 'Work in a small team of 5 to 7 students on a real brief from a charity partner, with Amazon staff overseeing your progress and giving feedback.',
-    points: ['Plan and deliver a live project', 'Present your work to the charity', 'Take on a clear role in the team'],
-    imageAlt: 'Student team presenting a project to a charity partner',
+    weeks: 'Weeks 2 to 4',
+    title: 'T Level group project',
+    text: 'Work in a small team of 5 to 7 students on a real brief, with Amazon staff overseeing your progress and giving feedback. This runs alongside Phase 3.',
+    points: ['Plan and deliver a live project', 'Present your work to your cohort and Amazonians', 'Take on a clear role in the team'],
+    image: '/assets/images/tl-group-project.jpg',
+    imageAlt: 'Three young people sharing ideas at a desk covered in laptops and papers as they plan a project together',
   },
   {
     phase: 'Phase 3',
-    title: 'Team-based challenges',
-    text: 'Join an Amazon team and help solve real business challenges alongside employees, using everything you have learned in the first two phases.',
+    weeks: 'Weeks 2 to 9',
+    title: 'Individual Team-based',
+    text: 'Join an Amazon team and help solve real business challenges alongside employees. This starts at the same time as the group project and carries on until the end of your placement.',
     points: ['Work on real Amazon problems', 'Get regular feedback from your team', 'Reflect on your progress in a logbook'],
-    imageAlt: 'Student working with an Amazon team on a challenge',
+    image: '/assets/images/tl-team-challenge.jpg',
+    imageAlt: 'An Amazon employee points to sketches pinned on a wall while explaining her ideas to a colleague',
   },
 ]
 
@@ -248,7 +254,7 @@ function TLevel() {
             </p>
             <a className="tl-link" href="/t-level/advice">Read our advice for students and schools →</a>
           </div>
-          <Media alt="T Level students at an Amazon site" />
+          <Media image="/assets/images/tl-amazon-office.jpg" alt="An Amazon office building at dusk, with the Amazon logo lit up near the top" />
         </section>
 
         {/* ================= FOR STUDENTS ================= */}
@@ -270,8 +276,9 @@ function TLevel() {
 
             <h2 className="tl-subheading" id="phases-heading">Your placement in three phases</h2>
             <p className="section-intro">
-              Your 45 days at Amazon build up step by step, from learning the basics to
-              working on real challenges with an Amazon team.
+              Your placement at Amazon lasts nine weeks, about 45 days. After an
+              onboarding week, you work on a group project in weeks 2 to 4 while also
+              taking part in team-based challenges, which carry on until week 9.
             </p>
             <ol className="phase-list" aria-labelledby="phases-heading">
               {phases.map((item) => (
@@ -279,6 +286,7 @@ function TLevel() {
                   <Media image={item.image} alt={item.imageAlt} className="phase-media" />
                   <div className="phase-body">
                     <span className="phase-label">{item.phase}</span>
+                    <span className="phase-weeks">{item.weeks}</span>
                     <h3>{item.title}</h3>
                     <p>{item.text}</p>
                     <ul>
@@ -352,7 +360,7 @@ function TLevel() {
                   </article>
                 ))}
               </div>
-              <Media alt="Teacher and Amazon mentor reviewing a student's progress" />
+              <Media image="/assets/images/tl-mentor-review.jpg" alt="A mentor leans over to help a student with work on his laptop, while other students study nearby" />
             </div>
 
             <div className="tl-heading-row">
@@ -453,7 +461,7 @@ function TLevel() {
                   start when they apply.
                 </p>
               </div>
-              <Media alt="Amazon apprentice at work" className="earn-media" />
+              <Media image="/assets/images/tl-apprentice.jpg" alt="Two apprentices in safety glasses and work aprons testing a robotics model on a workshop bench" className="earn-media" />
             </div>
 
             <div className="tl-heading-row">
