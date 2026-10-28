@@ -130,6 +130,11 @@
     margin: 0 auto;
     color: var(--muted);
     line-height: 1.6;
+    max-width: 620px;
+    margin: 0 0 2rem;
+    color: #d8dee6;
+    font-size: 1.125rem;
+    line-height: 1.5;
 }
 
 /* People: open two-column profiles under hairlines (no boxes) */
@@ -140,6 +145,38 @@
     margin: 0;
     padding: 0;
     list-style: none;
+.cc-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.cc-secondary-on-dark {
+    border-color: var(--white);
+    color: var(--white);
+}
+
+.cc-secondary-on-dark:hover {
+    background: var(--white);
+    color: var(--navy);
+}
+
+/* Shared */
+.cc-anchor {
+    scroll-margin-top: 16px;
+}
+
+.cc-band {
+    background: var(--light);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+}
+
+/* Who is available */
+.chat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
 }
 
 .cc-person {
@@ -151,9 +188,20 @@
 
 .cc-person-top {
     display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 22px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--white);
+}
+
+.chat-card-top {
+    display: flex;
     align-items: center;
     gap: 18px;
     margin-bottom: 18px;
+    gap: 14px;
 }
 
 .cc-avatar {
@@ -185,7 +233,8 @@
     font-weight: 600;
 }
 
-.cc-role {
+.chat-role,
+.chat-team {
     margin: 0;
     color: var(--muted);
     font-size: 0.9375rem;
@@ -253,7 +302,123 @@
 
 .cc-times svg { color: var(--muted); }
 
-.cc-request {
+.chat-team {
+    color: var(--ink);
+}
+
+.chat-topics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.chat-topics li {
+    padding: 4px 10px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--light);
+    color: var(--navy);
+    font-size: 0.8125rem;
+}
+
+.chat-availability {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    background: #eef8f1;
+}
+
+.chat-dot {
+    width: 10px;
+    height: 10px;
+    margin-top: 5px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: #067d62;
+}
+
+.chat-days {
+    margin: 0;
+    color: #055a47;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.chat-next {
+    margin: 2px 0 0;
+    color: var(--muted);
+    font-size: 0.8125rem;
+}
+
+.chat-card .primary-button {
+    margin-top: auto;
+    padding: 10px 16px;
+    font-size: 0.875rem;
+}
+
+.cc-subheading {
+    margin-top: 72px;
+}
+
+.cc-fact h3,
+.cc-step h3,
+.cc-tip h3 {
+    margin: 0 0 8px;
+    color: var(--navy);
+    font-size: 1.1875rem;
+    font-weight: 500;
+}
+
+.cc-fact p,
+.cc-step p,
+.cc-tip p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+/* What is a coffee chat */
+.cc-fact-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+
+.cc-fact {
+    padding: 24px;
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--orange);
+    border-radius: 2px;
+    background: var(--white);
+}
+
+.cc-ask-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px 32px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.cc-ask-list li {
+    position: relative;
+    padding: 12px 0 12px 28px;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink);
+    line-height: 1.4;
+}
+
+.cc-ask-list li::before {
+    content: "?";
+    position: absolute;
+    top: 12px;
+    left: 0;
     display: inline-flex;
     align-items: center;
     align-self: flex-start;
@@ -267,8 +432,151 @@
     font: inherit;
     font-size: 0.9375rem;
     font-weight: 600;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--orange);
+    color: var(--navy);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+/* How it works */
+.cc-steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.cc-step-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    margin-bottom: 14px;
+    border-radius: 50%;
+    background: var(--navy);
+    color: var(--white);
+    font-weight: 500;
+}
+
+.cc-tips {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+}
+
+.cc-tip {
+    padding-top: 18px;
+    border-top: 3px solid var(--orange);
+}
+
+/* Request form */
+.cc-form,
+.cc-success {
+    max-width: 760px;
+    padding: 32px;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    background: var(--white);
+}
+
+.cc-field {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    margin-bottom: 18px;
+}
+
+.cc-field-row {
+    display: flex;
+    gap: 18px;
+}
+
+.cc-field label,
+.cc-label {
+    margin-bottom: 6px;
+    color: var(--navy);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.cc-field input:not([type="radio"]),
+.cc-field select,
+.cc-field textarea {
+    width: 100%;
+    padding: 11px 13px;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    background: var(--white);
+    color: var(--ink);
+    font: inherit;
+}
+
+.cc-field select:disabled {
+    background: var(--light);
+    color: var(--muted);
+}
+
+.cc-field input:focus,
+.cc-field select:focus,
+.cc-field textarea:focus {
+    outline: 2px solid var(--orange);
+    outline-offset: 1px;
+}
+
+/* Time slot buttons */
+.slot-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.slot {
+    position: relative;
+    margin: 0;
+}
+
+.slot input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.slot span {
+    display: inline-block;
+    padding: 10px 16px;
+    border: 1px solid var(--navy);
+    border-radius: 20px;
+    color: var(--navy);
+    font-weight: 500;
     cursor: pointer;
     transition: background var(--dur) ease, transform var(--dur) var(--ease-out), box-shadow var(--dur) ease;
+}
+
+.slot input:checked + span {
+    background: var(--navy);
+    color: var(--white);
+}
+
+.slot input:focus-visible + span {
+    outline: 2px solid var(--orange);
+    outline-offset: 2px;
+}
+
+.slot-empty {
+    margin: 0;
+    padding: 11px 13px;
+    border: 1px dashed var(--line);
+    border-radius: 2px;
+    color: var(--muted);
+    font-size: 0.875rem;
 }
 
 .cc-request:hover {
@@ -279,6 +587,32 @@
 
 .cc-request:active { transform: scale(0.98); }
 .cc-request:hover svg { transform: translateX(3px); }
+.cc-note {
+    margin: 0 0 20px;
+    padding: 12px 14px;
+    border-radius: 2px;
+    background: var(--light);
+    color: var(--muted);
+    font-size: 0.8125rem;
+    line-height: 1.5;
+}
+
+.cc-success h3 {
+    margin: 0 0 8px;
+    color: var(--navy);
+    font-size: 1.5rem;
+    font-weight: 500;
+}
+
+.cc-success p {
+    margin: 0 0 20px;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+.cc-success strong {
+    color: var(--navy);
+}
 
 /* Your requests */
 .cc-mine-wrap {
@@ -588,6 +922,42 @@
     .cc-details { grid-template-columns: 1fr; }
     .cc-form-row { grid-template-columns: 1fr; }
     .cc-request { align-self: stretch; justify-content: center; }
+/* Coffee chats responsive styles */
+@media (max-width: 900px) {
+    .chat-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .cc-fact-grid,
+    .cc-steps,
+    .cc-tips {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 650px) {
+    .cc-header-content {
+        padding: 48px 20px;
+    }
+
+    .chat-grid,
+    .cc-ask-list {
+        grid-template-columns: 1fr;
+    }
+
+    .cc-subheading {
+        margin-top: 56px;
+    }
+
+    .cc-field-row {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .cc-form,
+    .cc-success {
+        padding: 24px;
+    }
 }
 
 /* Tick boxes in the request form (under-18 check and consent) */

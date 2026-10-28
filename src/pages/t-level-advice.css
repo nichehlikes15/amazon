@@ -293,6 +293,24 @@
 }
 
 .advice-detail-text p:last-child { margin-bottom: 0; }
+.advice-detail-text p:last-child {
+    margin-bottom: 0;
+}
+
+.advice-source {
+    margin: 48px 0 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.advice-source a {
+    color: var(--navy);
+    font-weight: 500;
+}
+
+.advice-source a:hover {
+    color: var(--orange-solid);
+}
 
 /* ---------- Responsive ---------- */
 @media (max-width: 1000px) {
