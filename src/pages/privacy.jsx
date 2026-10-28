@@ -15,8 +15,13 @@ const DATA = [
   ['Application tracking', 'The status, notes and files you add to an opportunity', 'So you can keep track of your applications'],
   ['Your CV', 'The file you upload and its automatic review', 'To give you a score and tips'],
   ['Career quiz', 'Your top pathway and when you finished the quiz', 'To show your match on My profile'],
-  ['Register interest form', 'Name, email, school, pathway and message', 'So the Amazon team can contact you'],
+  ['Register interest form', 'Who you are (student, parent or carer, or school), name, email, school or college, job title (schools only), pathway and message', 'So the Amazon team can contact you'],
   ['Coffee chat requests', 'Name, email, who you want to talk to, time, topic and message', 'So the team can arrange your chat'],
+  ['Interview practice', 'Your score for each practice call and each question, the pathway and the date - not what you said', 'To show your progress on My profile'],
+  ['Agreements', 'When you agreed to the privacy notice and terms (sign up, interest form and coffee chats)', 'To show you agreed'],
+  ['Coffee chat safety check', "Whether you said you're under 18, and that a parent or carer knows about the chat", 'To help keep under-18s safe'],
+  ['Password reset links', 'A scrambled code and when it runs out (after 30 minutes)', 'So you can choose a new password'],
+  ['Page feedback', 'Which page, yes or no, and any comment - not linked to your name or account', 'To improve the site'],
 ]
 
 function Privacy() {
@@ -86,6 +91,12 @@ function Privacy() {
           <h2>Interview practice</h2>
           <ul>
             <li>Your answers are sent to our server to work out your feedback, then thrown away. They are not saved.</li>
+            <li>
+              Alex's replies, follow-up questions and end summary can be written by an AI model. The AI runs on the
+              Launchpad server itself (using a tool called Ollama), so your answers are not sent to an outside AI
+              company, and the AI doesn't keep them. Your scores always come from fixed checks, not the AI.
+            </li>
+            <li>If you're signed in, your scores for each call (not your answers) are saved to My profile. You can remove any result there.</li>
             <li>If you turn on your camera, the video only shows on your own screen. It is not recorded or sent anywhere.</li>
             <li>
               If you answer out loud, your browser turns your speech into text. Some browsers (such as Chrome)
@@ -114,8 +125,8 @@ function Privacy() {
           <h3>Delete your account</h3>
           <p>
             In <Link to="/settings#privacy">Settings</Link>, press <strong>Delete my account</strong>.
-            This removes your account, saved opportunities, application tracking and files, your CV
-            and your coffee chat requests.
+            This removes your account, saved opportunities, application tracking and files, your CV,
+            your coffee chat requests and your interview practice scores.
           </p>
           <p>
             Register interest forms you sent are kept so the Amazon team can still reply, but they are

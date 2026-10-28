@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom'
 import './footer.css'
+import { Icon } from './icons'
+import { AMAZON_LINKS } from './amazon-links'
 
 // <Link> instead of <a> so footer links use the smooth page transition
 // rather than reloading the whole site.
@@ -27,6 +29,7 @@ const COLUMNS = [
     title: 'Community',
     links: [
       ['/about-us', 'About us'],
+      ['/parents', 'Parents and carers'],
       ['/alumni/coffee-chats', 'Coffee chats'],
       ['/t-level/advice', 'Advice'],
     ],
@@ -35,8 +38,10 @@ const COLUMNS = [
     title: 'Support',
     links: [
       ['/help', 'Help'],
+      ['/safeguarding', 'Staying safe'],
       ['/accessibility', 'Accessibility'],
       ['/privacy', 'Privacy'],
+      ['/terms', 'Terms of use'],
     ],
   },
 ]
@@ -54,6 +59,16 @@ function Footer() {
               ))}
             </div>
           ))}
+          {/* Official Amazon pages from the project brief */}
+          <div className="footer-column">
+            <h3>From Amazon</h3>
+            {[AMAZON_LINKS.tLevels, AMAZON_LINKS.stepUp, AMAZON_LINKS.apprenticeships].map((l) => (
+              <a key={l.url} href={l.url} target="_blank" rel="noopener noreferrer" className="footer-ext">
+                {l.label} <Icon name="external" size={12} />
+                <span className="visually-hidden"> (opens in a new tab)</span>
+              </a>
+            ))}
+          </div>
         </div>
       </div>
 

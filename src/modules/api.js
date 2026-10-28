@@ -34,8 +34,12 @@ async function uploadRequest(path, formData) {
 }
 
 export const api = {
-  signup: (fullName, email, password) =>
-    request('/signup', { method: 'POST', body: JSON.stringify({ fullName, email, password }) }),
+  signup: (fullName, email, password, consent) =>
+    request('/signup', { method: 'POST', body: JSON.stringify({ fullName, email, password, consent }) }),
+  forgotPassword: (email) =>
+    request('/password/forgot', { method: 'POST', body: JSON.stringify({ email }) }),
+  resetPassword: (token, newPassword) =>
+    request('/password/reset', { method: 'POST', body: JSON.stringify({ token, password: newPassword }) }),
   login: (email, password) =>
     request('/login', { method: 'POST', body: JSON.stringify({ email, password }) }),
   logout: () => request('/logout', { method: 'POST' }),
@@ -48,10 +52,19 @@ export const api = {
   myCoffeeChats: () => request('/me/coffee-chats'),
   exportMe: () => request('/me/export'),
   interviewQuestions: (pathway) => request(`/interview/questions?pathway=${encodeURIComponent(pathway || '')}`),
+  // Is Alex's AI (Ollama) running? Also starts loading the model.
+  interviewAiStatus: () => request('/interview/ai-status'),
+  // Something said to Alex that might not be an answer (a question, "repeat that"...)
+  interviewTurn: (payload) =>
+    request('/interview/turn', { method: 'POST', body: JSON.stringify(payload) }),
+  interviewFollowUp: (payload) =>
+    request('/interview/follow-up', { method: 'POST', body: JSON.stringify(payload) }),
   reviewAnswer: (payload) =>
     request('/interview/review-answer', { method: 'POST', body: JSON.stringify(payload) }),
-  reviewInterview: (answers) =>
-    request('/interview/review', { method: 'POST', body: JSON.stringify({ answers }) }),
+  reviewInterview: (answers, pathway) =>
+    request('/interview/review', { method: 'POST', body: JSON.stringify({ answers, pathway }) }),
+  myInterviewPractice: () => request('/me/interview-practice'),
+  deleteInterviewPractice: (id) => request(`/me/interview-practice/${id}`, { method: 'DELETE' }),
   listCoffeeChats: () => request('/coffee-chats'),
   updateCoffeeChatStatus: (id, status) =>
     request(`/coffee-chats/${id}/status`, { method: 'PUT', body: JSON.stringify({ status }) }),
@@ -95,6 +108,12 @@ export const api = {
   },
   deleteCv: () => request('/me/cv', { method: 'DELETE' }),
   cvFileUrl: () => `${BASE}/me/cv/file`,
+  // Members-only guide PDFs (the server checks you're signed in)
+  guidePdfUrl: (file) => `${BASE}/guides/${encodeURIComponent(file)}`,
+  sendFeedback: (payload) =>
+    request('/feedback', { method: 'POST', body: JSON.stringify(payload) }),
+  listFeedback: () => request('/admin/feedback'),
+  adminKpis: () => request('/admin/kpis'),
   saveQuizResult: (pathway) =>
     request('/me/quiz-result', { method: 'POST', body: JSON.stringify({ pathway }) }),
 }

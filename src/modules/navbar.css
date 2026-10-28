@@ -225,6 +225,31 @@
     font-weight: 600;
 }
 
+/* "Read this page aloud" button at the top of the panel */
+.a11y-read {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    margin-bottom: 14px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--light);
+    color: var(--navy);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color var(--dur) ease, background var(--dur) ease;
+}
+
+.a11y-read:hover { border-color: var(--line-strong); background: var(--white); }
+.a11y-read .a11y-row-icon { background: var(--white); }
+.a11y-read > svg { color: var(--orange-solid); }
+
+/* The panel has more options now - let it scroll on short screens */
+.a11y-panel { max-height: calc(100vh - 110px); overflow-y: auto; }
+
 .a11y-group {
     padding-bottom: 14px;
     border-bottom: 1px solid var(--line);

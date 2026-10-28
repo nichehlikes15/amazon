@@ -14,6 +14,10 @@ const defaults = {
   reducedMotion: false,
   // null = follow the device's light/dark setting until the user picks one
   theme: null,
+  // Stronger contrast for people with low vision
+  highContrast: false,
+  // 'compact' = the site shows at 75% on big screens; 'full' = normal 100% size
+  zoom: 'compact',
 }
 
 export function loadSettings() {
@@ -39,6 +43,8 @@ export function applySettings(settings) {
   root.setAttribute('data-colour-blind', settings.colourBlind ? 'on' : 'off')
   root.setAttribute('data-reduced-motion', settings.reducedMotion ? 'on' : 'off')
   root.setAttribute('data-theme', resolvedTheme(settings))
+  root.setAttribute('data-contrast', settings.highContrast ? 'high' : 'normal')
+  root.setAttribute('data-zoom', settings.zoom === 'full' ? 'full' : 'compact')
 }
 
 export function saveSettings(settings) {

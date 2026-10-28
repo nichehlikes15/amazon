@@ -155,3 +155,110 @@
 @media (max-width: 520px) {
     .auth-page { padding-top: calc(var(--hero-top) * 0.6); }
 }
+
+/* Forgot password link under the password box */
+.auth-forgot {
+    margin: 10px 0 0;
+    text-align: right;
+    font-size: 0.875rem;
+}
+
+.auth-forgot a,
+.auth-consent a,
+.auth-error a {
+    color: var(--navy);
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: rgb(255 153 0 / 55%);
+    text-underline-offset: 3px;
+}
+
+.auth-forgot a:hover,
+.auth-consent a:hover { color: var(--orange-solid); }
+
+/* Consent tick box */
+.auth-consent {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin: 4px 0 22px;
+    color: var(--ink);
+    font-size: 0.875rem;
+    line-height: 1.55;
+    text-align: left;
+    cursor: pointer;
+}
+
+.auth-consent input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.auth-check {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    margin-top: 1px;
+    border: 1.5px solid var(--line-strong);
+    border-radius: 6px;
+    background: var(--white);
+    color: transparent;
+    transition: background var(--dur) ease, border-color var(--dur) ease, color var(--dur) ease;
+}
+
+.auth-consent input:checked + .auth-check {
+    border-color: var(--orange-solid);
+    background: var(--orange-solid);
+    color: #fff;
+}
+
+.auth-consent input:focus-visible + .auth-check {
+    outline: 2px solid var(--orange);
+    outline-offset: 2px;
+}
+
+/* "Link sent" / "Password changed" message */
+.auth-done {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 8px 0;
+    color: var(--ink);
+    text-align: center;
+    animation: auth-in 0.4s var(--ease-out) both;
+}
+
+.auth-done p { margin: 0; line-height: 1.6; }
+
+.auth-done-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: #e8f6ec;
+    color: #1e7e34;
+}
+
+.auth-note {
+    margin: 16px 0 0;
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
+    background: var(--light);
+    color: var(--muted);
+    font-size: 0.8125rem;
+    line-height: 1.55;
+    text-align: left;
+}
+
+@keyframes auth-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+}

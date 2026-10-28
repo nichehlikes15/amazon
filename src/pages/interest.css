@@ -122,3 +122,273 @@
     font-size: 0.875rem;
 }
 
+/* ============================================================
+   Register interest - students, parents/carers and schools
+   ============================================================ */
+.ei { overflow-x: clip; }
+
+.ei-hero { background: var(--hero-gradient); }
+
+.ei-hero-inner {
+    max-width: var(--content-max);
+    margin: 0 auto;
+    padding: var(--hero-top) var(--gutter) calc(var(--hero-bottom) * 0.7);
+    text-align: center;
+}
+
+.ei-kicker {
+    margin: 0 0 14px;
+    color: var(--muted);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.ei-hero h1 {
+    margin: 0 auto 24px;
+    color: var(--navy);
+    font-size: var(--h1);
+    font-weight: 600;
+    line-height: 1.04;
+    letter-spacing: -0.025em;
+}
+
+.ei-hero h1 span { color: var(--orange); }
+
+.ei-lead {
+    max-width: 640px;
+    margin: 0 auto;
+    color: var(--muted);
+    font-size: var(--lead);
+    line-height: 1.65;
+}
+
+.ei-body {
+    padding: 0 var(--gutter) var(--section-y);
+}
+
+.ei-card {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: clamp(28px, 4vw, 48px);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--white);
+    box-shadow: var(--shadow-soft);
+}
+
+/* Who are you? */
+.ei-roles {
+    margin: 0 0 28px;
+    padding: 0;
+    border: 0;
+}
+
+.ei-roles legend {
+    margin-bottom: 14px;
+    padding: 0;
+    color: var(--navy);
+    font-size: 1.0625rem;
+    font-weight: 600;
+}
+
+.ei-role-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.ei-role {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 18px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--white);
+    cursor: pointer;
+    transition: border-color var(--dur) ease, background var(--dur) ease, box-shadow var(--dur) ease, transform var(--dur) var(--ease-out);
+}
+
+.ei-role input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.ei-role:hover {
+    border-color: var(--line-strong);
+    transform: translateY(-2px);
+}
+
+.ei-role.is-on {
+    border-color: var(--orange);
+    background: var(--light);
+    box-shadow: inset 0 0 0 1px var(--orange);
+}
+
+.ei-role:focus-within {
+    outline: 2px solid var(--orange);
+    outline-offset: 2px;
+}
+
+.ei-role-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    margin-bottom: 8px;
+    border-radius: 12px;
+    background: var(--light);
+    color: var(--navy);
+    transition: background var(--dur) ease, color var(--dur) ease;
+}
+
+.ei-role.is-on .ei-role-icon {
+    background: var(--white);
+    color: var(--orange-solid);
+}
+
+.ei-role strong {
+    color: var(--navy);
+    font-size: 0.9375rem;
+}
+
+.ei-role > span:last-child {
+    color: var(--muted);
+    font-size: 0.875rem;
+    line-height: 1.45;
+}
+
+.ei-fields { animation: ei-in 0.4s var(--ease-out) both; }
+
+.ei-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 20px;
+}
+
+.ei-hint {
+    margin: 8px 0 0;
+    color: var(--muted);
+    font-size: 0.8125rem;
+}
+
+/* Consent tick box */
+.ei-consent {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin: 4px 0 28px;
+    color: var(--ink);
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    cursor: pointer;
+}
+
+.ei-consent input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.ei-check {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    margin-top: 1px;
+    border: 1.5px solid var(--line-strong);
+    border-radius: 6px;
+    background: var(--white);
+    color: transparent;
+    transition: background var(--dur) ease, border-color var(--dur) ease, color var(--dur) ease;
+}
+
+.ei-consent input:checked + .ei-check {
+    border-color: var(--orange-solid);
+    background: var(--orange-solid);
+    color: #fff;
+}
+
+.ei-consent input:focus-visible + .ei-check {
+    outline: 2px solid var(--orange);
+    outline-offset: 2px;
+}
+
+.ei-consent a {
+    color: var(--navy);
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: rgb(255 153 0 / 55%);
+    text-underline-offset: 3px;
+}
+
+.ei-card .interest-submit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+/* Thank-you message */
+.ei-success {
+    text-align: center;
+    animation: ei-in 0.45s var(--ease-out) both;
+}
+
+.ei-success-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    margin-bottom: 18px;
+    border-radius: 50%;
+    background: #e8f6ec;
+    color: #1e7e34;
+}
+
+.ei-success h2 {
+    max-width: 520px;
+    margin: 0 auto 12px;
+    color: var(--navy);
+    font-size: var(--h3);
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.ei-success p {
+    margin: 0 0 28px;
+    color: var(--muted);
+}
+
+.ei-success-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+}
+
+html[data-theme="dark"] .ei-success-icon { background: #15301f; color: #8fdca6; }
+
+@keyframes ei-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ei-fields, .ei-success { animation: none; }
+}
+
+@media (max-width: 720px) {
+    .ei-role-grid, .ei-row { grid-template-columns: 1fr; }
+}

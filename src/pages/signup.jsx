@@ -10,6 +10,7 @@ function Signup() {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [consent, setConsent] = useState(false)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
@@ -20,9 +21,13 @@ function Signup() {
       setError('Password must be at least 8 characters.')
       return
     }
+    if (!consent) {
+      setError('Please tick the box to agree to the privacy notice and terms of use.')
+      return
+    }
     setBusy(true)
     try {
-      await signup(fullName, email, password)
+      await signup(fullName, email, password, consent)
       navigate('/profile')
     } catch (err) {
       setError(err.message)
@@ -79,6 +84,14 @@ function Signup() {
               />
               <p className="auth-hint" id="password-hint">At least 8 characters.</p>
             </div>
+            <label className="auth-consent">
+              <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
+              <span className="auth-check" aria-hidden="true"><Icon name="check" size={12} /></span>
+              <span>
+                I've read the <Link to="/privacy">privacy notice</Link> and agree to the{' '}
+                <Link to="/terms">terms of use</Link>. If I'm under 18, a parent or carer knows I'm using Launchpad.
+              </span>
+            </label>
             <button className="primary-button auth-submit" type="submit" disabled={busy}>
               {busy ? 'Creating account…' : 'Create account'}
               {!busy && <Icon name="arrowRight" size={15} />}

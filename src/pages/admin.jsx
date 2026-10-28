@@ -3,10 +3,14 @@ import { Navigate } from 'react-router-dom'
 import './admin.css'
 import { api } from '../modules/api'
 import { useAuth } from '../modules/auth'
+import { Icon } from '../modules/icons'
 import { CHAT_STATUSES, formatChatTime } from '../modules/mentors'
+import { AdminFeedback, AdminKpis, downloadCsv } from './admin-insights'
+
+const ROLE_NAMES = { student: 'Student', parent: 'Parent or carer', school: 'School or college' }
 
 const PATHWAYS = ['Digital', 'Business', 'Media', 'Finance', 'Engineering']
-const FILTER_PATHWAYS = ['All', ...PATHWAYS]
+const FILTER_PATHWAYS = ['All', ...PATHWAYS, 'Not sure yet', 'Several pathways']
 
 const emptyForm = {
   title: '',
@@ -28,6 +32,7 @@ function Admin() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('All')
+  const [roleFilter, setRoleFilter] = useState('All')
 
   // Coffee chat requests
   const [chats, setChats] = useState([])
@@ -141,7 +146,15 @@ function Admin() {
     }
   }
 
-  const shown = filter === 'All' ? items : items.filter((i) => i.pathway === filter)
+  const shown = items
+    .filter((i) => filter === 'All' || i.pathway === filter)
+    .filter((i) => roleFilter === 'All' || (i.role || 'student') === roleFilter)
+
+  const exportInterest = () => downloadCsv(
+    'launchpad-expressions-of-interest.csv',
+    ['Who', 'Name', 'Email', 'School or college', 'Job title', 'Pathway', 'Message', 'Received'],
+    shown.map((i) => [ROLE_NAMES[i.role] || 'Student', i.fullName, i.email, i.organisation || i.school || '', i.contactRole || '', i.pathway, i.message || '', i.createdAt]),
+  )
   const shownChats = chatFilter === 'All' ? chats : chats.filter((c) => c.status === chatFilter)
 
   return (
@@ -151,10 +164,13 @@ function Admin() {
           <div className="admin-header-content">
             <h1>Admin dashboard</h1>
             <p className="admin-tagline">
-              Manage apprenticeship opportunities and review expressions of interest.
+              Track the project's KPIs, manage opportunities, and review interest, coffee chats and feedback.
             </p>
           </div>
         </section>
+
+        {/* KPIs */}
+        <AdminKpis />
 
         {/* Manage opportunities */}
         <section className="content-section">
@@ -245,7 +261,12 @@ function Admin() {
           <div className="admin-toolbar">
             <span className="admin-count">{count} total {count === 1 ? 'entry' : 'entries'}</span>
             <div className="admin-filter">
-              <label htmlFor="pathway-filter">Filter by pathway</label>
+              <label htmlFor="role-filter">Who</label>
+              <select id="role-filter" value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
+                <option value="All">Everyone</option>
+                {Object.entries(ROLE_NAMES).map(([id, name]) => <option key={id} value={id}>{name}</option>)}
+              </select>
+              <label htmlFor="pathway-filter">Pathway</label>
               <select
                 id="pathway-filter"
                 value={filter}
@@ -253,6 +274,9 @@ function Admin() {
               >
                 {FILTER_PATHWAYS.map((p) => <option key={p} value={p}>{p}</option>)}
               </select>
+              <button type="button" className="ak-csv" onClick={exportInterest} disabled={!shown.length}>
+                <Icon name="download" size={14} /> Download CSV
+              </button>
             </div>
           </div>
 
@@ -268,6 +292,7 @@ function Admin() {
               <table className="admin-table">
                 <thead>
                   <tr>
+                    <th>Who</th>
                     <th>Name</th>
                     <th>Email</th>
                     <th>School / College</th>
@@ -279,9 +304,13 @@ function Admin() {
                 <tbody>
                   {shown.map((item) => (
                     <tr key={item.id}>
+                      <td><span className={`ak-role is-${item.role || 'student'}`}>{ROLE_NAMES[item.role] || 'Student'}</span></td>
                       <td>{item.fullName}</td>
                       <td>{item.email}</td>
-                      <td>{item.school || '—'}</td>
+                      <td>
+                        {item.organisation || item.school || '-'}
+                        {item.contactRole && <span className="ak-sub">{item.contactRole}</span>}
+                      </td>
                       <td><span className="admin-pathway">{item.pathway}</span></td>
                       <td className="admin-message">{item.message || '—'}</td>
                       <td className="admin-date">{item.createdAt}</td>
@@ -329,6 +358,7 @@ function Admin() {
                   <tr>
                     <th>With</th>
                     <th>Name</th>
+                    <th>Age</th>
                     <th>Email</th>
                     <th>Asked for</th>
                     <th>Topic</th>
@@ -344,6 +374,13 @@ function Admin() {
                     <tr className={editingChat === c.id ? 'is-editing' : ''}>
                       <td><span className="admin-pathway">{c.mentor}</span></td>
                       <td>{c.fullName}</td>
+                      <td>
+                        {c.under18 === null || c.under18 === undefined ? '-' : c.under18 ? (
+                          <span className="ak-u18" title="Under 18 - a parent or carer knows about the chat">
+                            Under 18{c.guardianAware ? ' · parent/carer aware' : ''}
+                          </span>
+                        ) : '18+'}
+                      </td>
                       <td>{c.email}</td>
                       <td>{c.preferredTime}</td>
                       <td>{c.topic || '-'}</td>
@@ -386,7 +423,7 @@ function Admin() {
                     </tr>
                     {editingChat === c.id && (
                       <tr className="admin-edit-row">
-                        <td colSpan={9}>
+                        <td colSpan={10}>
                           <form className="admin-chat-form" onSubmit={(e) => saveChatDetails(e, c.id)}>
                             <div className="admin-field">
                               <label htmlFor={`chat-time-${c.id}`}>Date and time</label>
@@ -430,6 +467,9 @@ function Admin() {
             </div>
           )}
         </section>
+
+        {/* Page feedback */}
+        <AdminFeedback />
       </main>
     </>
   )

@@ -151,7 +151,13 @@ export function PageTransition({ children }) {
   }, [pathname])
 
   return (
-    <div className={leaving ? 'page-transition is-leaving' : 'page-transition'} key={pathname} ref={ref}>
+    <div
+      className={leaving ? 'page-transition is-leaving' : 'page-transition'}
+      key={pathname}
+      ref={ref}
+      id="main-content"
+      tabIndex={-1}
+    >
       <Routes location={shown}>{children}</Routes>
     </div>
   )

@@ -509,7 +509,7 @@ function TLevel() {
                 </aside>
 
                 <div className="tl-section-actions">
-                  <a className="primary-button" href="/register-interest">Start a partnership</a>
+                  <a className="primary-button" href="/register-interest?role=school">Start a partnership</a>
                   <a className="secondary-button" href="/t-level/advice#schools">School advice</a>
                 </div>
               </div>

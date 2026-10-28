@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import './t-level-advice.css'
+import { Link } from 'react-router-dom'
 import { Icon } from '../modules/icons'
 
 // Add more cards here; the carousel scrolls through all of them.
@@ -176,6 +177,123 @@ function AdviceDetails({ items }) {
   )
 }
 
+// The STAR method - one row per letter: the letter in a star, how to do it on the right.
+const STAR_STEPS = [
+  {
+    letter: 'S',
+    word: 'Situation',
+    lead: 'Set the scene.',
+    how: 'Say when and where it happened, in one or two sentences. Keep it short - just enough for the listener to picture it.',
+    example: 'Last year at college, our group had two weeks to build a website for a local charity.',
+  },
+  {
+    letter: 'T',
+    word: 'Task',
+    lead: 'Say what needed to happen.',
+    how: 'Explain the goal or the problem, and what your job was.',
+    example: 'I was in charge of making sure the pages worked on phones.',
+  },
+  {
+    letter: 'A',
+    word: 'Action',
+    lead: 'Say what you did.',
+    how: "This is the biggest part. Talk through the steps you took, and say \"I\", not \"we\", so they hear what you did yourself.",
+    example: 'I tested every page on my phone, made a list of the problems and fixed them one by one.',
+  },
+  {
+    letter: 'R',
+    word: 'Result',
+    lead: 'Say how it ended.',
+    how: 'Share what happened in the end - use a number if you can - and what you learned.',
+    example: 'The site worked on every phone we tried, and I learned to test things early.',
+  },
+]
+
+// Five-point star with softened corners, the letter in the middle.
+function StarBadge({ letter }) {
+  const id = `star-grad-${letter}`
+  return (
+    <svg className="star-badge" viewBox="0 0 100 100" aria-hidden="true">
+      <defs>
+        <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#ffb340" />
+          <stop offset="1" stopColor="#ec7211" />
+        </linearGradient>
+      </defs>
+      <polygon
+        className="star-shape"
+        points="50,8 61.76,35.82 91.85,38.4 69.02,58.18 75.86,87.6 50,72 24.14,87.6 30.98,58.18 8.15,38.4 38.24,35.82"
+        fill={`url(#${id})`}
+        stroke={`url(#${id})`}
+        strokeWidth="7"
+        strokeLinejoin="round"
+      />
+      <text x="50" y="57" textAnchor="middle" dominantBaseline="middle" className="star-letter">{letter}</text>
+    </svg>
+  )
+}
+
+function StarMethod() {
+  const listRef = useRef(null)
+  const [shown, setShown] = useState(false)
+
+  // Stars pop in one after another when the list scrolls into view.
+  useEffect(() => {
+    const el = listRef.current
+    if (!el || typeof IntersectionObserver === 'undefined') { setShown(true); return undefined }
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setShown(true)
+          io.disconnect()
+        }
+      },
+      { threshold: 0.15 },
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
+
+  return (
+    <section className="advice-section star-section" id="star" aria-labelledby="star-heading">
+      <div className="advice-head">
+        <p className="advice-kicker">Interview tips</p>
+        <h2 id="star-heading" className="advice-h2">Answer with the STAR method</h2>
+        <p className="advice-intro">
+          When an interviewer says &ldquo;Tell me about a time when&hellip;&rdquo;, use these four steps
+          to give a clear answer with a real example.
+        </p>
+      </div>
+
+      <ol className={shown ? 'star-list is-in' : 'star-list'} ref={listRef} data-no-reveal>
+        {STAR_STEPS.map((s, i) => (
+          <li className="star-row" key={s.letter} style={{ '--i': i }}>
+            <StarBadge letter={s.letter} />
+            <div className="star-text">
+              <h3>
+                <span className="star-word">{s.word}</span>
+                <span className="star-lead">{s.lead}</span>
+              </h3>
+              <p>{s.how}</p>
+              <p className="star-example">
+                <span>For example</span>
+                &ldquo;{s.example}&rdquo;
+              </p>
+            </div>
+          </li>
+        ))}
+      </ol>
+
+      <div className="star-cta">
+        <p>Spend most of your answer on the <strong>Action</strong> - that's the part interviewers care about most.</p>
+        <Link className="primary-button" to="/interview">
+          Practise with the virtual interviewer <Icon name="arrowRight" size={15} />
+        </Link>
+      </div>
+    </section>
+  )
+}
+
 function TLevelAdvice() {
   return (
     <main className="adv">
@@ -189,6 +307,7 @@ function TLevelAdvice() {
           </p>
           <ul className="advice-jump" aria-label="Jump to a section">
             <li><a href="#students">Student advice</a></li>
+            <li><a href="#star">The STAR method</a></li>
             <li><a href="#schools">School advice</a></li>
           </ul>
         </div>
@@ -205,6 +324,8 @@ function TLevelAdvice() {
         <AdviceCarousel items={studentAdvice} label="Student advice" />
         <AdviceDetails items={studentDetails} />
       </section>
+
+      <StarMethod />
 
       <section className="advice-section" id="schools" aria-labelledby="schools-heading">
         <div className="advice-head">

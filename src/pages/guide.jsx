@@ -4,16 +4,23 @@ import './guide.css'
 import { getGuide } from './guides-data'
 import { Icon } from '../modules/icons'
 import { setPageTitle } from '../modules/page-title'
+import { useAuth } from '../modules/auth'
+import { api } from '../modules/api'
 
-// Downloadable PDF version of each guide (files live in public/guides/).
+// PDF version of each guide. The files are kept on the server and only
+// signed-in users can download them (members-only content from the brief).
 const PDFS = {
-  'assessment-centre': '/guides/how-to-pass-an-assessment-centre.pdf',
-  'interview-prep': '/guides/interview-preparation-tips.pdf',
-  'great-application': '/guides/writing-a-great-application.pdf',
+  'assessment-centre': 'how-to-pass-an-assessment-centre.pdf',
+  'interview-prep': 'interview-preparation-tips.pdf',
+  'great-application': 'writing-a-great-application.pdf',
 }
+
+// How many sections anyone can read before signing in.
+const FREE_SECTIONS = 1
 
 function Guide() {
   const { slug } = useParams()
+  const { user, loading } = useAuth()
   const guide = getGuide(slug)
 
   // Show the guide's name in the browser tab.
@@ -41,7 +48,24 @@ function Guide() {
     )
   }
 
-  const pdf = PDFS[slug]
+  const signedIn = Boolean(user)
+  const pdf = PDFS[slug] ? api.guidePdfUrl(PDFS[slug]) : null
+  const sections = signedIn ? guide.sections : guide.sections.slice(0, FREE_SECTIONS)
+  const locked = !signedIn && guide.sections.length > FREE_SECTIONS
+
+  const download = (className) => (
+    signedIn ? (
+      <a className={className} href={pdf} download>
+        <Icon name="download" size={16} />
+        Download the full guide (PDF)
+      </a>
+    ) : (
+      <Link className={className} to="/login">
+        <Icon name="lock" size={16} />
+        Sign in to download the PDF
+      </Link>
+    )
+  )
 
   return (
     <main className="guide-page">
@@ -51,23 +75,16 @@ function Guide() {
             <Icon name="arrowLeft" size={15} />
             Back to opportunities
           </Link>
-          <p className="guide-kicker">Guide</p>
+          <p className="guide-kicker">Guide{!signedIn && !loading ? ' · Members get the full guide' : ''}</p>
           <h1>{guide.title}</h1>
           <p className="guide-intro">{guide.intro}</p>
-          {pdf && (
-            <div className="guide-actions">
-              <a className="primary-button guide-download" href={pdf} download>
-                <Icon name="download" size={16} />
-                Download the full guide (PDF)
-              </a>
-            </div>
-          )}
+          {pdf && <div className="guide-actions">{download('primary-button guide-download')}</div>}
         </div>
       </header>
 
       {/* Narrow reading column */}
       <div className="guide-wrap">
-        {guide.sections.map((section, i) => (
+        {sections.map((section, i) => (
           <section className="guide-section" key={section.heading}>
             <div className="guide-section-head">
               <span className="guide-section-n" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
@@ -78,6 +95,31 @@ function Guide() {
             </ul>
           </section>
         ))}
+
+        {locked && (
+          <section className="guide-locked" aria-labelledby="guide-locked-title">
+            {/* A faded peek at what comes next */}
+            <div className="guide-locked-peek" aria-hidden="true">
+              {guide.sections.slice(FREE_SECTIONS, FREE_SECTIONS + 2).map((s) => (
+                <p key={s.heading}><strong>{s.heading}</strong> {s.body[0]}</p>
+              ))}
+            </div>
+            <div className="guide-locked-card">
+              <span className="guide-locked-icon"><Icon name="lock" size={20} /></span>
+              <h2 id="guide-locked-title">Read the full guide for free</h2>
+              <p>
+                Create a free account or sign in to read the other {guide.sections.length - FREE_SECTIONS}{' '}
+                {guide.sections.length - FREE_SECTIONS === 1 ? 'section' : 'sections'} and download the PDF.
+              </p>
+              <div className="guide-actions">
+                <Link className="primary-button" to="/signup">
+                  Create a free account <Icon name="arrowRight" size={15} />
+                </Link>
+                <Link className="secondary-button" to="/login">Sign in</Link>
+              </div>
+            </div>
+          </section>
+        )}
       </div>
 
       {/* Closing links */}
@@ -89,12 +131,7 @@ function Guide() {
           <Link className="primary-button" to="/opportunities">
             See opportunities <Icon name="arrowRight" size={15} />
           </Link>
-          {pdf && (
-            <a className="secondary-button guide-download" href={pdf} download>
-              <Icon name="download" size={15} />
-              Download PDF
-            </a>
-          )}
+          {pdf && download('secondary-button guide-download')}
         </div>
       </section>
     </main>

@@ -1,42 +1,67 @@
 // People students can request a coffee chat with.
 // Keep names and `times` in sync with MENTORS in backend/app.py
 // (the backend checks the request against that list).
-// The `about` lines are placeholder text - swap in real bios before launch.
+// Photos live in public/assets/images, named "<Full name>.png".
+// PLACEHOLDERS: `role`, `about`, `topics` and `times` still need checking
+// with each person before launch.
+
+const photo = (name) => encodeURI(`/assets/images/${name}.png`)
 
 export const MENTORS = [
   {
-    name: 'Amara',
+    name: 'Bea Galang',
     role: 'Digital T Level student',
     pathway: 'Digital',
     times: ['Monday', 'Wednesday'],
-    about: 'Currently on the Digital T Level. Happy to talk about what the course is really like day to day.',
+    about: 'Happy to talk about choosing a pathway and what the course is like day to day.',
     topics: ['Choosing a pathway', 'What a placement is like'],
   },
   {
-    name: 'Jay',
-    role: 'Business placement alum',
-    pathway: 'Business',
+    name: 'Michael Lawrence',
+    role: 'Digital T Level student',
+    pathway: 'Digital',
     times: ['Tuesday afternoon'],
-    about: 'Finished a Business placement. Ask about the jump from school to working in a real team.',
+    about: 'Ask about what a placement is like and settling into a real team.',
     topics: ['What a placement is like', 'Apprenticeships after T Levels'],
   },
   {
-    name: 'Priya',
-    role: 'Finance placement alum',
-    pathway: 'Finance',
-    times: ['Thursday'],
-    about: 'Did a Finance placement. Good to talk to if numbers and reporting interest you.',
+    name: 'Nahla Mitchell',
+    role: 'Digital T Level student',
+    pathway: 'Digital',
+    times: ['Wednesday afternoon'],
+    about: 'Good to talk to if you are deciding which pathway is right for you.',
     topics: ['Choosing a pathway', 'Applying and interviews'],
   },
   {
-    name: 'Sam',
-    role: 'Amazon buddy and mentor',
-    pathway: null,
+    name: 'Oliver Tappin',
+    role: 'Digital T Level student',
+    pathway: 'Digital',
+    times: ['Thursday'],
+    about: 'Ask about applying, interviews and what to expect on placement.',
+    topics: ['Applying and interviews', 'What a placement is like'],
+  },
+  {
+    name: 'Sarah Abwnawar',
+    role: 'Digital T Level student',
+    pathway: 'Digital',
     times: ['Friday morning'],
-    about: 'Works at Amazon and mentors placement students. Ask about applications, interviews and what teams look for.',
+    about: 'Happy to talk about applications and what you can do after your T Level.',
     topics: ['Applying and interviews', 'Apprenticeships after T Levels'],
   },
-]
+  {
+    name: 'Tasniim Dirie',
+    role: 'Digital T Level student',
+    pathway: 'Digital',
+    times: ['Monday afternoon', 'Thursday afternoon'],
+    about: 'Ask about choosing a pathway and the options after T Levels.',
+    topics: ['Choosing a pathway', 'Apprenticeships after T Levels'],
+  },
+].map((p) => ({ ...p, firstName: p.name.split(' ')[0], photo: photo(p.name) }))
+
+// Look someone up by the name saved on a chat request.
+export function findMentor(name) {
+  return MENTORS.find((p) => p.name === name) || null
+}
 
 export const CHAT_TOPICS = [
   'Choosing a pathway',

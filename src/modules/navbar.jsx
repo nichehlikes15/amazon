@@ -4,6 +4,7 @@ import './navbar.css'
 import { useAuth } from './auth'
 import { useAccessibility, resolvedTheme } from './accessibility'
 import { Icon } from './icons'
+import { readAloudSupported, startReadAloud } from './read-aloud'
 
 const Caret = ({ className }) => (
   <span className={className} aria-hidden="true">
@@ -19,6 +20,7 @@ const TLEVEL_LINKS = [
   ['/t-level/advice', 'Advice'],
   ['/quiz', 'Career quiz'],
   ['/interview', 'Interview practice'],
+  ['/parents', 'Parents and carers'],
 ]
 
 const TEXT_SIZES = [
@@ -146,6 +148,21 @@ function Navbar() {
             <div className={open === 'a11y' ? 'a11y-panel show' : 'a11y-panel'} role="dialog" aria-label="Accessibility settings">
               <p className="a11y-title">Accessibility</p>
 
+              {readAloudSupported && (
+                <button
+                  type="button"
+                  className="a11y-read"
+                  onClick={() => { setOpen(null); startReadAloud() }}
+                >
+                  <span className="a11y-row-icon"><Icon name="volume" size={16} /></span>
+                  <span className="a11y-row-text">
+                    <strong>Read this page aloud</strong>
+                    <span>Pause or stop it at any time</span>
+                  </span>
+                  <Icon name="play" size={14} />
+                </button>
+              )}
+
               <div className="a11y-group">
                 <span className="a11y-label"><Icon name="text" size={16} /> Text size</span>
                 <div className="a11y-sizes" role="radiogroup" aria-label="Text size">
@@ -165,6 +182,20 @@ function Navbar() {
                 </div>
               </div>
 
+              <Switch
+                icon="contrast"
+                label="High contrast"
+                hint="Darker text, clearer edges and links"
+                checked={a11y.highContrast}
+                onChange={(v) => setA11y({ highContrast: v })}
+              />
+              <Switch
+                icon="monitor"
+                label="Full-size page"
+                hint="Show the site at 100% instead of 75%"
+                checked={a11y.zoom === 'full'}
+                onChange={(v) => setA11y({ zoom: v ? 'full' : 'compact' })}
+              />
               <Switch
                 icon="eye"
                 label="Colour-blind friendly"

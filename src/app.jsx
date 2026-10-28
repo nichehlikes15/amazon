@@ -3,6 +3,8 @@ import { Navigate, Route } from "react-router-dom";
 import Navbar from "./modules/navbar";
 import Footer from "./modules/footer";
 import { PageTransition } from "./modules/motion";
+import { ReadAloudPlayer } from "./modules/read-aloud";
+import { PageFeedback } from "./modules/page-feedback";
 
 import Home from "./pages/home";
 import AboutUs from "./pages/about-us";
@@ -25,11 +27,28 @@ import Help from "./pages/help";
 import Accessibility from "./pages/accessibility";
 import Privacy from "./pages/privacy";
 import Interview from "./pages/interview";
+import Parents from "./pages/parents";
+import Safeguarding from "./pages/safeguarding";
+import Terms from "./pages/terms";
+import { ForgotPassword, ResetPassword } from "./pages/password-reset";
 import NotFound from "./pages/not-found";
+
+// Keyboard users can jump past the menu straight to the page content.
+function skipToContent(e) {
+  e.preventDefault();
+  const main = document.getElementById("main-content");
+  if (main) {
+    main.focus();
+    main.scrollIntoView();
+  }
+}
 
 function App() {
   return (
     <div className="App">
+      <a className="skip-link" href="#main-content" onClick={skipToContent}>
+        Skip to main content
+      </a>
       <Navbar />
 
       <PageTransition>
@@ -48,19 +67,26 @@ function App() {
         <Route path="/information" element={<Information />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/register-interest" element={<Interest />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/opportunities" element={<Opportunities />} />
         <Route path="/opportunities/:id" element={<OpportunityDetail />} />
         <Route path="/guides/:slug" element={<Guide />} />
         <Route path="/interview" element={<Interview />} />
+        <Route path="/parents" element={<Parents />} />
+        <Route path="/safeguarding" element={<Safeguarding />} />
+        <Route path="/terms" element={<Terms />} />
         <Route path="/help" element={<Help />} />
         <Route path="/accessibility" element={<Accessibility />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="*" element={<NotFound />} />
       </PageTransition>
 
+      <PageFeedback />
       <Footer />
+      <ReadAloudPlayer />
     </div>
   );
 }

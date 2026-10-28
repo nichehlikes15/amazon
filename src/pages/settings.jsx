@@ -541,6 +541,22 @@ function Settings() {
                 <h3>Accessibility</h3>
                 <div className="st-card">
                   <Row
+                    icon="contrast"
+                    title="High contrast"
+                    control={<Switch label="High contrast" checked={a11y.highContrast}
+                      onChange={(v) => setDisplay({ highContrast: v })} />}
+                  >
+                    Darker text, clearer edges and underlined links. Helpful for low vision.
+                  </Row>
+                  <Row
+                    icon="monitor"
+                    title="Full-size page"
+                    control={<Switch label="Full-size page" checked={a11y.zoom === 'full'}
+                      onChange={(v) => setDisplay({ zoom: v ? 'full' : 'compact' })} />}
+                  >
+                    On bigger screens the site shows at 75% so more fits on screen. Turn this on to see it at 100%.
+                  </Row>
+                  <Row
                     icon="eye"
                     title="Colour-blind friendly"
                     control={<Switch label="Colour-blind friendly" checked={a11y.colourBlind}
@@ -558,7 +574,8 @@ function Settings() {
                   </Row>
                 </div>
                 <p className="st-foot">
-                  These are saved on this device. They're also in the accessibility menu at the top of every page.{' '}
+                  These are saved on this device. They're also in the accessibility menu at the top of every page,
+                  which can also read any page aloud.{' '}
                   <Link to="/accessibility">More about accessibility</Link>
                 </p>
               </div>
@@ -610,8 +627,8 @@ function Settings() {
                       </button>
                     )}
                   >
-                    This removes your account, saved opportunities, application tracking and files, your CV and
-                    your coffee chat requests. It can't be undone.
+                    This removes your account, saved opportunities, application tracking and files, your CV,
+                    your coffee chat requests and your interview practice scores. It can't be undone.
                   </Row>
 
                   {confirmDelete && (

@@ -25,7 +25,7 @@
     background: var(--navy-solid);
     color: #fff;
 }
-.h-btn-primary:hover { background: #11161d; transform: translateY(-2px); }
+.h-btn-primary:hover { background: #46525d; transform: translateY(-2px); }
 
 .h-btn-ghost {
     border: 1px solid var(--line);

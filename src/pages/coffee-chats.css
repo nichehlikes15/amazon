@@ -170,8 +170,8 @@
 .cc-avatar-sm { width: 36px; height: 36px; font-size: 0.9rem; }
 .cc-avatar-md { width: 48px; height: 48px; font-size: 1.1rem; }
 .cc-avatar-lg {
-    width: 64px;
-    height: 64px;
+    width: 76px;
+    height: 76px;
     font-size: 1.5rem;
     transition: transform var(--dur) var(--ease-spring);
 }
@@ -589,3 +589,73 @@
     .cc-form-row { grid-template-columns: 1fr; }
     .cc-request { align-self: stretch; justify-content: center; }
 }
+
+/* Tick boxes in the request form (under-18 check and consent) */
+.cc-check {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    color: var(--ink);
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    cursor: pointer;
+    animation: cc-fade-up 0.35s var(--ease-out) both;
+}
+
+.cc-check input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.cc-check-box {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    margin-top: 1px;
+    border: 1.5px solid var(--line-strong);
+    border-radius: 6px;
+    background: var(--white);
+    color: transparent;
+    transition: background var(--dur) ease, border-color var(--dur) ease, color var(--dur) ease;
+}
+
+.cc-check input:checked + .cc-check-box {
+    border-color: var(--orange-solid);
+    background: var(--orange-solid);
+    color: #fff;
+}
+
+.cc-check input:focus-visible + .cc-check-box {
+    outline: 2px solid var(--orange);
+    outline-offset: 2px;
+}
+
+.cc-check a {
+    color: var(--navy);
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: rgb(255 153 0 / 55%);
+    text-underline-offset: 3px;
+}
+
+/* Photos of coffee chat people */
+.cc-avatar.has-photo {
+    overflow: hidden;
+    background: var(--light);
+    box-shadow: 0 0 0 1px var(--line);
+}
+
+.cc-avatar img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 24%;
+    border-radius: 50%;
+}
+.cc-person:hover .cc-avatar-lg.has-photo { transform: scale(1.05); }

@@ -358,3 +358,198 @@
     from { opacity: 0; transform: translateY(-6px); }
     to { opacity: 1; transform: none; }
 }
+
+/* ---------- KPI dashboard ---------- */
+.ak-head p {
+    margin: -16px 0 24px;
+    color: var(--muted);
+}
+
+.ak-tiles {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 28px;
+}
+
+.ak-tile {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 18px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--white);
+    animation: ak-in 0.45s var(--ease-out) backwards;
+}
+
+.ak-tile:nth-child(n+5) { animation-delay: 0.08s; }
+
+.ak-tile-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    margin-bottom: 6px;
+    border-radius: 10px;
+    background: var(--light);
+    color: var(--navy);
+}
+
+.ak-tile-label {
+    color: var(--muted);
+    font-size: 0.8125rem;
+    font-weight: 600;
+}
+
+.ak-tile-value {
+    color: var(--navy);
+    font-size: 1.875rem;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.ak-tile-sub {
+    color: var(--muted);
+    font-size: 0.8125rem;
+}
+
+.ak-breakdowns {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px 36px;
+    margin-bottom: 24px;
+}
+
+.ak-bars h4,
+.ak-list h4 {
+    margin: 0 0 10px;
+    color: var(--navy);
+    font-size: 0.9375rem;
+}
+
+.ak-bars ul,
+.ak-pages {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ak-bars li,
+.ak-pages li {
+    display: grid;
+    grid-template-columns: 150px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.875rem;
+}
+
+.ak-bar-label { color: var(--ink); }
+.ak-bar-num { min-width: 24px; color: var(--navy); font-weight: 700; text-align: right; }
+
+.ak-bar-track {
+    height: 8px;
+    overflow: hidden;
+    border-radius: 8px;
+    background: var(--light);
+}
+
+.ak-bar-track span {
+    display: block;
+    height: 100%;
+    border-radius: 8px;
+    background: var(--orange);
+    transition: width 0.8s var(--ease-out);
+}
+
+.ak-none { margin: 0; color: var(--muted); font-size: 0.875rem; }
+
+.ak-list ol {
+    max-width: 640px;
+    margin: 0;
+    padding-left: 20px;
+}
+
+.ak-list li {
+    padding: 4px 0;
+    color: var(--ink);
+    font-size: 0.9375rem;
+}
+
+.ak-list li strong { float: right; color: var(--navy); }
+
+.ak-pages {
+    max-width: 760px;
+    margin-bottom: 20px;
+}
+
+.ak-pages li { grid-template-columns: 200px minmax(0, 1fr) 110px; }
+.ak-pages code, .admin-table code { color: var(--navy); font-size: 0.8125rem; }
+
+.ak-csv {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--white);
+    color: var(--navy);
+    font: inherit;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background var(--dur) ease, border-color var(--dur) ease;
+}
+
+.ak-csv:hover { border-color: var(--line-strong); background: var(--light); }
+.ak-csv:disabled { opacity: 0.5; cursor: default; }
+
+.ak-yes, .ak-no, .ak-role, .ak-u18 {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.ak-yes { background: #e8f6ec; color: #1e7e34; }
+.ak-no { background: #fdeaea; color: #b42318; }
+.ak-role { background: var(--light); color: var(--navy); }
+.ak-role.is-parent { background: #f3ecfb; color: #5b2a9e; }
+.ak-role.is-school { background: #e8f0fe; color: #1d4ed8; }
+.ak-u18 { background: #fff4e6; color: #b25e00; white-space: normal; }
+
+.ak-sub {
+    display: block;
+    color: var(--muted);
+    font-size: 0.8125rem;
+}
+
+html[data-theme="dark"] .ak-yes { background: #15301f; color: #8fdca6; }
+html[data-theme="dark"] .ak-no { background: #3a1717; color: #ffb4ab; }
+html[data-theme="dark"] .ak-role.is-parent { background: #2a2142; color: #d6c3f5; }
+html[data-theme="dark"] .ak-role.is-school { background: #172a4a; color: #a9c5ff; }
+html[data-theme="dark"] .ak-u18 { background: #3a2a14; color: #ffc27a; }
+
+@keyframes ak-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) { .ak-tile { animation: none; } }
+
+@media (max-width: 1000px) {
+    .ak-tiles { grid-template-columns: repeat(2, 1fr); }
+    .ak-breakdowns { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 560px) {
+    .ak-bars li, .ak-pages li { grid-template-columns: 1fr auto; }
+    .ak-bar-track { display: none; }
+}

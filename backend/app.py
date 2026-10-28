@@ -3,13 +3,16 @@ Security notes (prototype level):
   - Passwords are hashed with werkzeug (PBKDF2); plain text is never stored.
   - All SQL uses parameterised queries, so there is no SQL injection risk.
   - Sessions use a signed cookie; CORS is limited to the dev frontend.
-  - For production you would add: HTTPS, CSRF tokens, rate limiting,
-    stronger session storage, and email verification.
+  - Rate limiting is in place (per IP address, and per account for sign in).
+  - For production you would add: HTTPS, CSRF tokens, stronger session
+    storage, and email verification.
 """
 
+import hashlib
 import json
+import secrets
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import sqlite3
 import uuid
@@ -20,12 +23,20 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
 from cv_reviewer import extract_text, review_cv
-from interview_coach import question_set, review_answer, review_interview, spoken_feedback
+from interview_coach import (
+    classify_turn, faq_facts, follow_up, question_info, question_set, reflect_answer, review_answer,
+    review_interview, spoken_feedback,
+)
+# Alex's words come from a local AI model (Ollama) when it's running; the
+# scores always come from the rules above. See llm_coach.py and AI_SETUP.md.
+from llm_coach import ai_feedback, ai_follow_up, ai_status, ai_summary, ai_turn, warm_up
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "launchpad.db")
 SCHEMA_PATH = os.path.join(BASE_DIR, "schema.sql")
 UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
+# Guide PDFs - only signed-in users can download them.
+GUIDES_DIR = os.path.join(BASE_DIR, "guides")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 # Upload limits for the prototype.
@@ -37,6 +48,9 @@ ALLOWED_UPLOAD_EXTENSIONS = {
 
 # Allowed pathways - kept in one place so validation is consistent.
 PATHWAYS = {"Digital", "Business", "Media", "Finance", "Engineering"}
+# Expression of interest: who's asking, and the extra pathway choices.
+INTEREST_ROLES = {"student", "parent", "school"}
+EXTRA_PATHWAY_CHOICES = {"Not sure yet", "Several pathways"}
 
 app = Flask(__name__)
 # In production, load this from an environment variable, never hard-code it.
@@ -151,6 +165,21 @@ def init_db():
         db.execute("ALTER TABLE coffee_chat_requests ADD COLUMN confirmed_time TEXT")
     if "meeting_link" not in chat_cols:
         db.execute("ALTER TABLE coffee_chat_requests ADD COLUMN meeting_link TEXT")
+
+    # Consent, customer type and safeguarding columns (added 28 Oct 2026).
+    def add_col(table, col, decl):
+        have = {r[1] for r in db.execute(f"PRAGMA table_info({table})").fetchall()}
+        if col not in have:
+            db.execute(f"ALTER TABLE {table} ADD COLUMN {col} {decl}")
+
+    add_col("users", "consented_at", "TEXT")
+    add_col("expressions_of_interest", "role", "TEXT NOT NULL DEFAULT 'student'")
+    add_col("expressions_of_interest", "organisation", "TEXT")
+    add_col("expressions_of_interest", "contact_role", "TEXT")
+    add_col("expressions_of_interest", "consent_at", "TEXT")
+    add_col("coffee_chat_requests", "under_18", "INTEGER")
+    add_col("coffee_chat_requests", "guardian_aware", "INTEGER")
+    add_col("coffee_chat_requests", "consent_at", "TEXT")
     db.commit()
     db.close()
 
@@ -181,7 +210,8 @@ def current_user():
 
 @app.post("/api/signup")
 def signup():
-    if rate_limited("signup", 10, 900):
+    # 30 per 15 minutes per address: a whole class on one school network can sign up.
+    if rate_limited("signup", 30, 900):
         return too_many()
     data = request.get_json(silent=True) or {}
     full_name = (data.get("fullName") or "").strip()
@@ -190,8 +220,14 @@ def signup():
 
     if not full_name or not email or not password:
         return jsonify({"error": "All fields are required."}), 400
+    if "@" not in email or "." not in email.split("@")[-1] or " " in email:
+        return jsonify({"error": "Please enter a valid email address."}), 400
+    if len(full_name) > 120 or len(email) > 254:
+        return jsonify({"error": "Your name or email is too long."}), 400
     if len(password) < 8:
         return jsonify({"error": "Password must be at least 8 characters."}), 400
+    if data.get("consent") is not True:
+        return jsonify({"error": "Please agree to the privacy notice and terms of use."}), 400
 
     db = get_db()
     existing = db.execute("SELECT id FROM users WHERE email = ?", (email,)).fetchone()
@@ -203,7 +239,7 @@ def signup():
     # PBKDF2 is always available and is a solid choice for a prototype.
     password_hash = generate_password_hash(password, method="pbkdf2:sha256")
     cur = db.execute(
-        "INSERT INTO users (full_name, email, password_hash) VALUES (?, ?, ?)",
+        "INSERT INTO users (full_name, email, password_hash, consented_at) VALUES (?, ?, ?, datetime('now'))",
         (full_name, email, password_hash),
     )
     db.commit()
@@ -214,11 +250,13 @@ def signup():
 
 @app.post("/api/login")
 def login():
-    if rate_limited("login", 10, 900):
-        return too_many()
     data = request.get_json(silent=True) or {}
     email = (data.get("email") or "").strip().lower()
     password = data.get("password") or ""
+    # 10 tries per account stops password guessing; the per-address limit is
+    # higher so a class sharing one school network isn't locked out.
+    if rate_limited("login:" + email, 10, 900) or rate_limited("login", 100, 900):
+        return too_many()
 
     db = get_db()
     row = db.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
@@ -250,7 +288,7 @@ def me():
 
 @app.post("/api/interest")
 def create_interest():
-    if rate_limited("interest", 10, 3600):
+    if rate_limited("interest", 30, 3600):
         return too_many()
     data = request.get_json(silent=True) or {}
     full_name = (data.get("fullName") or "").strip()
@@ -258,18 +296,32 @@ def create_interest():
     school = (data.get("school") or "").strip()
     pathway = (data.get("pathway") or "").strip()
     message = (data.get("message") or "").strip()
+    role = (data.get("role") or "student").strip()
+    organisation = (data.get("organisation") or "").strip()
+    contact_role = (data.get("contactRole") or "").strip()
 
+    if role not in INTEREST_ROLES:
+        return jsonify({"error": "Please tell us who you are."}), 400
     if not full_name or not email or not pathway:
         return jsonify({"error": "Name, email and pathway are required."}), 400
-    if pathway not in PATHWAYS:
+    if "@" not in email or "." not in email.split("@")[-1]:
+        return jsonify({"error": "Please enter a valid email address."}), 400
+    if pathway not in PATHWAYS and pathway not in EXTRA_PATHWAY_CHOICES:
         return jsonify({"error": "Please choose a valid pathway."}), 400
+    if role == "school" and not organisation:
+        return jsonify({"error": "Please add the name of your school or college."}), 400
+    if data.get("consent") is not True:
+        return jsonify({"error": "Please agree to the privacy notice so we can contact you."}), 400
+    if max(len(full_name), len(organisation), len(contact_role), len(school)) > 160 or len(message) > 2000:
+        return jsonify({"error": "Some of your answers are too long."}), 400
 
     db = get_db()
     db.execute(
         """INSERT INTO expressions_of_interest
-           (user_id, full_name, email, school, pathway, message)
-           VALUES (?, ?, ?, ?, ?, ?)""",
-        (session.get("user_id"), full_name, email, school, pathway, message),
+           (user_id, full_name, email, school, pathway, message, role, organisation, contact_role, consent_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))""",
+        (session.get("user_id"), full_name, email, school, pathway, message,
+         role, organisation or None, contact_role or None),
     )
     db.commit()
     return jsonify({"ok": True}), 201
@@ -295,6 +347,9 @@ def list_interest():
             "email": r["email"],
             "school": r["school"],
             "pathway": r["pathway"],
+            "role": r["role"] if "role" in r.keys() else "student",
+            "organisation": r["organisation"] if "organisation" in r.keys() else None,
+            "contactRole": r["contact_role"] if "contact_role" in r.keys() else None,
             "message": r["message"],
             "createdAt": r["created_at"],
         }
@@ -308,10 +363,12 @@ def list_interest():
 # People students can request a chat with. Keep in sync with
 # src/modules/mentors.js on the frontend.
 MENTORS = {
-    "Amara": ["Monday", "Wednesday"],
-    "Jay": ["Tuesday afternoon"],
-    "Priya": ["Thursday"],
-    "Sam": ["Friday morning"],
+    "Bea Galang": ["Monday", "Wednesday"],
+    "Michael Lawrence": ["Tuesday afternoon"],
+    "Nahla Mitchell": ["Wednesday afternoon"],
+    "Oliver Tappin": ["Thursday"],
+    "Sarah Abwnawar": ["Friday morning"],
+    "Tasniim Dirie": ["Monday afternoon", "Thursday afternoon"],
 }
 # Status a coffee chat request can be in (admins move it along).
 CHAT_STATUSES = ["Requested", "Confirmed", "Completed", "Cancelled"]
@@ -335,13 +392,15 @@ def coffee_chat_to_dict(r):
         "createdAt": r["created_at"],
         "confirmedTime": r["confirmed_time"] if "confirmed_time" in r.keys() else None,
         "meetingLink": r["meeting_link"] if "meeting_link" in r.keys() else None,
+        "under18": bool(r["under_18"]) if "under_18" in r.keys() and r["under_18"] is not None else None,
+        "guardianAware": bool(r["guardian_aware"]) if "guardian_aware" in r.keys() and r["guardian_aware"] is not None else None,
     }
 
 
 @app.post("/api/coffee-chats")
 def create_coffee_chat():
     """Request a coffee chat. Works signed in or out."""
-    if rate_limited("coffee-chat", 10, 3600):
+    if rate_limited("coffee-chat", 20, 3600):
         return too_many()
     data = request.get_json(silent=True) or {}
     mentor = (data.get("mentor") or "").strip()
@@ -363,13 +422,23 @@ def create_coffee_chat():
         return jsonify({"error": "Please choose a valid topic."}), 400
     if len(full_name) > 120 or len(message) > 1000:
         return jsonify({"error": "Your name or message is too long."}), 400
+    age_group = (data.get("ageGroup") or "").strip()
+    if age_group not in ("18+", "under18"):
+        return jsonify({"error": "Please tell us if you're under 18."}), 400
+    under_18 = age_group == "under18"
+    if under_18 and data.get("guardianAware") is not True:
+        return jsonify({"error": "If you're under 18, please check a parent or carer knows about the chat."}), 400
+    if data.get("consent") is not True:
+        return jsonify({"error": "Please agree to the privacy notice and the staying safe guidance."}), 400
 
     db = get_db()
     cur = db.execute(
         """INSERT INTO coffee_chat_requests
-           (user_id, mentor, full_name, email, preferred_time, topic, message)
-           VALUES (?, ?, ?, ?, ?, ?, ?)""",
-        (session.get("user_id"), mentor, full_name, email, preferred_time, topic, message),
+           (user_id, mentor, full_name, email, preferred_time, topic, message,
+            under_18, guardian_aware, consent_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))""",
+        (session.get("user_id"), mentor, full_name, email, preferred_time, topic, message,
+         1 if under_18 else 0, 1 if under_18 else None),
     )
     db.commit()
     row = db.execute("SELECT * FROM coffee_chat_requests WHERE id = ?", (cur.lastrowid,)).fetchone()
@@ -488,12 +557,40 @@ def cancel_my_coffee_chat(chat_id):
 
 # ---------- Interview practice ----------
 
+def role_context(pathway):
+    """One sentence about the role, from the same text as the career quiz."""
+    p = PATHWAY_PROFILES.get(pathway)
+    if not p:
+        return ""
+    return (f"On a {pathway} T Level you study {p['study']}, and it can lead to roles like a {p['roles']}. "
+            f"The pathway suits people who enjoy {p['strengths']}.")
+
+
+def interview_history(data):
+    """Earlier questions and answers in this call (sent by the page, not stored)."""
+    out = []
+    raw = data.get("history")
+    if isinstance(raw, list):
+        for h in raw[-3:]:
+            if isinstance(h, dict):
+                q = " ".join(str(h.get("q") or "").split())[:300]
+                a = " ".join(str(h.get("a") or "").split())[:1200]
+                if q and a:
+                    out.append({"q": q, "a": a})
+    return out
+
+
+def interview_pathway(data):
+    p = str(data.get("pathway") or "").strip()
+    return p if p in PATHWAYS else None
+
+
 @app.get("/api/interview/questions")
 def interview_questions():
     """Five practice questions for a pathway (?pathway=Digital)."""
     pathway = (request.args.get("pathway") or "").strip()
-    return jsonify({"pathway": pathway if pathway in PATHWAYS else "Digital",
-                    "questions": question_set(pathway)})
+    pathway = pathway if pathway in PATHWAYS else "Digital"
+    return jsonify({"pathway": pathway, "questions": question_set(pathway), "context": role_context(pathway)})
 
 
 @app.post("/api/interview/review-answer")
@@ -507,20 +604,120 @@ def interview_review_answer():
         seconds = float(seconds) if seconds is not None else None
     except (TypeError, ValueError):
         seconds = None
-    review = review_answer(
-        str(data.get("id") or "")[:40],
-        str(data.get("answer") or "")[:4000],
-        seconds,
-    )
+    qid = str(data.get("id") or "")[:40]
+    main = str(data.get("answer") or "")[:4000]
+    fu = data.get("followUp") if isinstance(data.get("followUp"), dict) else {}
+    follow_answer = str(fu.get("answer") or "")[:4000]
+    follow_asked = bool(data.get("followUpAsked"))
+
+    # The follow-up answer counts towards the score for this question.
+    combined = f"{main} {follow_answer}".strip()
+    review = review_answer(qid, combined, seconds)
     if review is None:
         return jsonify({"error": "That question wasn't recognised."}), 400
-    review["say"] = spoken_feedback(review)
+    first = review_answer(qid, main, None) if follow_answer.strip() else None
+    review["scoreBefore"] = first["score"] if first else None
+    # Alex already repeated back the first answer before his follow-up.
+    reflect_on = follow_answer if follow_answer.strip() else ("" if follow_asked else None)
+    review["say"] = spoken_feedback(review, reflect_on=reflect_on)
+    review["source"] = "rules"
+    # Alex's reply in his own words, if the AI is running. The score above doesn't change.
+    pathway = interview_pathway(data)
+    ai_say = ai_feedback(
+        question_info(qid), qid, main, review,
+        follow_question=str(fu.get("question") or "")[:300] or None,
+        follow_answer=follow_answer,
+        pathway=pathway, history=interview_history(data), context=role_context(pathway),
+    )
+    if ai_say:
+        review["say"] = ai_say
+        review["source"] = "ai"
     return jsonify(review)
+
+
+@app.post("/api/interview/follow-up")
+def interview_follow_up():
+    """After a first answer: a follow-up question if something is missing. Not stored."""
+    if rate_limited("interview-answer", 200, 3600):
+        return too_many()
+    data = request.get_json(silent=True) or {}
+    qid = str(data.get("id") or "")[:40]
+    answer = str(data.get("answer") or "")[:4000]
+    # The rules decide WHETHER to ask a follow-up (and what's missing)...
+    question = follow_up(qid, answer)
+    say = reflect_answer(qid, answer) if question else None
+    source = "rules"
+    pathway = interview_pathway(data)
+    history = interview_history(data)
+    context = role_context(pathway)
+    if question:
+        # ...and the AI, if it's running, writes it in Alex's own words.
+        ai = ai_follow_up(question_info(qid), qid, answer, question["why"], pathway, history, context)
+        if ai:
+            question = {**question, "text": ai["text"]}
+            say = ai["say"] or say
+            source = "ai"
+    elif qid != "close" and len(answer.split()) >= 12:
+        # Nothing missing - with the AI on, Alex still digs deeper, like a real interviewer.
+        ai = ai_follow_up(question_info(qid), qid, answer, None, pathway, history, context)
+        if ai:
+            question = {"text": ai["text"], "why": ai["why"] or "To hear a bit more about your example."}
+            say = ai["say"]
+            source = "ai"
+    return jsonify({"followUp": question, "say": say, "source": source})
+
+
+@app.post("/api/interview/turn")
+def interview_turn():
+    """Something the student said that might not be an answer, e.g. a question
+    for Alex ("What is the apprenticeship?") or "Can you repeat that?".
+    Works out what they're doing and what Alex says back. Not stored."""
+    if rate_limited("interview-answer", 200, 3600):
+        return too_many()
+    data = request.get_json(silent=True) or {}
+    qid = str(data.get("id") or "")[:40]
+    asked = " ".join(str(data.get("asked") or "").split())[:300]
+    utterance = str(data.get("utterance") or "")[:1000]
+    context = "feedback" if data.get("context") == "feedback" else "answering"
+    pathway = str(data.get("pathway") or "").strip()
+    pathway = pathway if pathway in PATHWAYS else None
+    tip = " ".join(str(data.get("tip") or "").split())[:300] or None
+    info = question_info(qid)
+    if info is None:
+        return jsonify({"error": "That question wasn't recognised."}), 400
+    asked = asked or info["text"]
+
+    rules = classify_turn(qid, utterance, context, asked=asked, pathway=pathway, tip=tip)
+    result = {**rules, "source": "rules"}
+    # Safety replies, exact repeats and the closing question never go to the AI.
+    if rules["type"] in ("safeguard", "repeat") or (context == "answering" and qid == "close"):
+        return jsonify(result)
+    ai = ai_turn(asked, info, qid, utterance, context, faq_facts(), pathway, tip, role_context(pathway))
+    if ai:
+        if ai["type"] == "repeat" and context == "answering":
+            return jsonify({"type": "repeat", "say": f"Sure. {asked}", "source": "ai"})
+        if ai["type"] == "answer":
+            # Keep a clear question the rules spotted; otherwise it's an answer.
+            if rules["type"] in ("answer", "other"):
+                return jsonify({**rules, "source": "ai"})
+        elif ai["type"] != "repeat":
+            return jsonify({"type": ai["type"], "say": ai["say"], "source": "ai"})
+    return jsonify(result)
+
+
+@app.get("/api/interview/ai-status")
+def interview_ai_status():
+    """Is Alex's AI running? Also starts loading the model so the first reply is quick."""
+    status = ai_status(refresh=request.args.get("refresh") == "1")
+    if status.get("available"):
+        warm_up()
+    return jsonify(status)
 
 
 @app.post("/api/interview/review")
 def interview_review():
-    """Feedback on a practice interview. Answers are checked locally and not stored."""
+    """Feedback on a practice interview. Answers are checked locally and not stored;
+    for signed-in users the scores are saved to their profile."""
     if rate_limited("interview", 60, 3600):
         return too_many()
     data = request.get_json(silent=True) or {}
@@ -542,7 +739,276 @@ def interview_review():
     result = review_interview(clean)
     if result is None:
         return jsonify({"error": "Those questions weren't recognised."}), 400
+    # A short summary in Alex's words, if the AI is running (not saved).
+    pathway = interview_pathway(data)
+    result["coachSummary"] = ai_summary(result, pathway, role_context(pathway))
+
+    # Signed in: keep the scores (not the answers) so progress shows on the profile.
+    result["saved"] = False
+    user = current_user()
+    if user is not None:
+        pathway = (data.get("pathway") or "").strip()
+        if pathway not in PATHWAYS:
+            pathway = "Digital"
+        scores = [{"id": r["id"], "question": r["question"], "score": r["score"]} for r in result["reviews"]]
+        db = get_db()
+        cur = db.execute(
+            """INSERT INTO interview_practice (user_id, pathway, overall, question_scores, focus_on)
+               VALUES (?, ?, ?, ?, ?)""",
+            (user["id"], pathway, int(result["overall"]), json.dumps(scores), json.dumps(result["focusOn"])),
+        )
+        db.commit()
+        result["saved"] = True
+        result["practiceId"] = cur.lastrowid
     return jsonify(result)
+
+
+def practice_to_dict(r):
+    try:
+        scores = json.loads(r["question_scores"] or "[]")
+    except ValueError:
+        scores = []
+    try:
+        focus = json.loads(r["focus_on"] or "[]")
+    except ValueError:
+        focus = []
+    return {
+        "id": r["id"],
+        "pathway": r["pathway"],
+        "overall": r["overall"],
+        "questions": scores,
+        "focusOn": focus,
+        "createdAt": r["created_at"],
+    }
+
+
+@app.get("/api/me/interview-practice")
+def my_interview_practice():
+    """The signed-in user's practice interview scores, newest first."""
+    user = current_user()
+    if user is None:
+        return jsonify({"items": []})
+    rows = get_db().execute(
+        "SELECT * FROM interview_practice WHERE user_id = ? ORDER BY created_at DESC, id DESC LIMIT 50",
+        (user["id"],),
+    ).fetchall()
+    return jsonify({"items": [practice_to_dict(r) for r in rows]})
+
+
+@app.delete("/api/me/interview-practice/<int:practice_id>")
+def delete_interview_practice(practice_id):
+    """Remove one saved practice result."""
+    user = current_user()
+    if user is None:
+        return jsonify({"error": "You must be signed in."}), 401
+    db = get_db()
+    cur = db.execute(
+        "DELETE FROM interview_practice WHERE id = ? AND user_id = ?", (practice_id, user["id"])
+    )
+    db.commit()
+    if cur.rowcount == 0:
+        return jsonify({"error": "Result not found."}), 404
+    return jsonify({"ok": True})
+
+
+# ---------- Forgot password ----------
+# The prototype has no email service, so the reset link is printed in the
+# terminal running this server. A live site would email it instead.
+RESET_MINUTES = 30
+
+
+def _hash_token(token):
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+
+@app.post("/api/password/forgot")
+def forgot_password():
+    if rate_limited("forgot", 5, 900):
+        return too_many()
+    data = request.get_json(silent=True) or {}
+    email = (data.get("email") or "").strip().lower()
+    # Same reply whether or not the account exists, so this can't be used to
+    # find out who has an account.
+    reply = jsonify({"ok": True})
+    if not email:
+        return reply
+    db = get_db()
+    user = db.execute("SELECT id FROM users WHERE email = ?", (email,)).fetchone()
+    if user is None:
+        return reply
+    token = secrets.token_urlsafe(32)
+    expires = (datetime.utcnow() + timedelta(minutes=RESET_MINUTES)).strftime("%Y-%m-%d %H:%M:%S")
+    db.execute("DELETE FROM password_resets WHERE user_id = ?", (user["id"],))
+    db.execute(
+        "INSERT INTO password_resets (user_id, token_hash, expires_at) VALUES (?, ?, ?)",
+        (user["id"], _hash_token(token), expires),
+    )
+    db.commit()
+    site = ALLOWED_ORIGINS[0] if ALLOWED_ORIGINS else "http://localhost:5173"
+    print(f"\n[Launchpad] Password reset link for {email} (valid {RESET_MINUTES} minutes):\n"
+          f"  {site}/reset-password?token={token}\n", flush=True)
+    return reply
+
+
+@app.post("/api/password/reset")
+def reset_password():
+    if rate_limited("reset", 10, 900):
+        return too_many()
+    data = request.get_json(silent=True) or {}
+    token = (data.get("token") or "").strip()
+    new = data.get("password") or ""
+    if len(new) < 8:
+        return jsonify({"error": "Password must be at least 8 characters."}), 400
+    db = get_db()
+    row = db.execute(
+        "SELECT * FROM password_resets WHERE token_hash = ? AND used = 0", (_hash_token(token),)
+    ).fetchone() if token else None
+    if row is None or row["expires_at"] < datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"):
+        return jsonify({"error": "This reset link has expired or already been used. Please ask for a new one."}), 400
+    db.execute(
+        "UPDATE users SET password_hash = ? WHERE id = ?",
+        (generate_password_hash(new, method="pbkdf2:sha256"), row["user_id"]),
+    )
+    db.execute("UPDATE password_resets SET used = 1 WHERE id = ?", (row["id"],))
+    db.commit()
+    return jsonify({"ok": True})
+
+
+# ---------- Members-only downloads ----------
+
+@app.get("/api/guides/<path:filename>")
+def guide_pdf(filename):
+    """Guide PDFs are for signed-in users only."""
+    if current_user() is None:
+        return jsonify({"error": "Please sign in to download this guide."}), 401
+    name = secure_filename(filename)
+    if not name.endswith(".pdf") or not os.path.isfile(os.path.join(GUIDES_DIR, name)):
+        return jsonify({"error": "Guide not found."}), 404
+    return send_from_directory(GUIDES_DIR, name, as_attachment=True)
+
+
+# ---------- Page feedback ("Was this page helpful?") ----------
+# Anonymous: no name, email or account is stored with it.
+
+@app.post("/api/feedback")
+def create_feedback():
+    if rate_limited("feedback", 30, 3600):
+        return too_many()
+    data = request.get_json(silent=True) or {}
+    page = (data.get("page") or "").strip()[:200]
+    helpful = data.get("helpful")
+    comment = (data.get("comment") or "").strip()
+    if not page.startswith("/") or not isinstance(helpful, bool):
+        return jsonify({"error": "Please choose yes or no."}), 400
+    if len(comment) > 500:
+        return jsonify({"error": "Please keep your comment under 500 characters."}), 400
+    db = get_db()
+    db.execute(
+        "INSERT INTO page_feedback (page, helpful, comment) VALUES (?, ?, ?)",
+        (page, 1 if helpful else 0, comment or None),
+    )
+    db.commit()
+    return jsonify({"ok": True}), 201
+
+
+def require_admin():
+    user = current_user()
+    if user is None:
+        return None, (jsonify({"error": "You must be signed in."}), 401)
+    if not user["is_admin"]:
+        return None, (jsonify({"error": "You do not have permission to view this."}), 403)
+    return user, None
+
+
+@app.get("/api/admin/feedback")
+def list_feedback():
+    _, err = require_admin()
+    if err:
+        return err
+    rows = get_db().execute("SELECT * FROM page_feedback ORDER BY created_at DESC, id DESC").fetchall()
+    items = [{"id": r["id"], "page": r["page"], "helpful": bool(r["helpful"]),
+              "comment": r["comment"], "createdAt": r["created_at"]} for r in rows]
+    return jsonify({"items": items, "count": len(items)})
+
+
+# ---------- KPI dashboard ----------
+
+@app.get("/api/admin/kpis")
+def admin_kpis():
+    """Headline numbers for the admin dashboard (the project's KPIs)."""
+    _, err = require_admin()
+    if err:
+        return err
+    db = get_db()
+
+    def one(sql, args=()):
+        row = db.execute(sql, args).fetchone()
+        return row[0] if row and row[0] is not None else 0
+
+    def grouped(sql):
+        return {str(r[0]): r[1] for r in db.execute(sql).fetchall() if r[0] is not None}
+
+    week = "datetime('now', '-7 days')"
+    month = "datetime('now', '-30 days')"
+    feedback_total = one("SELECT COUNT(*) FROM page_feedback")
+    feedback_yes = one("SELECT COUNT(*) FROM page_feedback WHERE helpful = 1")
+    most_saved = [
+        {"title": r["title"], "count": r["n"]}
+        for r in db.execute(
+            """SELECT o.title, COUNT(*) AS n FROM saved_opportunities s
+               JOIN opportunities o ON o.id = s.opportunity_id
+               GROUP BY o.id ORDER BY n DESC, o.title LIMIT 5"""
+        ).fetchall()
+    ]
+    worst_pages = [
+        {"page": r["page"], "yes": r["yes"], "total": r["total"]}
+        for r in db.execute(
+            """SELECT page, SUM(helpful) AS yes, COUNT(*) AS total FROM page_feedback
+               GROUP BY page HAVING total >= 1
+               ORDER BY (1.0 * SUM(helpful) / COUNT(*)) ASC, total DESC LIMIT 5"""
+        ).fetchall()
+    ]
+    return jsonify({
+        "users": {
+            "total": one("SELECT COUNT(*) FROM users"),
+            "last7": one(f"SELECT COUNT(*) FROM users WHERE created_at >= {week}"),
+            "last30": one(f"SELECT COUNT(*) FROM users WHERE created_at >= {month}"),
+        },
+        "interest": {
+            "total": one("SELECT COUNT(*) FROM expressions_of_interest"),
+            "last30": one(f"SELECT COUNT(*) FROM expressions_of_interest WHERE created_at >= {month}"),
+            "byRole": grouped("SELECT role, COUNT(*) FROM expressions_of_interest GROUP BY role"),
+            "byPathway": grouped("SELECT pathway, COUNT(*) FROM expressions_of_interest GROUP BY pathway"),
+        },
+        "quiz": {
+            "completed": one("SELECT COUNT(*) FROM users WHERE quiz_completed_at IS NOT NULL"),
+            "byPathway": grouped(
+                "SELECT quiz_pathway, COUNT(*) FROM users WHERE quiz_pathway IS NOT NULL GROUP BY quiz_pathway"),
+        },
+        "coffeeChats": {
+            "total": one("SELECT COUNT(*) FROM coffee_chat_requests"),
+            "byStatus": grouped("SELECT status, COUNT(*) FROM coffee_chat_requests GROUP BY status"),
+            "under18": one("SELECT COUNT(*) FROM coffee_chat_requests WHERE under_18 = 1"),
+        },
+        "practice": {
+            "calls": one("SELECT COUNT(*) FROM interview_practice"),
+            "people": one("SELECT COUNT(DISTINCT user_id) FROM interview_practice"),
+            "averageScore": round(one("SELECT AVG(overall) FROM interview_practice") or 0),
+        },
+        "cvs": {
+            "uploaded": one("SELECT COUNT(*) FROM user_cvs"),
+            "averageScore": round(one("SELECT AVG(score) FROM user_cvs") or 0),
+        },
+        "saved": {
+            "total": one("SELECT COUNT(*) FROM saved_opportunities"),
+            "mostSaved": most_saved,
+        },
+        "feedback": {
+            "total": feedback_total,
+            "helpfulPercent": round(100 * feedback_yes / feedback_total) if feedback_total else None,
+            "lowestPages": worst_pages,
+        },
+    })
 
 
 # ---------- Opportunities ----------
@@ -662,6 +1128,11 @@ def create_opportunity():
     # Basic URL sanity check so the Apply button always points somewhere real.
     if not (apply_url.startswith("http://") or apply_url.startswith("https://")):
         return jsonify({"error": "Apply URL must start with http:// or https://"}), 400
+    if closing_date:
+        try:
+            closing_date = datetime.strptime(closing_date, "%Y-%m-%d").strftime("%Y-%m-%d")
+        except ValueError:
+            return jsonify({"error": "Please enter the closing date as a date (YYYY-MM-DD)."}), 400
 
     db = get_db()
     cur = db.execute(
@@ -1061,6 +1532,8 @@ def delete_me():
     db.execute("DELETE FROM application_progress WHERE user_id = ?", (user["id"],))
     db.execute("DELETE FROM saved_opportunities WHERE user_id = ?", (user["id"],))
     db.execute("DELETE FROM coffee_chat_requests WHERE user_id = ?", (user["id"],))
+    db.execute("DELETE FROM interview_practice WHERE user_id = ?", (user["id"],))
+    db.execute("DELETE FROM password_resets WHERE user_id = ?", (user["id"],))
     db.execute("UPDATE expressions_of_interest SET user_id = NULL WHERE user_id = ?", (user["id"],))
     db.execute("DELETE FROM users WHERE id = ?", (user["id"],))
     db.commit()
@@ -1098,6 +1571,7 @@ def export_me():
             "SELECT * FROM expressions_of_interest WHERE user_id = ? OR lower(email) = ?",
             (uid, (user["email"] or "").lower())),
         "coffeeChatRequests": rows("SELECT * FROM coffee_chat_requests WHERE user_id = ?", (uid,)),
+        "interviewPractice": rows("SELECT * FROM interview_practice WHERE user_id = ?", (uid,)),
     })
 
 

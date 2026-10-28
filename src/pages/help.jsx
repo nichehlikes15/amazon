@@ -40,7 +40,15 @@ const GROUPS = [
       },
       {
         q: 'Can I practise for an interview?',
-        a: <>Yes. <Link to="/interview">Interview practice</Link> is a practice call with a virtual interviewer. You answer five questions out loud or by typing, then get feedback on each answer.</>,
+        a: <>Yes. <Link to="/interview">Interview practice</Link> is a practice call with a virtual interviewer. You answer five questions out loud or by typing, then get feedback on each answer. If you're signed in, your scores are saved to <Link to="/profile#interview-practice">My profile</Link> so you can see your progress.</>,
+      },
+      {
+        q: 'Why do I need an account for some guides?',
+        a: <>Anyone can read the start of each guide. Signing in (it's free) lets you read the rest and download the PDF versions.</>,
+      },
+      {
+        q: 'Is Alex a real person?',
+        a: <>No. Alex is a virtual interviewer. When his AI is running, his replies and follow-up questions are written by an AI model that runs on the Launchpad server, based on what you said. Your score always comes from fixed checks, so the same answer gets the same score. AI can misunderstand things, so use it as a guide.</>,
       },
       {
         q: 'How does the CV check work?',
@@ -70,6 +78,10 @@ const GROUPS = [
     id: 'account',
     title: 'Your account',
     items: [
+      {
+        q: "I've forgotten my password",
+        a: <>On the <Link to="/login">sign in page</Link>, choose <strong>Forgot your password?</strong> and enter your email to get a link to choose a new one. The link works for 30 minutes. (In this prototype the link appears in the server window instead of an email.)</>,
+      },
       {
         q: 'How do I change my details or password?',
         a: <>Go to <Link to="/settings">Settings</Link>. You can update your name, email and school, and change your password.</>,

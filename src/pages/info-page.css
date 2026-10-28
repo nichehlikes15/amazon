@@ -342,3 +342,207 @@
     .nf-links { grid-template-columns: repeat(2, 1fr); }
     .ip-features { grid-template-columns: 1fr; }
 }
+
+/* ---------- Shared bits for Parents, Safeguarding and Terms ---------- */
+.ip-actions-left {
+    justify-content: flex-start;
+    margin-top: 20px;
+}
+
+.ip-source {
+    margin: 14px 0 0 !important;
+    color: var(--muted) !important;
+    font-size: 0.875rem !important;
+}
+
+.ip-source a {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--navy);
+    font-weight: 600;
+}
+
+/* Fact lists with green ticks */
+.ip-facts {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 0 0 14px !important;
+    padding: 0 !important;
+    list-style: none;
+}
+
+.ip-facts li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin: 0 !important;
+}
+
+.ip-facts li svg {
+    flex-shrink: 0;
+    margin-top: 6px;
+    padding: 2px;
+    border-radius: 50%;
+    background: #e8f6ec;
+    color: #1e7e34;
+}
+
+/* "Never share" list */
+.ip-never {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px 24px;
+    margin: 0 0 18px !important;
+    padding: 0 !important;
+    list-style: none;
+}
+
+.ip-never li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 !important;
+}
+
+.ip-never li svg {
+    flex-shrink: 0;
+    padding: 3px;
+    border-radius: 50%;
+    background: #fdeaea;
+    color: #b42318;
+}
+
+/* Ways to help (Parents) */
+.ip-help {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 28px 36px;
+    margin: 8px 0 0 !important;
+    padding: 0 !important;
+    list-style: none;
+}
+
+.ip-help li {
+    display: flex;
+    gap: 14px;
+    margin: 0 !important;
+}
+
+.ip-help strong {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--navy);
+}
+
+.ip-help span {
+    display: block;
+    color: var(--muted);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+}
+
+.ip-inline-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    color: var(--navy);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.ip-inline-link svg { transition: transform var(--dur) var(--ease-out); }
+.ip-inline-link:hover { color: var(--orange-solid); }
+.ip-inline-link:hover svg { transform: translateX(3px); }
+
+/* Emergency note at the top of Safeguarding */
+.ip-alert {
+    display: flex;
+    gap: 14px;
+    margin-bottom: var(--block-gap);
+    padding: 16px 18px;
+    border: 1px solid #f0c2c2;
+    border-radius: var(--radius);
+    background: #fdeaea;
+}
+
+.ip-alert-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: #fff;
+    color: #b42318;
+}
+
+.ip-alert div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.ip-alert strong { color: #8a1a12; }
+.ip-alert span { color: var(--ink); }
+
+/* Helpline numbers */
+.ip-contacts {
+    margin: 10px 0 0 !important;
+    padding: 0 !important;
+    list-style: none;
+    border-top: 1px solid var(--line);
+}
+
+.ip-contacts li {
+    display: grid;
+    grid-template-columns: 170px minmax(0, 1fr);
+    gap: 20px;
+    margin: 0 !important;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--line);
+}
+
+.ip-contact-num {
+    color: var(--navy);
+    font-size: 1.375rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+}
+
+.ip-contacts strong {
+    display: block;
+    margin-bottom: 2px;
+    color: var(--navy);
+}
+
+.ip-contacts span {
+    color: var(--muted);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+}
+
+.ip-contacts a,
+.ip-alert a {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--navy);
+    font-weight: 600;
+}
+
+html[data-theme="dark"] .ip-alert { border-color: #5c2424; background: #3a1717; }
+html[data-theme="dark"] .ip-alert strong { color: #ffb4ab; }
+html[data-theme="dark"] .ip-alert-icon { background: #000; color: #ffb4ab; }
+html[data-theme="dark"] .ip-facts li svg { background: #15301f; color: #8fdca6; }
+html[data-theme="dark"] .ip-never li svg { background: #3a1717; color: #ffb4ab; }
+
+@media (max-width: 700px) {
+    .ip-help, .ip-never { grid-template-columns: 1fr; }
+    .ip-contacts li { grid-template-columns: 1fr; gap: 4px; }
+}

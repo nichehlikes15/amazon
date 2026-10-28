@@ -24,8 +24,8 @@ export function AuthProvider({ children }) {
     return data.user
   }
 
-  const signup = async (fullName, email, password) => {
-    const data = await api.signup(fullName, email, password)
+  const signup = async (fullName, email, password, consent) => {
+    const data = await api.signup(fullName, email, password, consent)
     setUser(data.user)
     return data.user
   }

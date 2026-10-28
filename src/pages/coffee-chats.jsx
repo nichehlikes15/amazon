@@ -6,6 +6,7 @@ import { api } from '../modules/api'
 import { useAuth } from '../modules/auth'
 import { Icon } from '../modules/icons'
 import { MENTORS, CHAT_TOPICS } from '../modules/mentors'
+import { PersonPhoto } from '../modules/person-photo'
 import { CoffeeChatList } from '../modules/coffee-chat-list'
 
 const STEPS = [
@@ -15,7 +16,7 @@ const STEPS = [
 ]
 
 function Avatar({ name, size = 'md' }) {
-  return <span className={`cc-avatar cc-avatar-${size}`} aria-hidden="true">{name.charAt(0)}</span>
+  return <PersonPhoto name={name} className={`cc-avatar cc-avatar-${size}`} />
 }
 
 /* ---------- Request form (slide-in panel) ---------- */
@@ -26,6 +27,9 @@ function RequestPanel({ mentor, user, onClose, onSent }) {
     preferredTime: mentor.times.length === 1 ? mentor.times[0] : '',
     topic: mentor.topics[0] || '',
     message: '',
+    ageGroup: '',
+    guardianAware: false,
+    consent: false,
   })
   const [error, setError] = useState('')
   const [sending, setSending] = useState(false)
@@ -65,6 +69,18 @@ function RequestPanel({ mentor, user, onClose, onSent }) {
       setError('Please choose a time.')
       return
     }
+    if (!form.ageGroup) {
+      setError("Please tell us if you're under 18.")
+      return
+    }
+    if (form.ageGroup === 'under18' && !form.guardianAware) {
+      setError("Please check that a parent or carer knows about the chat.")
+      return
+    }
+    if (!form.consent) {
+      setError('Please tick the box to agree to the privacy notice and the staying safe guidance.')
+      return
+    }
     setSending(true)
     try {
       const data = await api.requestCoffeeChat({ mentor: mentor.name, ...form })
@@ -97,7 +113,7 @@ function RequestPanel({ mentor, user, onClose, onSent }) {
             <span className="cc-sent-icon"><Icon name="check" size={28} /></span>
             <h3>Request sent</h3>
             <p>
-              You asked {mentor.name} for a chat on <strong>{sent.preferredTime}</strong>
+              You asked {mentor.firstName} for a chat on <strong>{sent.preferredTime}</strong>
               {sent.topic ? <> about <strong>{sent.topic.toLowerCase()}</strong></> : null}.
               The team will be in touch at <strong>{sent.email}</strong> to confirm.
             </p>
@@ -147,6 +163,38 @@ function RequestPanel({ mentor, user, onClose, onSent }) {
               <span>Anything else? <em>(optional)</em></span>
               <textarea rows="4" value={form.message} onChange={update('message')} maxLength={1000}
                 placeholder="A question you'd like answered, or anything they should know first." />
+            </label>
+
+            <fieldset className="cc-fieldset">
+              <legend>Are you under 18?</legend>
+              <div className="cc-options">
+                {[['under18', "Yes, I'm under 18"], ['18+', "No, I'm 18 or over"]].map(([value, label]) => (
+                  <label key={value} className={form.ageGroup === value ? 'cc-option is-on' : 'cc-option'}>
+                    <input type="radio" name="ageGroup" value={value} checked={form.ageGroup === value}
+                      onChange={() => setForm({ ...form, ageGroup: value, guardianAware: value === 'under18' ? form.guardianAware : false })} />
+                    {label}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+
+            {form.ageGroup === 'under18' && (
+              <label className="cc-check">
+                <input type="checkbox" checked={form.guardianAware}
+                  onChange={(e) => setForm({ ...form, guardianAware: e.target.checked })} />
+                <span className="cc-check-box" aria-hidden="true"><Icon name="check" size={12} /></span>
+                <span>A parent or carer knows I'm booking this chat.</span>
+              </label>
+            )}
+
+            <label className="cc-check">
+              <input type="checkbox" checked={form.consent}
+                onChange={(e) => setForm({ ...form, consent: e.target.checked })} />
+              <span className="cc-check-box" aria-hidden="true"><Icon name="check" size={12} /></span>
+              <span>
+                I agree to the <Link to="/privacy">privacy notice</Link> and I've read how to{' '}
+                <Link to="/safeguarding">stay safe in coffee chats</Link>.
+              </span>
             </label>
 
             <div className="cc-form-actions">
@@ -259,7 +307,7 @@ function CoffeeChats() {
               </dl>
 
               <button type="button" className="cc-request" onClick={() => setSelected(m)}>
-                Request a chat with {m.name}
+                Request a chat with {m.firstName}
                 <Icon name="arrowRight" size={15} />
               </button>
             </li>

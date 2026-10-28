@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import './alummi.css'
 import { Icon, PathwayIcon } from '../modules/icons'
 import { MENTORS } from '../modules/mentors'
+import { PersonPhoto } from '../modules/person-photo'
 
 const stories = [
   { name: 'Amara', pathway: 'Digital', quote: 'My placement showed me what software development is really like. I learned more in a month than I expected to all year.' },
@@ -119,7 +120,7 @@ function Alummi() {
           {MENTORS.map((m) => (
             <li key={m.name}>
               <Link className="al-person" to="/alumni/coffee-chats">
-                <span className="al-person-avatar" aria-hidden="true">{m.name.charAt(0)}</span>
+                <PersonPhoto name={m.name} className="al-person-avatar" />
                 <strong>{m.name}</strong>
                 <span className="al-person-role">{m.role}</span>
                 <span className="al-person-time">

@@ -3,6 +3,7 @@ import './coffee-chat-list.css'
 import { api } from './api'
 import { Icon } from './icons'
 import { STATUS_HELP, formatChatTime, downloadChatIcs } from './mentors'
+import { PersonPhoto } from './person-photo'
 
 // A student's own coffee chat requests: status, the confirmed time and
 // meeting link once the team adds them, and a cancel option while waiting.
@@ -39,7 +40,7 @@ export function CoffeeChatList({ items, onUpdate }) {
 
         return (
           <li key={r.id} className={`ccl-item is-${tone}`}>
-            <span className="ccl-avatar" aria-hidden="true">{r.mentor.charAt(0)}</span>
+            <PersonPhoto name={r.mentor} className="ccl-avatar" />
 
             <div className="ccl-main">
               <div className="ccl-top">

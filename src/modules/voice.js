@@ -100,7 +100,7 @@ function sentences(text) {
   Callbacks: onStart (first sound), onWord (each word, if the browser reports
   it - used for the mouth), onEnd (finished, or speech failed).
 */
-export function speakNatural(text, { voice, onStart, onWord, onEnd } = {}) {
+export function speakNatural(text, { voice, onStart, onWord, onEnd, volume = 1 } = {}) {
   if (!canSpeak) {
     onEnd?.()
     return () => {}
@@ -135,7 +135,7 @@ export function speakNatural(text, { voice, onStart, onWord, onEnd } = {}) {
     const wobble = (Math.random() - 0.5) * 0.04
     u.rate = natural ? 0.98 + wobble / 2 : 0.92 + wobble
     u.pitch = natural ? 1 : 0.97 + wobble
-    u.volume = 1
+    u.volume = volume
 
     u.onstart = () => {
       if (!started) {

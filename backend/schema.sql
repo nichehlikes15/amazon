@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS users (
     email         TEXT    NOT NULL UNIQUE,
     password_hash TEXT    NOT NULL,
     is_admin      INTEGER NOT NULL DEFAULT 0,
+    consented_at  TEXT,                       -- when they agreed to the privacy notice and terms
     created_at    TEXT    NOT NULL DEFAULT (datetime('now'))
 );
 
@@ -16,8 +17,12 @@ CREATE TABLE IF NOT EXISTS expressions_of_interest (
     full_name   TEXT    NOT NULL,
     email       TEXT    NOT NULL,
     school      TEXT,
-    pathway     TEXT    NOT NULL,             -- Digital / Business / Media / Finance / Engineering
+    pathway     TEXT    NOT NULL,             -- a pathway, 'Not sure yet' or 'Several pathways'
     message     TEXT,
+    role        TEXT    NOT NULL DEFAULT 'student', -- student / parent / school
+    organisation TEXT,                        -- school or college name (schools)
+    contact_role TEXT,                        -- job title (schools)
+    consent_at  TEXT,                         -- when they agreed to be contacted
     created_at  TEXT    NOT NULL DEFAULT (datetime('now')),
     FOREIGN KEY (user_id) REFERENCES users (id)
 );
@@ -123,6 +128,41 @@ CREATE TABLE IF NOT EXISTS coffee_chat_requests (
     status         TEXT    NOT NULL DEFAULT 'Requested',
     confirmed_time TEXT,                      -- set by an admin, e.g. 2026-11-03T15:30
     meeting_link   TEXT,                      -- https:// link set by an admin
+    under_18       INTEGER,                   -- 1 if the student said they're under 18
+    guardian_aware INTEGER,                   -- 1 if a parent/carer knows (under 18s)
+    consent_at     TEXT,
     created_at     TEXT    NOT NULL DEFAULT (datetime('now')),
     FOREIGN KEY (user_id) REFERENCES users (id)
+);
+
+-- Interview practice results. Only scores are kept - never what was said.
+CREATE TABLE IF NOT EXISTS interview_practice (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id         INTEGER NOT NULL,
+    pathway         TEXT    NOT NULL,
+    overall         INTEGER NOT NULL,
+    question_scores TEXT    NOT NULL,        -- JSON list of {id, question, score}
+    focus_on        TEXT,                    -- JSON list of general tips
+    created_at      TEXT    NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (user_id) REFERENCES users (id)
+);
+
+-- Forgot password links. Only a hash of the token is stored.
+CREATE TABLE IF NOT EXISTS password_resets (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id     INTEGER NOT NULL,
+    token_hash  TEXT    NOT NULL,
+    expires_at  TEXT    NOT NULL,
+    used        INTEGER NOT NULL DEFAULT 0,
+    created_at  TEXT    NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (user_id) REFERENCES users (id)
+);
+
+-- "Was this page helpful?" answers. Anonymous - not linked to an account.
+CREATE TABLE IF NOT EXISTS page_feedback (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    page        TEXT    NOT NULL,
+    helpful     INTEGER NOT NULL,
+    comment     TEXT,
+    created_at  TEXT    NOT NULL DEFAULT (datetime('now'))
 );

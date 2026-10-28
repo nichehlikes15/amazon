@@ -137,11 +137,12 @@ def review_cv(text):
         tips.append("Name more specific skills, such as Excel, Python, customer service or teamwork.")
     sentences = [s for s in re.split(r"[.!?\n]+", text) if len(s.split()) > 3]
     avg = (sum(len(s.split()) for s in sentences) / len(sentences)) if sentences else 0
-    clear_pts = 8 if 0 < avg <= 22 else 4 if avg <= 30 else 0
+    # No sentences means nothing to judge, so no points (an empty CV used to get some).
+    clear_pts = 0 if not sentences else 8 if avg <= 22 else 4 if avg <= 30 else 0
     if avg > 22:
         tips.append("Some sentences are long. Keep each point short and clear.")
     used = [c for c in CLICHES if c in lower]
-    cliche_pts = 7 if not used else max(0, 7 - 3 * len(used))
+    cliche_pts = 0 if not sentences else 7 if not used else max(0, 7 - 3 * len(used))
     if used:
         tips.append(
             "Swap general phrases like '" + used[0] + "' for a real example of what you did."

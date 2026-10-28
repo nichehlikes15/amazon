@@ -1,0 +1,135 @@
+/* "Was this page helpful?" strip above the footer */
+.pfb {
+    border-top: 1px solid var(--line);
+    background: var(--light);
+}
+
+.pfb-inner {
+    display: flex;
+    justify-content: center;
+    max-width: var(--content-max);
+    margin: 0 auto;
+    padding: 28px var(--gutter);
+}
+
+.pfb-ask {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 12px 20px;
+}
+
+.pfb-ask p,
+.pfb-thanks {
+    margin: 0;
+    color: var(--navy);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.pfb-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.pfb-buttons button,
+.pfb-skip,
+.pfb-send {
+    min-width: 72px;
+    padding: 9px 18px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--white);
+    color: var(--navy);
+    font: inherit;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background var(--dur) ease, border-color var(--dur) ease, transform var(--dur-fast) var(--ease-out);
+}
+
+.pfb-buttons button:hover,
+.pfb-skip:hover {
+    border-color: var(--line-strong);
+    background: var(--white);
+    transform: translateY(-1px);
+}
+
+.pfb-buttons button:disabled,
+.pfb-skip:disabled,
+.pfb-send:disabled { opacity: 0.6; cursor: progress; transform: none; }
+
+.pfb-send {
+    border-color: var(--orange-solid);
+    background: var(--orange-solid);
+    color: #fff;
+}
+
+.pfb-send:hover { background: var(--orange-solid-hover); }
+
+.pfb-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    max-width: 560px;
+    animation: pfb-in 0.35s var(--ease-out) both;
+}
+
+.pfb-form label {
+    color: var(--navy);
+    font-size: 0.9375rem;
+    font-weight: 600;
+}
+
+.pfb-form textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--white);
+    color: var(--ink);
+    font: inherit;
+    font-size: 0.9375rem;
+    resize: vertical;
+}
+
+.pfb-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.pfb-thanks {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    animation: pfb-in 0.35s var(--ease-out) both;
+}
+
+.pfb-tick {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #2f9e5a;
+    color: #fff;
+}
+
+.pfb-error {
+    margin: 0;
+    color: #b42318;
+    font-size: 0.875rem;
+}
+
+@keyframes pfb-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pfb-form, .pfb-thanks { animation: none; }
+}

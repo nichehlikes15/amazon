@@ -192,3 +192,77 @@
     .guide-section-head { gap: 14px; }
     .guide-section-n { font-size: 2.25rem; }
 }
+
+/* ---------- Members-only part of a guide ---------- */
+.guide-locked {
+    position: relative;
+    margin-top: var(--block-gap);
+}
+
+/* A faded preview of the next sections */
+.guide-locked-peek {
+    padding: 0 4px;
+    color: var(--ink);
+    line-height: 1.7;
+    filter: blur(3px);
+    opacity: 0.55;
+    -webkit-mask-image: linear-gradient(180deg, #000 0%, transparent 100%);
+    mask-image: linear-gradient(180deg, #000 0%, transparent 100%);
+    user-select: none;
+    pointer-events: none;
+}
+
+.guide-locked-peek strong {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--navy);
+}
+
+.guide-locked-card {
+    position: relative;
+    margin-top: -40px;
+    padding: clamp(24px, 3vw, 36px);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--white);
+    box-shadow: var(--shadow-lift);
+    text-align: center;
+    animation: guide-in 0.5s var(--ease-out) both;
+}
+
+.guide-locked-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 14px;
+    border-radius: 50%;
+    background: var(--light);
+    color: var(--orange-solid);
+}
+
+.guide-locked-card h2 {
+    margin: 0 0 8px;
+    color: var(--navy);
+    font-size: var(--h3);
+    font-weight: 600;
+}
+
+.guide-locked-card p {
+    max-width: 460px;
+    margin: 0 auto 22px;
+    color: var(--muted);
+    line-height: 1.6;
+}
+
+.guide-locked-card .guide-actions { justify-content: center; }
+
+@keyframes guide-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .guide-locked-card { animation: none; }
+}

@@ -60,6 +60,7 @@ function Login() {
                 autoComplete="current-password"
                 required
               />
+              <p className="auth-forgot"><Link to="/forgot-password">Forgot your password?</Link></p>
             </div>
             <button className="primary-button auth-submit" type="submit" disabled={busy}>
               {busy ? 'Signing in…' : 'Sign in'}

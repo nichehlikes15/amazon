@@ -1,7 +1,8 @@
 :root {
-    --navy: #232F3E;
+    /* Squid Ink - Amazon's darkest brand colour. Use it wherever you'd use black. */
+    --navy: #333E48;
     --orange: #FF9900;
-    --ink: #172235;
+    --ink: #333E48;
     --muted: #536174;
     --line: #dce3eb;
     --light: #f3f7fb;
@@ -45,7 +46,7 @@
 
     /* ----- Theme helpers (dark mode swaps these) ----- */
     --hero-gradient: linear-gradient(180deg, #e3d4f6 0%, #ecdff8 22%, #f3ecfb 46%, var(--white) 82%);
-    --navy-solid: #232F3E;        /* dark backgrounds that stay dark in both themes */
+    --navy-solid: #333E48;        /* Squid Ink: dark backgrounds that stay dark in both themes */
     --glass: rgb(255 255 255 / 72%);
     --line-strong: #c9d2dd;
     --sk-a: #eef2f6;
@@ -82,8 +83,172 @@ html[data-theme="dark"][data-colour-blind="on"] {
     --line: #3a4859;
 }
 
-/* Logos are drawn in navy - show them in white on dark backgrounds */
-html[data-theme="dark"] .brand img { filter: brightness(0) invert(1); }
+/* ===== High contrast (for low vision) ===== */
+/* Darker text and lines, plain backgrounds, darker orange that passes
+   contrast checks with white text (#B84E00 on white is about 5:1). */
+html[data-contrast="high"] {
+    --muted: #333E48;
+    --line: #6b7682;
+    --line-strong: #333E48;
+    --light: #eef1f4;
+    --orange: #b84e00;
+    --orange-solid: #b84e00;
+    --orange-solid-hover: #8f3c00;
+    --hero-gradient: var(--white);
+    --glass: #ffffff;
+    --shadow-soft: none;
+}
+
+html[data-contrast="high"][data-theme="dark"] {
+    --white: #000000;
+    --navy: #ffffff;
+    --ink: #ffffff;
+    --muted: #e6ebf1;
+    --line: #9aa8b9;
+    --line-strong: #ffffff;
+    --light: #121212;
+    --orange: #ffb04d;
+    --glass: #000000;
+}
+
+/* Links are always underlined so they don't rely on colour alone */
+html[data-contrast="high"] .page-transition a:not(.primary-button):not(.secondary-button):not([class*="-btn"]):not([class*="card"]) {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+}
+
+/* A thick, two-colour focus ring that shows on any background */
+html[data-contrast="high"] :focus-visible {
+    outline: 3px solid #0b0c0c !important;
+    outline-offset: 2px !important;
+    box-shadow: 0 0 0 6px #ffdd00 !important;
+}
+
+html[data-contrast="high"] ::placeholder { color: #4a5560; opacity: 1; }
+
+/* ===== Skip link (first thing keyboard users reach) ===== */
+.skip-link {
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 2000;
+    padding: 12px 18px;
+    border-radius: 10px;
+    background: var(--navy-solid);
+    color: #fff;
+    font-weight: 600;
+    text-decoration: none;
+    transform: translateY(-160%);
+    transition: transform var(--dur) var(--ease-out);
+}
+
+.skip-link:focus,
+.skip-link:focus-visible {
+    transform: none;
+    outline: 3px solid var(--orange);
+    outline-offset: 2px;
+}
+
+#main-content:focus { outline: none; }
+
+/* ===== Read aloud ===== */
+/* The bit being read is highlighted so it's easy to follow */
+.is-reading-aloud {
+    border-radius: 6px;
+    background: #fff4e6 !important;
+    box-shadow: 0 0 0 6px #fff4e6, inset 0 0 0 0 transparent;
+    transition: background var(--dur) ease, box-shadow var(--dur) ease;
+}
+
+html[data-theme="dark"] .is-reading-aloud {
+    background: #3a2a14 !important;
+    box-shadow: 0 0 0 6px #3a2a14;
+}
+
+.ra-player {
+    position: fixed;
+    left: 50%;
+    bottom: 20px;
+    z-index: 1500;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: calc(100% - 24px);
+    padding: 8px 8px 8px 18px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--white);
+    box-shadow: var(--shadow-lift);
+    color: var(--navy);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    transform: translateX(-50%);
+    animation: ra-in 0.35s var(--ease-out) both;
+}
+
+.ra-player .ra-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.ra-bars {
+    display: inline-flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 14px;
+}
+
+.ra-bars span {
+    width: 3px;
+    height: 5px;
+    border-radius: 2px;
+    background: var(--orange-solid);
+    animation: ra-bar 0.9s ease-in-out infinite;
+}
+
+.ra-bars span:nth-child(2) { animation-delay: 0.15s; }
+.ra-bars span:nth-child(3) { animation-delay: 0.3s; }
+.ra-player.is-paused .ra-bars span { animation-play-state: paused; }
+
+.ra-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--white);
+    color: var(--navy);
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background var(--dur) ease, border-color var(--dur) ease;
+}
+
+.ra-btn:hover { border-color: var(--line-strong); background: var(--light); }
+
+@keyframes ra-in {
+    from { opacity: 0; transform: translate(-50%, 16px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+@keyframes ra-bar {
+    0%, 100% { height: 5px; }
+    50% { height: 14px; }
+}
+
+/* The logo must never be recoloured (Amazon brand rules). On dark
+   backgrounds it sits on a small white tile instead. */
+html[data-theme="dark"] .brand img {
+    box-sizing: content-box;
+    padding: 6px 12px;
+    border-radius: 10px;
+    background: #fff;
+}
 
 /* Light pastel status pills / notices: deepen them in dark mode */
 html[data-theme="dark"] :is(.opp-closing.is-soon .opp-closing-pill, .od-tag-soon, .opp-save.saved, .od-save-opp.is-saved, .ccl-status, .cc-option.is-on, .admin-status-select.is-requested) {
@@ -134,9 +299,10 @@ html {
 
 /* Site-wide zoom: on laptops and desktops the whole site renders at 75%,
    the same as zooming the browser out to 75%. Phones and tablets stay at
-   100% so text stays readable. Change 0.75 to adjust. */
+   100% so text stays readable. Change 0.75 to adjust. People who need
+   bigger pages can switch this off in the accessibility menu (data-zoom="full"). */
 @media (min-width: 1200px) {
-    html {
+    html:not([data-zoom="full"]) {
         zoom: 0.75;
     }
 }
@@ -502,10 +668,10 @@ html[data-reduced-motion="on"] *::after {
 /* At the 75% site zoom (screens 1200px+), nudge text up a little so it stays
    readable. Layout and spacing still render at 75%; only rem-based text grows. */
 @media (min-width: 1200px) {
-    html,
-    html[data-text-size="medium"] { font-size: 106.25%; }
-    html[data-text-size="small"] { font-size: 93.75%; }
-    html[data-text-size="large"] { font-size: 122%; }
+    html:not([data-zoom="full"]),
+    html:not([data-zoom="full"])[data-text-size="medium"] { font-size: 106.25%; }
+    html:not([data-zoom="full"])[data-text-size="small"] { font-size: 93.75%; }
+    html:not([data-zoom="full"])[data-text-size="large"] { font-size: 122%; }
 }
 
 /* Respect the OS-level preference too, as a sensible default. */
@@ -513,4 +679,17 @@ html[data-reduced-motion="on"] *::after {
     html {
         scroll-behavior: auto;
     }
+}
+
+/* Text for screen readers only */
+.visually-hidden {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
 }

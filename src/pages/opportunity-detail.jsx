@@ -277,7 +277,7 @@ function OpportunityDetail() {
                         <span className="od-res-icon"><Icon name={icon} size={18} /></span>
                         <span className="od-res-text">
                           <span className="od-res-title">
-                            {r.title}{icon === 'download' ? ' (PDF)' : ''}
+                            {r.title}{icon === 'download' ? (user ? ' (PDF)' : ' (PDF - sign in to download)') : ''}
                           </span>
                           {r.description && <span className="od-res-desc">{r.description}</span>}
                         </span>
@@ -289,7 +289,11 @@ function OpportunityDetail() {
                     return (
                       <li key={r.id}>
                         {icon === 'download' ? (
-                          <a className="od-res-link" href={r.url} download>{inner}</a>
+                          user ? (
+                            <a className="od-res-link" href={api.guidePdfUrl(r.url.split('/').pop())} download>{inner}</a>
+                          ) : (
+                            <Link className="od-res-link" to="/login">{inner}</Link>
+                          )
                         ) : r.url.startsWith('/') ? (
                           <Link className="od-res-link" to={r.url}>{inner}</Link>
                         ) : (
