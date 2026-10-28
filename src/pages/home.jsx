@@ -2,6 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import './home.css'
 import Events from '../modules/events'
+import { api } from '../modules/api'
+import { useAuth } from '../modules/auth'
+import { Icon, PathwayIcon, closingLabel, daysUntil } from '../modules/icons'
+import { formatChatTime } from '../modules/mentors'
 
 const PATHWAYS = [
   {
@@ -97,7 +101,74 @@ function StatCard({ stat, run }) {
   )
 }
 
+// Signed-in summary: your quiz match, saved opportunities and next coffee chat.
+function WelcomeBack({ user }) {
+  const [saved, setSaved] = useState(null)
+  const [chats, setChats] = useState([])
+
+  useEffect(() => {
+    api.listSavedOpportunities().then((d) => setSaved(d.items || [])).catch(() => setSaved([]))
+    api.myCoffeeChats().then((d) => setChats(d.items || [])).catch(() => setChats([]))
+  }, [])
+
+  const firstName = user.fullName.split(' ')[0]
+  const pathway = user.quizPathway
+
+  const nextClosing = (saved || [])
+    .filter((o) => { const d = daysUntil(o.closingDate); return d !== null && d >= 0 })
+    .sort((a, b) => daysUntil(a.closingDate) - daysUntil(b.closingDate))[0]
+
+  const now = Date.now()
+  const nextChat = chats
+    .filter((c) => c.status === 'Confirmed' && c.confirmedTime && new Date(c.confirmedTime).getTime() > now)
+    .sort((a, b) => new Date(a.confirmedTime) - new Date(b.confirmedTime))[0]
+  const waitingChats = chats.filter((c) => c.status === 'Requested').length
+
+  return (
+    <section className="h-welcome" aria-label="Your summary">
+      <div className="h-welcome-head">
+        <h2>Welcome back, {firstName}</h2>
+        <Link className="h-welcome-link" to="/profile">Go to my profile <Icon name="arrowRight" size={14} /></Link>
+      </div>
+      <div className="h-welcome-grid">
+        {/* Quiz match */}
+        <Link className="h-tile" to={pathway ? `/information#${pathway.toLowerCase()}` : '/quiz'}>
+          <span className="h-tile-icon">{pathway ? <PathwayIcon pathway={pathway} size={20} /> : <Icon name="check" size={20} />}</span>
+          <span className="h-tile-label">Your pathway</span>
+          <strong>{pathway || 'Not found yet'}</strong>
+          <span className="h-tile-sub">{pathway ? 'From your career quiz' : 'Take the two-minute quiz'}</span>
+        </Link>
+
+        {/* Saved */}
+        <Link className="h-tile" to={saved && saved.length ? '/profile' : '/opportunities'}>
+          <span className="h-tile-icon"><Icon name="bookmark" size={20} /></span>
+          <span className="h-tile-label">Saved opportunities</span>
+          <strong>{saved === null ? '-' : saved.length}</strong>
+          <span className="h-tile-sub">
+            {nextClosing
+              ? <>Next to close: {nextClosing.title} ({closingLabel(nextClosing.closingDate).text.toLowerCase()})</>
+              : saved && saved.length ? 'None closing soon' : 'Browse and save the ones you like'}
+          </span>
+        </Link>
+
+        {/* Coffee chat */}
+        <Link className="h-tile" to="/alumni/coffee-chats">
+          <span className="h-tile-icon"><Icon name="calendar" size={20} /></span>
+          <span className="h-tile-label">Next coffee chat</span>
+          <strong>{nextChat ? nextChat.mentor : waitingChats ? `${waitingChats} waiting` : 'None booked'}</strong>
+          <span className="h-tile-sub">
+            {nextChat
+              ? formatChatTime(nextChat.confirmedTime)
+              : waitingChats ? 'Waiting for the team to confirm' : 'Talk to a student or Amazon buddy'}
+          </span>
+        </Link>
+      </div>
+    </section>
+  )
+}
+
 function Home() {
+  const { user } = useAuth()
   const [statsRef, statsShown] = useReveal()
   const [pathRef, pathShown] = useReveal()
   const [stepsRef, stepsShown] = useReveal()
@@ -125,6 +196,8 @@ function Home() {
         </div>
       </section>
 
+      {user && <WelcomeBack user={user} />}
+
       {/* ===== Stats band with count-up ===== */}
       <section
         className={`h-stats ${statsShown ? 'is-shown' : ''}`}
@@ -146,7 +219,7 @@ function Home() {
         <div className="h-path-grid">
           {PATHWAYS.map((p, i) => (
             <Link
-              to="/information"
+              to={`/information#${p.name.toLowerCase()}`}
               className={`h-path-card ${pathShown ? 'is-shown' : ''}`}
               key={p.name}
               style={{ transitionDelay: `${i * 0.08}s` }}
@@ -195,7 +268,6 @@ function Home() {
         className={`h-cta ${ctaShown ? 'is-shown' : ''}`}
         ref={ctaRef}
       >
-        <div className="h-cta-shimmer" aria-hidden="true" />
         <div className="h-cta-inner">
           <h2>Your next step starts here</h2>
           <p>Take the two-minute quiz and we'll point you to the pathway that fits.</p>

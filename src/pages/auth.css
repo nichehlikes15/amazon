@@ -1,103 +1,157 @@
-/* Shared styles for login and signup pages (AWS style) */
+/* ============================================================
+   Sign in / Create account - centred card on the lilac gradient
+   ============================================================ */
+
 .auth-page {
     display: flex;
     justify-content: center;
-    min-height: 70vh;
-    padding: 64px 24px;
-    background: linear-gradient(180deg, #e3d4f6 0%, #ecdff8 20%, #f3ecfb 40%, var(--light) 80%);
+    min-height: 80vh;
+    padding: var(--hero-top) var(--gutter) var(--section-y);
+    background: var(--hero-gradient);
 }
 
+/* Narrow on purpose so the form is easy to fill in.
+   (The rise-in animation for .auth-card lives in global.css.) */
 .auth-card {
     width: 100%;
-    max-width: 420px;
+    max-width: 480px;
     align-self: flex-start;
-    padding: 32px;
+    padding: clamp(32px, 5vw, 52px);
     border: 1px solid var(--line);
-    border-radius: 16px;
-    box-shadow: 0 1px 3px rgb(6 33 66 / 6%);
+    border-radius: var(--radius-lg);
     background: var(--white);
+    box-shadow: var(--shadow-lift);
+}
+
+.auth-head {
+    margin-bottom: 36px;
+    text-align: center;
+}
+
+/* Small quiet label above the title (neutral, not orange) */
+.auth-kicker {
+    margin: 0 0 12px;
+    color: var(--muted);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
 }
 
 .auth-title {
-    margin: 0 0 6px;
+    margin: 0 0 12px;
     color: var(--navy);
-    font-size: 1.75rem;
-    font-weight: 500;
+    font-size: var(--h1-compact);
+    font-weight: 600;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
 }
 
 .auth-subtitle {
-    margin: 0 0 24px;
+    max-width: 340px;
+    margin: 0 auto;
     color: var(--muted);
-    font-size: 0.9375rem;
-    line-height: 1.5;
+    font-size: 1rem;
+    line-height: 1.6;
 }
 
+/* Fields */
 .auth-field {
-    margin-bottom: 18px;
+    margin-bottom: 22px;
 }
 
 .auth-field label {
     display: block;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
     color: var(--navy);
     font-size: 0.875rem;
-    font-weight: 500;
+    font-weight: 600;
 }
 
+/* Focus and hover rings come from the shared form styles in global.css */
 .auth-field input {
     width: 100%;
-    padding: 11px 13px;
+    padding: 13px 15px;
     border: 1px solid var(--line);
-    border-radius: 2px;
+    border-radius: var(--radius-sm);
     background: var(--white);
     color: var(--ink);
-}
-
-.auth-field input:focus {
-    outline: 2px solid var(--orange);
-    outline-offset: 1px;
+    font: inherit;
+    font-size: 0.9375rem;
 }
 
 .auth-hint {
-    margin: 6px 0 0;
+    margin: 8px 0 0;
     color: var(--muted);
     font-size: 0.8125rem;
 }
 
 .auth-submit {
     width: 100%;
-    margin-top: 4px;
-    border: 0;
+    margin-top: 8px;
+    cursor: pointer;
 }
 
 .auth-submit:disabled {
     opacity: 0.7;
-    cursor: default;
+    cursor: progress;
+    transform: none;
+    box-shadow: none;
 }
 
 .auth-error {
-    margin-bottom: 18px;
+    margin-bottom: 22px;
     padding: 12px 14px;
     border: 1px solid #f0c2c2;
-    border-radius: 2px;
+    border-radius: var(--radius-sm);
     background: #fdeaea;
     color: #b42318;
     font-size: 0.875rem;
 }
 
+/* Short reassurance line under the button */
+.auth-reassure {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 20px 0 0;
+    color: var(--muted);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    text-align: center;
+}
+
+.auth-reassure svg {
+    flex-shrink: 0;
+    color: #1e7e34;
+}
+
+/* Switch between sign in and create account */
 .auth-switch {
-    margin: 22px 0 0;
+    margin: 28px 0 0;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
     color: var(--muted);
     font-size: 0.9375rem;
     text-align: center;
 }
 
 .auth-switch a {
-    color: var(--orange);
-    font-weight: 500;
-    text-decoration: none;
+    color: var(--navy);
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: rgb(255 153 0 / 45%);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
+    transition: color var(--dur) ease, text-decoration-color var(--dur) ease;
 }
 
 .auth-switch a:hover {
-    text-decoration: underline;
+    color: var(--orange-solid);
+    text-decoration-color: var(--orange);
+}
+
+@media (max-width: 520px) {
+    .auth-page { padding-top: calc(var(--hero-top) * 0.6); }
 }

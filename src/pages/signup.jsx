@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import './auth.css'
 import { useAuth } from '../modules/auth'
+import { Icon } from '../modules/icons'
 
 function Signup() {
   const { signup } = useAuth()
@@ -34,8 +35,11 @@ function Signup() {
     <>
       <main className="auth-page">
         <div className="auth-card">
-          <h1 className="auth-title">Create your account</h1>
-          <p className="auth-subtitle">Save opportunities and register your interest with Amazon.</p>
+          <div className="auth-head">
+            <p className="auth-kicker">Launchpad</p>
+            <h1 className="auth-title">Create your account</h1>
+            <p className="auth-subtitle">Save opportunities and register your interest with Amazon.</p>
+          </div>
 
           {error && <div className="auth-error" role="alert">{error}</div>}
 
@@ -70,14 +74,21 @@ function Signup() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete="new-password"
+                aria-describedby="password-hint"
                 required
               />
-              <p className="auth-hint">At least 8 characters.</p>
+              <p className="auth-hint" id="password-hint">At least 8 characters.</p>
             </div>
             <button className="primary-button auth-submit" type="submit" disabled={busy}>
               {busy ? 'Creating account…' : 'Create account'}
+              {!busy && <Icon name="arrowRight" size={15} />}
             </button>
           </form>
+
+          <p className="auth-reassure">
+            <Icon name="check" size={15} />
+            You can download your data or delete your account at any time.
+          </p>
 
           <p className="auth-switch">
             Already have an account? <Link to="/login">Sign in</Link>

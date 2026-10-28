@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import './information.css'
+import { Icon, PathwayIcon } from '../modules/icons'
 
 const pathways = [
   {
@@ -56,9 +57,21 @@ function Information() {
   const [active, setActive] = useState(pathways[0].id)
   const sectionsRef = useRef(null)
 
+  const { hash } = useLocation()
+
   const scrollToPathway = (id) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
+
+  // Arriving from a link like /information#digital: glide down to that pathway.
+  useEffect(() => {
+    const id = hash.replace('#', '')
+    if (!pathways.some((p) => p.id === id)) return
+    setActive(id)
+    // Wait a moment so the page has laid out (and finished fading in) first.
+    const t = setTimeout(() => scrollToPathway(id), 250)
+    return () => clearTimeout(t)
+  }, [hash])
 
   // Scroll-spy: highlight the side-rail item for the pathway in view,
   // and reveal each section as it enters.
@@ -95,13 +108,30 @@ function Information() {
       {/* Hero */}
       <header className="info2-hero">
         <div className="info2-hero-inner">
+          <p className="info2-kicker">Five subject areas</p>
           <h1>Explore the <span>T Level</span> pathways</h1>
           <p className="info2-lead">
             Amazon Emerging Talent offers placements across five subject areas. Explore what
             you would study, the skills you would build, and where each pathway can lead.
           </p>
+          <ul className="info2-jump" aria-label="Jump to a pathway">
+            {pathways.map((p) => (
+              <li key={p.id}>
+                <button type="button" onClick={() => scrollToPathway(p.id)}>
+                  <PathwayIcon pathway={p.id} size={16} />
+                  {p.name}
+                </button>
+              </li>
+            ))}
+          </ul>
         </div>
       </header>
+
+      {/* Section heading */}
+      <div className="info2-head">
+        <p className="info2-kicker">The pathways</p>
+        <h2 className="info2-h2">What each pathway covers</h2>
+      </div>
 
       {/* Body: sticky side rail + open sections */}
       <div className="info2-body">
@@ -112,6 +142,7 @@ function Information() {
                 <button
                   type="button"
                   className={active === p.id ? 'is-active' : ''}
+                  aria-current={active === p.id ? 'true' : undefined}
                   onClick={() => scrollToPathway(p.id)}
                 >
                   <span className="info2-rail-n">{String(i + 1).padStart(2, '0')}</span>
@@ -124,35 +155,35 @@ function Information() {
 
         <div className="info2-sections" ref={sectionsRef}>
           {pathways.map((p, i) => (
-            <section className="pw-row" id={p.id} key={p.id}>
-              <div className="pw-index" aria-hidden="true">{String(i + 1).padStart(2, '0')}</div>
-              <div className="pw-content">
-                <div className="pw-head">
-                  <h2>{p.name}</h2>
-                  {p.comingSoon && <span className="pw-soon">More coming soon</span>}
-                </div>
+            <section className="pw-row" id={p.id} key={p.id} aria-labelledby={`${p.id}-heading`}>
+              <div className="pw-top">
+                <span className="pw-index" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                <span className="pw-icon" aria-hidden="true"><PathwayIcon pathway={p.id} size={24} /></span>
+                <h2 id={`${p.id}-heading`}>{p.name}</h2>
+                {p.comingSoon && <span className="pw-soon">More coming soon</span>}
                 <p className="pw-summary">{p.summary}</p>
+              </div>
 
-                <div className="pw-cols">
-                  {COLS.map((col) => (
-                    <div className="pw-col" key={col.key}>
-                      <h3>{col.label}</h3>
-                      <ul>
-                        {p[col.key].map((item) => <li key={item}>{item}</li>)}
-                      </ul>
-                    </div>
-                  ))}
-                </div>
+              <div className="pw-cols">
+                {COLS.map((col) => (
+                  <div className="pw-col" key={col.key}>
+                    <h3>{col.label}</h3>
+                    <ul>
+                      {p[col.key].map((item) => <li key={item}>{item}</li>)}
+                    </ul>
+                  </div>
+                ))}
+              </div>
 
-                <div className="pw-actions">
-                  <Link className="pw-link" to="/quiz">
-                    Is this right for me?
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
-                  </Link>
-                  <Link className="pw-link pw-link-muted" to="/opportunities">
-                    See opportunities
-                  </Link>
-                </div>
+              <div className="pw-actions">
+                <Link className="pw-link" to="/quiz">
+                  Is this right for me?
+                  <Icon name="arrowRight" size={15} />
+                </Link>
+                <Link className="pw-link" to="/opportunities">
+                  See opportunities
+                  <Icon name="arrowRight" size={15} />
+                </Link>
               </div>
             </section>
           ))}
@@ -161,9 +192,15 @@ function Information() {
 
       {/* Closing CTA */}
       <section className="info2-cta">
+        <p className="info2-kicker">Next step</p>
         <h2>Ready to register your interest?</h2>
-        <p>Let Amazon know which pathway interests you - it only takes a minute.</p>
-        <Link className="info2-cta-btn" to="/register-interest">Register your interest</Link>
+        <p className="info2-cta-text">Let Amazon know which pathway interests you - it only takes a minute.</p>
+        <div className="info2-cta-actions">
+          <Link className="primary-button" to="/register-interest">
+            Register your interest <Icon name="arrowRight" size={15} />
+          </Link>
+          <Link className="secondary-button" to="/quiz">Take the quiz</Link>
+        </div>
       </section>
     </main>
   )

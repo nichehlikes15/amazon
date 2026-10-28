@@ -1,108 +1,265 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import './navbar.css'
 import { useAuth } from './auth'
+import { useAccessibility, resolvedTheme } from './accessibility'
+import { Icon } from './icons'
+
+const Caret = ({ className }) => (
+  <span className={className} aria-hidden="true">
+    <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 6l4 4 4-4" />
+    </svg>
+  </span>
+)
+
+const TLEVEL_LINKS = [
+  ['/tlevel', 'Overview'],
+  ['/information', 'Pathways'],
+  ['/t-level/advice', 'Advice'],
+  ['/quiz', 'Career quiz'],
+  ['/interview', 'Interview practice'],
+]
+
+const TEXT_SIZES = [
+  ['small', 'A', 'Small text'],
+  ['medium', 'A', 'Medium text'],
+  ['large', 'A', 'Large text'],
+]
+
+function Switch({ checked, onChange, label, hint, icon }) {
+  return (
+    <label className="a11y-row">
+      <span className="a11y-row-icon"><Icon name={icon} size={16} /></span>
+      <span className="a11y-row-text">
+        <strong>{label}</strong>
+        <span>{hint}</span>
+      </span>
+      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
+      <span className="a11y-switch" aria-hidden="true"><span /></span>
+    </label>
+  )
+}
 
 function Navbar() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const { pathname } = useLocation()
+  const [a11y, setA11y] = useAccessibility()
+  const theme = resolvedTheme(a11y)
 
-  const [tlevelOpen, setTlevelOpen] = useState(false)
-  const [accountOpen, setAccountOpen] = useState(false)
-  const tlevelRef = useRef(null)
-  const accountRef = useRef(null)
+  // Only one dropdown open at a time: 'tlevel' | 'account' | 'a11y' | 'mobile' | null
+  const [open, setOpen] = useState(null)
+  const barRef = useRef(null)
+  const toggle = (name) => setOpen((cur) => (cur === name ? null : name))
 
-  // Close any open dropdown when clicking outside it.
+  // Close menus on outside click, Escape, and page change.
   useEffect(() => {
     const onClick = (e) => {
-      if (tlevelRef.current && !tlevelRef.current.contains(e.target)) setTlevelOpen(false)
-      if (accountRef.current && !accountRef.current.contains(e.target)) setAccountOpen(false)
+      if (barRef.current && !barRef.current.contains(e.target)) setOpen(null)
     }
+    const onKey = (e) => { if (e.key === 'Escape') setOpen(null) }
     document.addEventListener('click', onClick)
-    return () => document.removeEventListener('click', onClick)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('click', onClick)
+      document.removeEventListener('keydown', onKey)
+    }
   }, [])
 
+  useEffect(() => { setOpen(null) }, [pathname])
+
+  // No page scrolling behind the open mobile menu.
+  useEffect(() => {
+    document.body.classList.toggle('nav-locked', open === 'mobile')
+    return () => document.body.classList.remove('nav-locked')
+  }, [open])
+
   const handleLogout = async () => {
-    setAccountOpen(false)
+    setOpen(null)
     await logout()
     navigate('/')
   }
 
   const firstName = user ? user.fullName.split(' ')[0] : null
+  const tlevelActive = TLEVEL_LINKS.some(([to]) => pathname === to)
 
   return (
-    <header className="site-header">
+    <header className="site-header" ref={barRef}>
       <nav className="nav-bar" aria-label="Main navigation">
         <Link className="brand" to="/" aria-label="Launchpad home">
           <img src="/assets/images/launchpad.svg" alt="Launchpad" />
         </Link>
 
+        {/* Desktop links */}
         <div className="nav-links">
-          <Link to="/">Home</Link>
-          <Link to="/opportunities">Opportunities</Link>
+          <NavLink to="/" end>Home</NavLink>
+          <NavLink to="/opportunities">Opportunities</NavLink>
 
-          {/* T Levels dropdown */}
-          <div className="nav-dropdown" ref={tlevelRef}>
+          <div className="nav-dropdown">
             <button
               type="button"
-              className="nav-dropdown-toggle"
-              onClick={() => setTlevelOpen((o) => !o)}
-              aria-expanded={tlevelOpen}
+              className={tlevelActive ? 'nav-dropdown-toggle active' : 'nav-dropdown-toggle'}
+              onClick={() => toggle('tlevel')}
+              aria-expanded={open === 'tlevel'}
               aria-haspopup="true"
             >
               T Levels
-              <span className="nav-caret" aria-hidden="true">&#8964;</span>
+              <Caret className="nav-caret" />
             </button>
-            <div className={tlevelOpen ? 'nav-menu show' : 'nav-menu'}>
-              <Link to="/tlevel" onClick={() => setTlevelOpen(false)}>Overview</Link>
-              <Link to="/information" onClick={() => setTlevelOpen(false)}>Pathways</Link>
-              <Link to="/t-level/advice" onClick={() => setTlevelOpen(false)}>Advice</Link>
-              <Link to="/quiz" onClick={() => setTlevelOpen(false)}>Career quiz</Link>
+            <div className={open === 'tlevel' ? 'nav-menu show' : 'nav-menu'}>
+              {TLEVEL_LINKS.map(([to, label]) => <Link key={to} to={to}>{label}</Link>)}
             </div>
           </div>
 
-          <Link to="/about-us">About us</Link>
+          <NavLink to="/about-us">About us</NavLink>
         </div>
 
-        {user ? (
-          <div className="nav-profile" ref={accountRef}>
-            <button
-              className="nav-profile-button"
-              type="button"
-              onClick={() => setAccountOpen((o) => !o)}
-              aria-label="Open account menu"
-              aria-haspopup="true"
-              aria-expanded={accountOpen}
-            >
-              <img
-                className="profile-picture"
-                src="/assets/images/defaultprofile.svg"
-                alt=""
-              />
-              <span className="nav-profile-text">
-                <span className="profile-greeting">Hello, {firstName}</span>
-                <span className="profile-name">Account &amp; Lists</span>
-              </span>
-              <span className="profile-arrow" aria-hidden="true">&#8964;</span>
-            </button>
+        <div className="nav-right">
+          {/* Light / dark mode */}
+          <button
+            type="button"
+            className="nav-icon-btn theme-btn"
+            onClick={() => setA11y({ theme: theme === 'dark' ? 'light' : 'dark' })}
+            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+          >
+            <span className={theme === 'dark' ? 'theme-icons is-dark' : 'theme-icons'}>
+              <Icon name="sun" size={18} />
+              <Icon name="moon" size={18} />
+            </span>
+          </button>
 
-            <div className={accountOpen ? 'profile-dropdown show' : 'profile-dropdown'}>
-              <Link to="/profile" onClick={() => setAccountOpen(false)}>My Profile</Link>
-              <Link to="/settings" onClick={() => setAccountOpen(false)}>Settings</Link>
-              <Link to="/alummi" onClick={() => setAccountOpen(false)}>Career Journey</Link>
-              {user.isAdmin && <Link to="/admin" onClick={() => setAccountOpen(false)}>Admin</Link>}
-              <button type="button" className="dropdown-signout" onClick={handleLogout}>
-                Sign out
-              </button>
+          {/* Accessibility quick settings */}
+          <div className="nav-a11y">
+            <button
+              type="button"
+              className={open === 'a11y' ? 'nav-icon-btn is-open' : 'nav-icon-btn'}
+              onClick={() => toggle('a11y')}
+              aria-expanded={open === 'a11y'}
+              aria-haspopup="dialog"
+              aria-label="Accessibility settings"
+              title="Accessibility"
+            >
+              <Icon name="access" size={19} />
+            </button>
+            <div className={open === 'a11y' ? 'a11y-panel show' : 'a11y-panel'} role="dialog" aria-label="Accessibility settings">
+              <p className="a11y-title">Accessibility</p>
+
+              <div className="a11y-group">
+                <span className="a11y-label"><Icon name="text" size={16} /> Text size</span>
+                <div className="a11y-sizes" role="radiogroup" aria-label="Text size">
+                  {TEXT_SIZES.map(([value, letter, label]) => (
+                    <button
+                      key={value}
+                      type="button"
+                      role="radio"
+                      aria-checked={a11y.textSize === value}
+                      aria-label={label}
+                      className={`a11y-size a11y-size-${value}${a11y.textSize === value ? ' is-on' : ''}`}
+                      onClick={() => setA11y({ textSize: value })}
+                    >
+                      {letter}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <Switch
+                icon="eye"
+                label="Colour-blind friendly"
+                hint="Stronger, easier to tell apart colours"
+                checked={a11y.colourBlind}
+                onChange={(v) => setA11y({ colourBlind: v })}
+              />
+              <Switch
+                icon="motion"
+                label="Reduce motion"
+                hint="Turn off animations"
+                checked={a11y.reducedMotion}
+                onChange={(v) => setA11y({ reducedMotion: v })}
+              />
+              <Switch
+                icon="moon"
+                label="Dark mode"
+                hint="Light text on a dark background"
+                checked={theme === 'dark'}
+                onChange={(v) => setA11y({ theme: v ? 'dark' : 'light' })}
+              />
+
+              <Link className="a11y-more" to="/accessibility">
+                More about accessibility <Icon name="arrowRight" size={14} />
+              </Link>
             </div>
           </div>
-        ) : (
-          <div className="nav-auth">
-            <Link className="nav-signin" to="/login">Sign in</Link>
-            <Link className="nav-signup" to="/signup">Create account</Link>
-          </div>
-        )}
+
+          {user ? (
+            <div className="nav-profile">
+              <button
+                className="nav-profile-button"
+                type="button"
+                onClick={() => toggle('account')}
+                aria-label={`Account menu for ${firstName}`}
+                title="Your account"
+                aria-haspopup="true"
+                aria-expanded={open === 'account'}
+              >
+                <img className="profile-picture" src="/assets/images/defaultprofile.svg" alt="" />
+                <span className="profile-first-name">{firstName}</span>
+              </button>
+
+              <div className={open === 'account' ? 'profile-dropdown show' : 'profile-dropdown'}>
+                <p className="profile-dropdown-name">
+                  <strong>{user.fullName}</strong>
+                  <span>{user.email}</span>
+                </p>
+                <Link to="/profile">My Profile</Link>
+                <Link to="/settings">Settings</Link>
+                <Link to="/alumni">Career Journey</Link>
+                {user.isAdmin && <Link to="/admin">Admin</Link>}
+                <button type="button" className="dropdown-signout" onClick={handleLogout}>
+                  Sign out
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="nav-auth">
+              <Link className="nav-signin" to="/login">Sign in</Link>
+              <Link className="nav-signup" to="/signup">Create account</Link>
+            </div>
+          )}
+
+          {/* Phone / small tablet menu */}
+          <button
+            type="button"
+            className={open === 'mobile' ? 'nav-icon-btn nav-burger is-open' : 'nav-icon-btn nav-burger'}
+            onClick={() => toggle('mobile')}
+            aria-expanded={open === 'mobile'}
+            aria-controls="mobile-menu"
+            aria-label={open === 'mobile' ? 'Close menu' : 'Open menu'}
+          >
+            <Icon name={open === 'mobile' ? 'close' : 'menu'} size={20} />
+          </button>
+        </div>
       </nav>
+
+      <div id="mobile-menu" className={open === 'mobile' ? 'mobile-menu show' : 'mobile-menu'} aria-hidden={open !== 'mobile'}>
+        <div className="mobile-menu-inner">
+          <NavLink to="/" end>Home</NavLink>
+          <NavLink to="/opportunities">Opportunities</NavLink>
+          <p className="mobile-menu-label">T Levels</p>
+          {TLEVEL_LINKS.map(([to, label]) => <NavLink key={to} to={to} className="mobile-sub">{label}</NavLink>)}
+          <NavLink to="/about-us">About us</NavLink>
+          <NavLink to="/alumni/coffee-chats">Coffee chats</NavLink>
+          {!user && (
+            <div className="mobile-menu-auth">
+              <Link className="secondary-button" to="/login">Sign in</Link>
+              <Link className="primary-button" to="/signup">Create account</Link>
+            </div>
+          )}
+        </div>
+      </div>
+      <div className={open === 'mobile' ? 'mobile-scrim show' : 'mobile-scrim'} onClick={() => setOpen(null)} aria-hidden="true" />
     </header>
   )
 }

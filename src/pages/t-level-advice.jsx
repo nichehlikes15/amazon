@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import './t-level-advice.css'
+import { Icon } from '../modules/icons'
 
 // Add more cards here; the carousel scrolls through all of them.
 const studentAdvice = [
@@ -109,6 +110,7 @@ function AdviceCarousel({ items, label }) {
     if (!card) return
     const gap = parseFloat(getComputedStyle(track).columnGap) || 0
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      || document.documentElement.getAttribute('data-reduced-motion') === 'on'
     track.scrollBy({
       left: direction * (card.offsetWidth + gap),
       behavior: reduceMotion ? 'auto' : 'smooth',
@@ -124,7 +126,7 @@ function AdviceCarousel({ items, label }) {
         disabled={atStart}
         aria-label={`Previous ${label.toLowerCase()}`}
       >
-        &#8592;
+        <Icon name="arrowLeft" size={18} />
       </button>
       <div className="advice-carousel-track" ref={trackRef} onScroll={updateButtons} tabIndex={0}>
         {items.map((item, index) => (
@@ -134,6 +136,7 @@ function AdviceCarousel({ items, label }) {
             aria-roledescription="slide"
             aria-label={`${index + 1} of ${items.length}`}
           >
+            <span className="advice-card-n" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
             <h3>{item.title}</h3>
             <p>{item.text}</p>
           </article>
@@ -146,26 +149,28 @@ function AdviceCarousel({ items, label }) {
         disabled={atEnd}
         aria-label={`Next ${label.toLowerCase()}`}
       >
-        &#8594;
+        <Icon name="arrowRight" size={18} />
       </button>
     </div>
   )
 }
 
+// Text sections with an image (or soft placeholder) alongside, no boxes.
 // Text sections with an image alongside (a grey box shows if no image is set).
 function AdviceDetails({ items }) {
   return (
     <div className="advice-details">
-      {items.map((item) => (
+      {items.map((item, index) => (
         <div className="advice-detail" key={item.title}>
           {item.image ? (
             <img className="advice-detail-media" src={item.image} alt={item.imageAlt} />
           ) : (
             <div className="advice-detail-media advice-detail-placeholder" role="img" aria-label={item.imageAlt}>
-              Image coming soon
+              <span>Image coming soon</span>
             </div>
           )}
           <div className="advice-detail-text">
+            <span className="advice-detail-n" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
             <h3>{item.title}</h3>
             {item.paragraphs.map((text) => (
               <p key={text}>{text}</p>
@@ -179,27 +184,46 @@ function AdviceDetails({ items }) {
 
 function TLevelAdvice() {
   return (
-    <>
-      <main>
-        <section className="advice-header" aria-labelledby="advice-heading">
-          <div className="advice-header-content">
-            <h1 id="advice-heading">Advice for <span>students and schools</span></h1>
-            <p className="advice-tagline">
-              Practical guidance to help students make the most of their placements, and
-              to help schools set them up and manage them.
-            </p>
-          </div>
-        </section>
+    <main className="adv">
+      <header className="advice-header" aria-labelledby="advice-heading">
+        <div className="advice-header-content">
+          <p className="advice-kicker">T Level advice</p>
+          <h1 id="advice-heading">Advice for <span>students and schools</span></h1>
+          <p className="advice-tagline">
+            Practical guidance to help students make the most of their placements, and
+            to help schools set them up and manage them.
+          </p>
+          <ul className="advice-jump" aria-label="Jump to a section">
+            <li><a href="#students">Student advice</a></li>
+            <li><a href="#schools">School advice</a></li>
+          </ul>
+        </div>
+      </header>
 
-        <section className="content-section" id="students" aria-labelledby="students-heading">
-          <h2 id="students-heading">Student advice</h2>
-          <p className="section-intro">
+      <section className="advice-section" id="students" aria-labelledby="students-heading">
+        <div className="advice-head">
+          <p className="advice-kicker">For students</p>
+          <h2 id="students-heading" className="advice-h2">Student advice</h2>
+          <p className="advice-intro">
             How to get the most out of your placement and connect with the people around you.
           </p>
-          <AdviceCarousel items={studentAdvice} label="Student advice" />
-          <AdviceDetails items={studentDetails} />
-        </section>
+        </div>
+        <AdviceCarousel items={studentAdvice} label="Student advice" />
+        <AdviceDetails items={studentDetails} />
+      </section>
 
+      <section className="advice-section" id="schools" aria-labelledby="schools-heading">
+        <div className="advice-head">
+          <p className="advice-kicker">For schools and colleges</p>
+          <h2 id="schools-heading" className="advice-h2">School advice</h2>
+          <p className="advice-intro">
+            How to set up and manage T Level placements, and how to collaborate with Amazon.
+          </p>
+        </div>
+        <AdviceCarousel items={schoolAdvice} label="School advice" />
+        <AdviceDetails items={schoolDetails} />
+      </section>
+    </main>
         <section className="advice-band">
           <div className="content-section" id="schools" aria-labelledby="schools-heading">
             <h2 id="schools-heading">School advice</h2>

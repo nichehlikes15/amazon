@@ -1,47 +1,49 @@
 /* Interest header band */
 .interest-header {
-    background: linear-gradient(180deg, #e3d4f6 0%, #ecdff8 22%, #f3ecfb 46%, var(--white) 82%);
+    background: var(--hero-gradient);
 }
 
 .interest-header-content {
-    max-width: 1120px;
+    max-width: var(--content-max);
     margin: 0 auto;
-    padding: 56px 24px;
+    padding: var(--hero-top) var(--gutter) var(--hero-bottom);
 }
 
 .interest-header h1 {
-    margin-bottom: 0.75rem;
+    margin-bottom: 24px;
     color: var(--navy);
-    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-size: var(--h1);
     font-weight: 600;
-    line-height: 1.05;
+    line-height: 1.04;
+    letter-spacing: -0.025em;
 }
 
 .interest-tagline {
-    max-width: 600px;
+    max-width: 640px;
     margin: 0;
     color: var(--muted);
-    font-size: 1.0625rem;
-    line-height: 1.5;
+    font-size: var(--lead);
+    line-height: 1.65;
 }
 
 /* Form card */
 .interest-card {
     max-width: 600px;
     margin: 0 auto;
-    padding: 32px;
+    padding: clamp(28px, 4vw, 48px);
     border: 1px solid var(--line);
-    border-radius: 2px;
+    border-radius: var(--radius-lg);
     background: var(--white);
+    box-shadow: var(--shadow-soft);
 }
 
 .interest-field {
-    margin-bottom: 18px;
+    margin-bottom: 24px;
 }
 
 .interest-field label {
     display: block;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
     color: var(--navy);
     font-size: 0.875rem;
     font-weight: 500;
@@ -51,9 +53,9 @@
 .interest-field select,
 .interest-field textarea {
     width: 100%;
-    padding: 11px 13px;
+    padding: 13px 15px;
     border: 1px solid var(--line);
-    border-radius: 2px;
+    border-radius: var(--radius-sm);
     background: var(--white);
     color: var(--ink);
     font-family: inherit;
@@ -71,9 +73,9 @@
 }
 
 .interest-privacy {
-    margin: 0 0 20px;
-    padding: 12px 14px;
-    border-radius: 2px;
+    margin: 0 0 28px;
+    padding: 16px 18px;
+    border-radius: var(--radius-sm);
     background: var(--light);
     color: var(--muted);
     font-size: 0.8125rem;
@@ -96,10 +98,10 @@
 }
 
 .interest-success h2 {
-    margin-bottom: 10px;
+    margin-bottom: 14px;
     color: var(--navy);
-    font-size: 1.5rem;
-    font-weight: 500;
+    font-size: var(--h3);
+    font-weight: 600;
 }
 
 .interest-success p {
@@ -114,18 +116,9 @@
     margin-bottom: 18px;
     padding: 12px 14px;
     border: 1px solid #f0c2c2;
-    border-radius: 2px;
+    border-radius: var(--radius-sm);
     background: #fdeaea;
     color: #b42318;
     font-size: 0.875rem;
 }
 
-@media (max-width: 650px) {
-    .interest-header-content {
-        padding: 44px 20px;
-    }
-
-    .interest-card {
-        padding: 24px;
-    }
-}

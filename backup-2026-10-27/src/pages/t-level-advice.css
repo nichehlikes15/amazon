@@ -1,0 +1,214 @@
+/* Advice header band */
+.advice-header {
+    background: linear-gradient(180deg, #e3d4f6 0%, #ecdff8 22%, #f3ecfb 46%, var(--white) 82%);
+}
+
+.advice-header-content {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 64px 24px;
+}
+
+.advice-header h1 {
+    margin-bottom: 0.75rem;
+    color: var(--navy);
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 600;
+    line-height: 1.05;
+}
+
+.advice-header h1 span {
+    color: var(--orange);
+}
+
+.advice-tagline {
+    max-width: 620px;
+    margin: 0;
+    color: var(--muted);
+    font-size: 1.125rem;
+    line-height: 1.5;
+}
+
+/* Advice cards */
+.advice-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+
+.advice-card {
+    padding: 24px 24px 24px 0;
+    border-top: 2px solid var(--orange);
+    background: transparent;
+}
+
+.advice-card h3 {
+    margin: 0 0 10px;
+    padding-top: 16px;
+    color: var(--navy);
+    font-size: 1.1875rem;
+    font-weight: 600;
+}
+
+.advice-card p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+/* Student advice carousel: arrow | cards | arrow */
+.advice-carousel {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.advice-carousel-track {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    gap: 18px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+}
+
+.advice-carousel-track::-webkit-scrollbar {
+    display: none;
+}
+
+.advice-carousel-track:focus-visible {
+    outline: 2px solid var(--orange);
+    outline-offset: 4px;
+}
+
+/* Three cards visible at a time on desktop */
+.advice-carousel-track .advice-card {
+    flex: 0 0 calc((100% - 36px) / 3);
+    scroll-snap-align: start;
+}
+
+.advice-carousel-button {
+    flex: 0 0 auto;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--navy);
+    border-radius: 50%;
+    background: var(--white);
+    color: var(--navy);
+    font-size: 1.25rem;
+    cursor: pointer;
+}
+
+.advice-carousel-button:hover:not(:disabled) {
+    background: var(--navy);
+    color: var(--white);
+}
+
+.advice-carousel-button:focus-visible {
+    outline: 2px solid var(--orange);
+    outline-offset: 2px;
+}
+
+.advice-carousel-button:disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+
+/* Student detail rows (text + image, no boxes) */
+.advice-details {
+    display: flex;
+    flex-direction: column;
+    gap: 56px;
+    margin-top: 64px;
+}
+
+.advice-detail {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: center;
+}
+
+/* Alternate image left / right */
+.advice-detail:nth-child(even) .advice-detail-media {
+    order: 2;
+}
+
+.advice-detail-media {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    border-radius: 2px;
+    object-fit: cover;
+}
+
+.advice-detail-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #d5d9de;
+    color: #6b7480;
+    font-size: 0.9375rem;
+}
+
+.advice-detail-text h3 {
+    margin: 0 0 12px;
+    color: var(--navy);
+    font-size: 1.5rem;
+    font-weight: 500;
+}
+
+.advice-detail-text p {
+    margin: 0 0 12px;
+    color: var(--muted);
+    line-height: 1.6;
+}
+
+.advice-detail-text p:last-child {
+    margin-bottom: 0;
+}
+
+/* School advice band */
+.advice-band {
+    border-top: 1px solid var(--line);
+}
+
+/* Advice responsive styles */
+@media (max-width: 650px) {
+    .advice-header-content {
+        padding: 48px 20px;
+    }
+
+    .advice-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .advice-carousel {
+        gap: 8px;
+    }
+
+    .advice-carousel-button {
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
+    }
+
+    .advice-carousel-track .advice-card {
+        flex-basis: 100%;
+    }
+
+    .advice-details {
+        gap: 40px;
+        margin-top: 48px;
+    }
+
+    .advice-detail {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .advice-detail:nth-child(even) .advice-detail-media {
+        order: 0;
+    }
+}

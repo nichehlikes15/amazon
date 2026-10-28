@@ -1,44 +1,59 @@
+import { Link } from 'react-router-dom'
 import './footer.css'
 
-function Footer() {
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
+// <Link> instead of <a> so footer links use the smooth page transition
+// rather than reloading the whole site.
+const COLUMNS = [
+  {
+    title: 'Explore',
+    links: [
+      ['/', 'Home'],
+      ['/opportunities', 'Opportunities'],
+      ['/tlevel', 'T Levels'],
+      ['/information', 'Pathways'],
+      ['/quiz', 'Career quiz'],
+      ['/interview', 'Interview practice'],
+    ],
+  },
+  {
+    title: 'Your account',
+    links: [
+      ['/profile', 'My profile'],
+      ['/settings', 'Settings'],
+      ['/alumni', 'Career journey'],
+    ],
+  },
+  {
+    title: 'Community',
+    links: [
+      ['/about-us', 'About us'],
+      ['/alumni/coffee-chats', 'Coffee chats'],
+      ['/t-level/advice', 'Advice'],
+    ],
+  },
+  {
+    title: 'Support',
+    links: [
+      ['/help', 'Help'],
+      ['/accessibility', 'Accessibility'],
+      ['/privacy', 'Privacy'],
+    ],
+  },
+]
 
+function Footer() {
   return (
     <footer className="site-footer">
-      <button type="button" className="footer-top" onClick={scrollToTop}>
-        Back to top
-      </button>
-
       <div className="footer-main">
         <div className="footer-columns">
-          <div className="footer-column">
-            <h3>Explore</h3>
-            <a href="/">Home</a>
-            <a href="/tlevel">T Levels at Amazon</a>
-            <a href="/what-is-a-t-level">What is a T Level?</a>
-            <a href="/information">Information</a>
-            <a href="/quiz">Career quiz</a>
-          </div>
-          <div className="footer-column">
-            <h3>Your account</h3>
-            <a href="/profile">My profile</a>
-            <a href="/settings">Settings</a>
-            <a href="/alummi">Career journey</a>
-          </div>
-          <div className="footer-column">
-            <h3>Community</h3>
-            <a href="/about-us">About us</a>
-            <a href="/alummi/coffee-chats">Coffee chats</a>
-            <a href="/t-level/advice">Advice</a>
-          </div>
-          <div className="footer-column">
-            <h3>Support</h3>
-            <a href="/information">Help</a>
-            <a href="/settings">Accessibility</a>
-            <a href="/settings">Privacy</a>
-          </div>
+          {COLUMNS.map((col) => (
+            <div className="footer-column" key={col.title}>
+              <h3>{col.title}</h3>
+              {col.links.map(([to, label]) => (
+                <Link key={to} to={to}>{label}</Link>
+              ))}
+            </div>
+          ))}
         </div>
       </div>
 

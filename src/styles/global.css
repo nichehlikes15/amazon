@@ -11,6 +11,101 @@
     --grad-start: #0FB8C9;
     --grad-mid: #2563EB;
     --grad-end: #7C3AED;
+
+    /* ----- Design system: spacing ----- */
+    /* Side space roughly halved: wider content, smaller gutters */
+    --gutter: clamp(20px, 3vw, 48px);
+    --content-max: 1600px;
+    --hero-top: clamp(104px, 13vw, 168px);
+    --hero-bottom: clamp(72px, 9vw, 120px);
+    --section-y: clamp(96px, 11vw, 152px);
+    --row-y: clamp(64px, 7vw, 96px);
+    --block-gap: clamp(40px, 5vw, 64px);
+    --grid-gap: clamp(24px, 3vw, 40px);
+    --stack: 20px;
+
+    /* ----- Design system: type ----- */
+    --h1: clamp(2.6rem, 6vw, 4.25rem);
+    --h1-compact: clamp(2.2rem, 4.5vw, 3.25rem);
+    --h2: clamp(2rem, 3.6vw, 2.75rem);
+    --h3: clamp(1.25rem, 1.8vw, 1.5rem);
+    --lead: clamp(1.125rem, 1.6vw, 1.3rem);
+
+    /* ----- Design system: shape + motion ----- */
+    --radius-sm: 10px;
+    --radius: 14px;
+    --radius-lg: 20px;
+    --shadow-soft: 0 1px 2px rgb(6 33 66 / 4%), 0 8px 24px rgb(6 33 66 / 6%);
+    --shadow-lift: 0 2px 4px rgb(6 33 66 / 4%), 0 18px 40px rgb(6 33 66 / 12%);
+    --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+    --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+    --dur-fast: 0.18s;
+    --dur: 0.35s;
+    --dur-slow: 0.8s;
+
+    /* ----- Theme helpers (dark mode swaps these) ----- */
+    --hero-gradient: linear-gradient(180deg, #e3d4f6 0%, #ecdff8 22%, #f3ecfb 46%, var(--white) 82%);
+    --navy-solid: #232F3E;        /* dark backgrounds that stay dark in both themes */
+    --glass: rgb(255 255 255 / 72%);
+    --line-strong: #c9d2dd;
+    --sk-a: #eef2f6;
+    --sk-b: #f7f9fb;
+    color-scheme: light;
+}
+
+/* ===== Dark mode ===== */
+html[data-theme="dark"] {
+    --navy: #e9eef5;              /* headings */
+    --ink: #d3dae4;               /* body text */
+    --muted: #9aa8b9;
+    --line: #2b3746;
+    --light: #172230;             /* soft panels */
+    --white: #0d141d;             /* page background */
+    --navy-solid: #1b2735;
+    --orange-solid: #f0801f;
+    --orange-solid-hover: #ff9233;
+    --hero-gradient: linear-gradient(180deg, #2a2142 0%, #211b36 22%, #171a2a 46%, var(--white) 82%);
+    --glass: rgb(23 34 48 / 72%);
+    --line-strong: #3d4b5c;
+    --sk-a: #17212d;
+    --sk-b: #1f2b39;
+    --shadow-soft: 0 1px 2px rgb(0 0 0 / 30%), 0 8px 24px rgb(0 0 0 / 30%);
+    --shadow-lift: 0 2px 4px rgb(0 0 0 / 30%), 0 18px 40px rgb(0 0 0 / 45%);
+    color-scheme: dark;
+}
+
+html[data-theme="dark"][data-colour-blind="on"] {
+    --orange: #ff8a3d;
+    --navy: #f2f5f9;
+    --ink: #e6ebf1;
+    --muted: #b3bfcc;
+    --line: #3a4859;
+}
+
+/* Logos are drawn in navy - show them in white on dark backgrounds */
+html[data-theme="dark"] .brand img { filter: brightness(0) invert(1); }
+
+/* Light pastel status pills / notices: deepen them in dark mode */
+html[data-theme="dark"] :is(.opp-closing.is-soon .opp-closing-pill, .od-tag-soon, .opp-save.saved, .od-save-opp.is-saved, .ccl-status, .cc-option.is-on, .admin-status-select.is-requested) {
+    background-color: #3a2a14;
+    border-color: #5a3d17;
+    color: #ffc27a;
+}
+html[data-theme="dark"] :is(.ccl-status.is-confirmed, .admin-status-select.is-confirmed, .ccl-meeting) { background-color: #172a4a; color: #a9c5ff; }
+html[data-theme="dark"] :is(.ccl-status.is-completed, .admin-status-select.is-completed, .cc-sent-icon) { background-color: #15301f; color: #8fdca6; }
+html[data-theme="dark"] :is(.ccl-status.is-cancelled, .admin-status-select.is-cancelled, .opp-closing.is-closed .opp-closing-pill, .od-tag-closed) { background-color: #222b36; color: #9aa8b9; }
+html[data-theme="dark"] :is(.auth-error, .od-error, .cc-error, .pf-error, .ccl-yes, [class$="-error"][role="alert"]) { background-color: #3a1717; border-color: #5c2424; color: #ffb4ab; }
+html[data-theme="dark"] .ccl-when { color: var(--navy); }
+html[data-theme="dark"] .od-drop:hover,
+html[data-theme="dark"] .od-drop.is-dragging { background: #2a1f12; }
+html[data-theme="dark"] ::selection { background: #5a3d17; color: #fff; }
+
+/* Fade colours when switching theme (class added briefly by accessibility.js) */
+html.theme-fade,
+html.theme-fade *,
+html.theme-fade *::before,
+html.theme-fade *::after {
+    transition: background-color 0.4s ease, border-color 0.4s ease, color 0.4s ease, fill 0.4s ease !important;
 }
 
 @font-face {
@@ -37,12 +132,25 @@ html {
     scroll-behavior: smooth;
 }
 
+/* Site-wide zoom: on laptops and desktops the whole site renders at 75%,
+   the same as zooming the browser out to 75%. Phones and tablets stay at
+   100% so text stays readable. Change 0.75 to adjust. */
+@media (min-width: 1200px) {
+    html {
+        zoom: 0.75;
+    }
+}
+
 body {
     margin: 0;
     background: var(--white);
     color: var(--ink);
     font-family: "Amazon Ember Display", Arial, sans-serif;
     font-size: 16px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
 }
 
 a, button {
@@ -61,38 +169,59 @@ h1, h2, h3, p {
     margin-top: 0;
 }
 
+h1, h2, h3 {
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+}
+
+p {
+    text-wrap: pretty;
+}
+
+::selection {
+    background: #ffe2b8;
+    color: var(--navy);
+}
+
 /* ===== Shared layout ===== */
 .content-section {
-    max-width: 1120px;
+    max-width: var(--content-max);
     margin: 0 auto;
-    padding: 88px 24px;
+    padding: var(--section-y) var(--gutter);
 }
 
 .content-section h2 {
-    max-width: 570px;
-    margin-bottom: 18px;
+    max-width: 640px;
+    margin-bottom: 24px;
     color: var(--navy);
-    font-size: 38px;
-    font-weight: 500;
+    font-size: var(--h2);
+    font-weight: 600;
     line-height: 1.1;
 }
 
 .section-intro {
-    max-width: 570px;
-    margin-bottom: 38px;
+    max-width: 640px;
+    margin-bottom: var(--block-gap);
     color: var(--muted);
-    line-height: 1.5;
+    font-size: var(--lead);
+    line-height: 1.65;
 }
 
-/* ===== Shared buttons (Amazon style) ===== */
+/* ===== Shared buttons ===== */
 .primary-button,
 .secondary-button {
-    display: inline-block;
-    padding: 13px 22px;
-    border-radius: 2px;
-    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 26px;
+    border-radius: 12px;
+    font-weight: 600;
     text-decoration: none;
     text-align: center;
+    transition: background var(--dur-fast) ease, border-color var(--dur-fast) ease,
+        color var(--dur-fast) ease, transform var(--dur-fast) var(--ease-out),
+        box-shadow var(--dur) ease;
 }
 
 .primary-button {
@@ -104,27 +233,227 @@ h1, h2, h3, p {
 .primary-button:hover {
     background: var(--orange-solid-hover);
     border-color: var(--orange-solid-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgb(236 114 17 / 24%);
 }
 
 .secondary-button {
-    border: 1px solid var(--navy);
-    background: transparent;
+    border: 1px solid var(--line);
+    background: var(--white);
     color: var(--navy);
 }
 
 .secondary-button:hover {
-    background: var(--navy);
-    color: var(--white);
+    border-color: var(--line-strong);
+    background: var(--light);
+    color: var(--navy);
+    transform: translateY(-2px);
+}
+
+.primary-button:active,
+.secondary-button:active {
+    transform: translateY(0) scale(0.98);
+}
+
+.primary-button svg,
+.secondary-button svg {
+    transition: transform var(--dur) var(--ease-out);
+}
+
+.primary-button:hover svg,
+.secondary-button:hover svg {
+    transform: translateX(3px);
+}
+
+/* ===== Shared form fields (all forms use the same look) ===== */
+.page-transition input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.page-transition select,
+.page-transition textarea {
+    border-radius: var(--radius-sm);
+    transition: border-color var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
+}
+
+.page-transition input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):hover,
+.page-transition select:hover,
+.page-transition textarea:hover {
+    border-color: var(--line-strong);
+}
+
+.page-transition input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus,
+.page-transition select:focus,
+.page-transition textarea:focus {
+    outline: none;
+    border-color: var(--orange);
+    box-shadow: 0 0 0 4px rgb(255 153 0 / 18%);
+}
+
+/* Inline text links inside page content get a soft underline that grows */
+.page-transition p a:not([class]) {
+    text-decoration: underline;
+    text-decoration-color: rgb(255 153 0 / 45%);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+    transition: text-decoration-color var(--dur-fast) ease, color var(--dur-fast) ease;
+}
+
+.page-transition p a:not([class]):hover {
+    color: var(--orange-solid);
+    text-decoration-color: var(--orange);
+}
+
+/* ===== Motion ===== */
+/* Safety net: anything clickable eases between states instead of snapping.
+   :where() keeps this at zero specificity, so any component that sets its
+   own transition still wins. */
+:where(a, button, summary, label, select, input, textarea, [role="tab"], [role="button"]) {
+    transition-property: color, background-color, border-color, box-shadow, opacity,
+        transform, text-decoration-color, outline-color, fill, stroke;
+    transition-duration: var(--dur);
+    transition-timing-function: var(--ease-out);
+}
+
+:where(a, button, summary, [role="tab"]) svg {
+    transition: transform var(--dur) var(--ease-out), color var(--dur) ease, opacity var(--dur) ease;
+}
+
+/* Page fade on route change */
+.page-transition {
+    animation: page-in 0.6s var(--ease-out) both;
+}
+
+/* Old page fades out before the new one comes in */
+.page-transition.is-leaving {
+    animation: page-out 0.24s ease-in both;
+    pointer-events: none;
+}
+
+@keyframes page-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: none; }
+}
+
+@keyframes page-out {
+    from { opacity: 1; transform: none; }
+    to { opacity: 0; transform: translateY(-6px); }
+}
+
+/* Messages, errors and confirmations fade in instead of popping */
+.page-transition [role="alert"],
+.page-transition [role="status"] {
+    animation: msg-in 0.45s var(--ease-out) both;
+}
+
+@keyframes msg-in {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: none; }
+}
+
+/* Content that swaps in place (quiz questions, results) slides in */
+.qz-swap {
+    animation: swap-in 0.55s var(--ease-out) both;
+}
+
+@keyframes swap-in {
+    from { opacity: 0; transform: translateX(18px); }
+    to { opacity: 1; transform: none; }
+}
+
+/* Quiz score bars grow from the left */
+.qz-bar-fill {
+    transform-origin: left center;
+    animation: bar-grow 1s var(--ease-out) 0.2s both;
+}
+
+@keyframes bar-grow {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+}
+
+/* FAQ / <details>: the height glides open and closed where the browser
+   supports it (Chrome, Edge); elsewhere the answer still fades in. */
+@supports (interpolate-size: allow-keywords) {
+    :root {
+        interpolate-size: allow-keywords;
+    }
+
+    .page-transition details::details-content {
+        block-size: 0;
+        overflow: hidden;
+        transition: block-size 0.45s var(--ease-out), content-visibility 0.45s allow-discrete;
+    }
+
+    .page-transition details[open]::details-content {
+        block-size: auto;
+    }
+}
+
+/* Hero content rises in, staggered (delays set in motion.jsx) */
+.hero-rise {
+    animation: hero-rise 0.9s var(--ease-out) both;
+}
+
+@keyframes hero-rise {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: none; }
+}
+
+/* Sign-in / sign-up card */
+.auth-card {
+    animation: hero-rise 0.9s var(--ease-out) 0.1s both;
+}
+
+/* FAQ / expandable answers slide open */
+.page-transition details > summary {
+    transition: color var(--dur-fast) ease;
+}
+
+.page-transition details > summary:hover {
+    color: var(--orange-solid);
+}
+
+.page-transition details[open] > :not(summary) {
+    animation: details-open 0.45s var(--ease-out) both;
+}
+
+@keyframes details-open {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: none; }
+}
+
+/* Images settle in gently and zoom slightly on hover inside links */
+.page-transition a img {
+    transition: transform 0.6s var(--ease-out);
+}
+
+.page-transition a:hover img {
+    transform: scale(1.03);
+}
+
+/* Keyboard focus ring, consistent everywhere */
+.page-transition :is(a, button, summary):focus-visible {
+    outline: 2px solid var(--orange);
+    outline-offset: 3px;
+    border-radius: 6px;
+}
+
+/* Scroll reveal (classes added in motion.jsx, removed again once the
+   element has finished appearing so its own hover styles take over) */
+.page-transition .reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity var(--dur-slow) var(--ease-out) var(--reveal-delay, 0s),
+        transform var(--dur-slow) var(--ease-out) var(--reveal-delay, 0s);
+}
+
+.page-transition .reveal.is-visible {
+    opacity: 1;
+    transform: none;
 }
 
 /* Responsive shared layout */
 @media (max-width: 650px) {
-    .content-section {
-        padding: 64px 20px;
-    }
-
     .content-section h2 {
-        font-size: 32px;
+        font-size: var(--h2);
     }
 }
 
@@ -168,6 +497,15 @@ html[data-reduced-motion="on"] *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
+}
+
+/* At the 75% site zoom (screens 1200px+), nudge text up a little so it stays
+   readable. Layout and spacing still render at 75%; only rem-based text grows. */
+@media (min-width: 1200px) {
+    html,
+    html[data-text-size="medium"] { font-size: 106.25%; }
+    html[data-text-size="small"] { font-size: 93.75%; }
+    html[data-text-size="large"] { font-size: 122%; }
 }
 
 /* Respect the OS-level preference too, as a sensible default. */

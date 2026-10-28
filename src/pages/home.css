@@ -16,26 +16,29 @@
     font-weight: 600;
     font-size: 1rem;
     text-decoration: none;
-    transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+    transition: transform var(--dur-fast) ease, background var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
 }
 
 .h-btn:active { transform: translateY(1px); }
 
 .h-btn-primary {
-    background: var(--navy);
+    background: var(--navy-solid);
     color: #fff;
 }
 .h-btn-primary:hover { background: #11161d; transform: translateY(-2px); }
 
 .h-btn-ghost {
-    border: 1px solid var(--navy);
+    border: 1px solid var(--line);
     background: var(--white);
     color: var(--navy);
 }
-.h-btn-ghost:hover { background: var(--light); }
+.h-btn-ghost:hover { background: var(--light);
+    border-color: var(--line-strong);
+    transform: translateY(-2px);
+}
 
 .h-btn-light {
-    background: #fff;
+    background: var(--white);
     color: var(--navy);
 }
 .h-btn-light:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgb(0 0 0 / 18%); }
@@ -44,7 +47,7 @@
 .h-hero {
     position: relative;
     overflow: hidden;
-    background: linear-gradient(180deg, #e3d4f6 0%, #ecdff8 18%, #f3ecfb 38%, var(--white) 70%);
+    background: var(--hero-gradient);
     color: var(--navy);
 }
 
@@ -56,7 +59,7 @@
     position: relative;
     max-width: 920px;
     margin: 0 auto;
-    padding: 120px 24px 110px;
+    padding: var(--hero-top) var(--gutter) calc(var(--hero-bottom) + 44px);
     text-align: center;
 }
 
@@ -77,10 +80,10 @@
 
 .h-hero-sub {
     max-width: 620px;
-    margin: 0 auto 32px;
+    margin: 0 auto 44px;
     color: var(--muted);
-    font-size: 1.2rem;
-    line-height: 1.6;
+    font-size: var(--lead);
+    line-height: 1.65;
 }
 
 .h-hero-actions {
@@ -126,17 +129,125 @@
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* ---------- Welcome back (signed in) ---------- */
+.h-welcome {
+    position: relative;
+    z-index: 3;
+    max-width: min(1280px, calc(100% - 2 * var(--gutter)));
+    margin: -44px auto 0;
+    padding: clamp(28px, 3vw, 40px);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--white);
+    box-shadow: var(--shadow-lift);
+    animation: h-rise-in 0.8s var(--ease-out) 0.5s backwards;
+}
+
+/* stats card sits below the welcome card instead of overlapping the hero */
+.h-welcome + .h-stats { margin-top: 32px; }
+
+.h-welcome-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.h-welcome-head h2 {
+    margin: 0;
+    color: var(--navy);
+    font-size: clamp(1.5rem, 2.4vw, 2rem);
+    font-weight: 600;
+}
+
+.h-welcome-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--navy);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.h-welcome-link:hover { color: var(--orange-solid); }
+.h-welcome-link:hover svg { transform: translateX(3px); }
+
+.h-welcome-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.h-tile {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 22px;
+    border-radius: var(--radius);
+    background: var(--light);
+    color: inherit;
+    text-decoration: none;
+    transition: transform var(--dur) var(--ease-out), box-shadow var(--dur) ease, background var(--dur) ease;
+}
+
+.h-tile:hover {
+    background: var(--white);
+    box-shadow: var(--shadow-soft), inset 0 0 0 1px var(--line);
+    transform: translateY(-3px);
+}
+
+.h-tile-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    margin-bottom: 10px;
+    border-radius: 12px;
+    background: var(--white);
+    color: var(--navy);
+    transition: transform var(--dur) var(--ease-spring);
+}
+
+.h-tile:hover .h-tile-icon { transform: rotate(-6deg) scale(1.06); }
+
+.h-tile-label {
+    color: var(--muted);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.h-tile strong {
+    color: var(--navy);
+    font-size: 1.375rem;
+    font-weight: 700;
+}
+
+.h-tile-sub {
+    color: var(--muted);
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+@media (max-width: 800px) {
+    .h-welcome-grid { grid-template-columns: 1fr; }
+}
+
 /* ---------- Stats band (count-up) ---------- */
 .h-stats {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
-    max-width: 1080px;
+    gap: 32px;
+    max-width: min(1280px, calc(100% - 2 * var(--gutter)));
     margin: -44px auto 0;
-    padding: 36px 32px;
+    padding: clamp(32px, 4vw, 48px) clamp(24px, 4vw, 48px);
     position: relative;
     z-index: 2;
-    background: #fff;
+    background: var(--white);
     border: 1px solid var(--line);
     border-radius: 18px;
     box-shadow: 0 16px 40px rgb(6 33 66 / 10%);
@@ -166,28 +277,28 @@
 
 /* ---------- Generic section ---------- */
 .h-section {
-    max-width: 1120px;
+    max-width: var(--content-max);
     margin: 0 auto;
-    padding: 96px 24px;
+    padding: var(--section-y) var(--gutter);
 }
 
-.h-section-head { max-width: 620px; margin: 0 auto 44px; text-align: center; }
+.h-section-head { max-width: 620px; margin: 0 auto var(--block-gap); text-align: center; }
 
 .h-section-head h2 {
-    margin: 0 0 14px;
+    margin: 0 0 18px;
     color: var(--navy);
-    font-size: clamp(2rem, 4vw, 2.75rem);
+    font-size: var(--h2);
     font-weight: 600;
     letter-spacing: -0.01em;
 }
 
-.h-lead { margin: 0; color: var(--muted); font-size: 1.1rem; line-height: 1.6; }
+.h-lead { margin: 0; color: var(--muted); font-size: var(--lead); line-height: 1.6; }
 
 /* ---------- Pathways ---------- */
 .h-path-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    gap: 16px;
+    gap: 20px;
 }
 
 .h-path-card {
@@ -195,7 +306,7 @@
     display: block;
     padding: 26px 22px 54px;
     border-radius: 16px;
-    background: #fff;
+    background: var(--white);
     border: 1px solid var(--line);
     text-decoration: none;
     opacity: 0;
@@ -236,21 +347,21 @@
     background: var(--light);
     border-top: 1px solid var(--line);
     border-bottom: 1px solid var(--line);
-    padding: 96px 24px;
+    padding: var(--section-y) var(--gutter);
 }
 
 .h-steps {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-    max-width: 1000px;
+    gap: var(--grid-gap);
+    max-width: 1280px;
     margin: 0 auto;
 }
 
 .h-step {
-    padding: 30px;
+    padding: clamp(28px, 3vw, 40px);
     border-radius: 16px;
-    background: #fff;
+    background: var(--white);
     border: 1px solid var(--line);
     opacity: 0;
     transform: translateY(26px);
@@ -275,40 +386,27 @@
 /* ---------- Gradient CTA ---------- */
 .h-cta {
     position: relative;
-    overflow: hidden;
     margin: 0;
-    background: linear-gradient(120deg, var(--grad-start), var(--grad-mid), var(--grad-end));
-    background-size: 200% 200%;
-    animation: h-grad 12s ease infinite;
+    background: none;
     opacity: 0;
     transition: opacity 0.6s ease;
 }
 .h-cta.is-shown { opacity: 1; }
 
-@keyframes h-grad {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-
-.h-cta-shimmer {
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(60% 120% at 50% 0%, rgba(255,255,255,0.25), transparent 60%);
-    pointer-events: none;
-}
-
 .h-cta-inner {
     position: relative;
     max-width: 680px;
     margin: 0 auto;
-    padding: 86px 24px;
+    padding: var(--section-y) var(--gutter);
     text-align: center;
-    color: #fff;
+    color: var(--navy);
 }
 
-.h-cta-inner h2 { margin: 0 0 12px; font-size: clamp(2rem, 4vw, 2.75rem); font-weight: 600; }
-.h-cta-inner p { margin: 0 0 28px; font-size: 1.15rem; line-height: 1.6; color: rgba(255,255,255,0.92); }
+.h-cta-inner h2 { margin: 0 0 16px; color: var(--navy); font-size: var(--h2); font-weight: 600; }
+.h-cta-inner p { margin: 0 0 36px; font-size: var(--lead); line-height: 1.6; color: var(--muted); }
+
+.h-cta .h-btn-light { background: var(--orange-solid); color: #fff; }
+.h-cta .h-btn-light:hover { background: var(--orange-solid-hover); box-shadow: 0 10px 24px rgb(236 114 17 / 25%); }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 900px) {
@@ -318,7 +416,6 @@
 }
 
 @media (max-width: 560px) {
-    .h-hero-inner { padding: 92px 20px 80px; }
     .h-stats { grid-template-columns: 1fr; margin-top: -28px; }
     .h-path-grid { grid-template-columns: 1fr; }
 }

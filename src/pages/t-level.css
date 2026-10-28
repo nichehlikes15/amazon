@@ -1,32 +1,44 @@
 /* T Level header band */
 .tl-header {
-    background: linear-gradient(180deg, #e3d4f6 0%, #ecdff8 22%, #f3ecfb 46%, var(--white) 82%);
+    background: var(--hero-gradient);
 }
 
 .tl-header-content {
-    max-width: 1120px;
+    max-width: var(--content-max);
     margin: 0 auto;
-    padding: 72px 24px;
+    padding: var(--hero-top) var(--gutter) var(--hero-bottom);
 }
 
 .tl-header h1 {
-    margin-bottom: 0.75rem;
+    margin-bottom: 24px;
     color: var(--navy);
-    font-size: clamp(2rem, 5vw, 3.25rem);
+    /* Sized to the screen width so the heading always fits on one line */
+    font-size: clamp(2.2rem, 5.2vw, 3.75rem);
     font-weight: 600;
-    line-height: 1.05;
+    line-height: 1.04;
+    letter-spacing: -0.025em;
+    white-space: nowrap;
+    text-wrap: nowrap;
 }
 
 .tl-header h1 span {
     color: var(--orange);
 }
 
+/* On phones there isn't room for one line, so let it wrap */
+@media (max-width: 650px) {
+    .tl-header h1 {
+        white-space: normal;
+        text-wrap: balance;
+    }
+}
+
 .tl-tagline {
-    max-width: 600px;
-    margin-bottom: 2rem;
+    max-width: 640px;
+    margin-bottom: 40px;
     color: var(--muted);
-    font-size: 1.25rem;
-    line-height: 1.5;
+    font-size: var(--lead);
+    line-height: 1.65;
 }
 
 .tl-actions {
@@ -39,7 +51,7 @@
 .fact-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 18px;
+    gap: var(--grid-gap);
 }
 
 .fact-card {
@@ -67,16 +79,16 @@
 }
 
 .tl-steps-inner {
-    max-width: 1120px;
+    max-width: var(--content-max);
     margin: 0 auto;
-    padding: 72px 24px;
+    padding: var(--section-y) var(--gutter);
 }
 
 .step-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 18px;
-    margin-top: 28px;
+    gap: var(--grid-gap);
+    margin-top: 40px;
 }
 
 .step-card {
@@ -92,8 +104,8 @@
     height: 36px;
     margin-bottom: 14px;
     border-radius: 50%;
-    background: var(--navy);
-    color: var(--white);
+    background: var(--navy-solid);
+    color: #fff;
     font-weight: 500;
 }
 
@@ -101,7 +113,7 @@
     margin: 0 0 8px;
     color: var(--navy);
     font-size: 1.0625rem;
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .step-card p {
@@ -113,47 +125,122 @@
 
 /* Outline button on the navy header */
 .tl-secondary-on-dark {
-    border-color: var(--navy);
+    border-color: var(--line);
     color: var(--navy);
 }
 
 .tl-secondary-on-dark:hover {
-    background: var(--navy);
-    color: var(--white);
+    background: var(--light);
+    color: var(--navy);
 }
 
-/* On-this-page jump links */
+/* Topic tabs: only the selected tab's content is shown below */
 .tl-subnav {
     position: sticky;
     top: 0;
     z-index: 5;
     border-bottom: 1px solid var(--line);
-    background: var(--white);
+    background: var(--glass);
+    -webkit-backdrop-filter: saturate(180%) blur(12px);
+    backdrop-filter: saturate(180%) blur(12px);
 }
 
-.tl-subnav ul {
+.tl-tabs {
     display: flex;
-    gap: 28px;
-    max-width: 1120px;
+    gap: clamp(20px, 3vw, 40px);
+    max-width: var(--content-max);
     margin: 0 auto;
-    padding: 0 24px;
+    padding: 0 var(--gutter);
     overflow-x: auto;
-    list-style: none;
+    scrollbar-width: none;
 }
 
-.tl-subnav a {
-    display: block;
-    padding: 16px 0;
-    border-bottom: 3px solid transparent;
-    color: var(--navy);
+.tl-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.tl-tab {
+    position: relative;
+    padding: 20px 0;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
     font-weight: 500;
-    text-decoration: none;
     white-space: nowrap;
+    cursor: pointer;
+    transition: color var(--dur-fast) ease;
 }
 
-.tl-subnav a:hover,
-.tl-subnav a:focus-visible {
-    border-bottom-color: var(--orange);
+/* Underline grows in from the centre on hover, stays solid when selected */
+.tl-tab::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 3px;
+    border-radius: 3px 3px 0 0;
+    background: var(--orange);
+    transform: scaleX(0);
+    transition: transform var(--dur) var(--ease-out), opacity var(--dur) ease;
+    opacity: 0.45;
+}
+
+.tl-tab:hover {
+    color: var(--navy);
+}
+
+.tl-tab:hover::after {
+    transform: scaleX(0.6);
+}
+
+.tl-tab.is-active {
+    color: var(--navy);
+    font-weight: 600;
+}
+
+.tl-tab.is-active::after {
+    transform: scaleX(1);
+    opacity: 1;
+}
+
+.tl-tab:focus-visible {
+    outline: 2px solid var(--orange);
+    outline-offset: -2px;
+    border-radius: 6px;
+}
+
+/* Tab content fades in when you switch */
+.tl-panel {
+    /* Same soft background on every tab (matches Career pathway) */
+    background: var(--light);
+    animation: tl-panel-in 0.5s var(--ease-out) both;
+}
+
+.tl-panel > .tl-band,
+.tl-panel > .tl-steps {
+    background: var(--light);
+}
+
+/* Old tab content fades out first */
+.tl-panel.is-leaving {
+    animation: tl-panel-out 0.2s ease-in both;
+    pointer-events: none;
+}
+
+@keyframes tl-panel-out {
+    from { opacity: 1; transform: none; }
+    to { opacity: 0; transform: translateY(-8px); }
+}
+
+@keyframes tl-panel-in {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: none; }
+}
+
+/* No double line straight under the tabs */
+.tl-panel > .tl-band:first-child {
+    border-top: 0;
 }
 
 /* Section bands */
@@ -167,7 +254,7 @@
 }
 
 .tl-subheading {
-    margin-top: 72px;
+    margin-top: calc(var(--row-y) + 24px);
 }
 
 .tl-body {
@@ -181,6 +268,7 @@
     margin-top: 8px;
     color: var(--navy);
     font-weight: 500;
+    transition: color var(--dur-fast) ease;
 }
 
 .tl-link:hover {
@@ -191,14 +279,14 @@
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
-    margin-top: 48px;
+    margin-top: var(--block-gap);
 }
 
 /* Text + image side by side */
 .tl-split {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 48px;
+    gap: clamp(48px, 6vw, 96px);
     align-items: center;
 }
 
@@ -210,7 +298,7 @@
 .tl-media {
     width: 100%;
     aspect-ratio: 4 / 3;
-    border-radius: 2px;
+    border-radius: var(--radius);
     object-fit: cover;
 }
 
@@ -232,7 +320,7 @@
 .phase-list {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
+    gap: var(--grid-gap);
     margin: 0;
     padding: 0;
     list-style: none;
@@ -247,7 +335,7 @@
 
 .phase-media {
     aspect-ratio: 16 / 10;
-    border-radius: 14px;
+    border-radius: var(--radius);
 }
 
 .phase-body {
@@ -277,7 +365,7 @@
     margin: 8px 0 10px;
     color: var(--navy);
     font-size: 1.25rem;
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .phase-body p {
@@ -296,7 +384,7 @@
 .skill-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 32px;
+    gap: var(--grid-gap);
 }
 
 .skill-item {
@@ -309,7 +397,7 @@
     margin: 0 0 8px;
     color: var(--navy);
     font-size: 1.1875rem;
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .skill-item p,
@@ -323,21 +411,22 @@
 .tl-faq {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
     max-width: 820px;
 }
 
 .tl-faq-item {
-    padding: 18px 20px;
+    padding: 22px 26px;
     border: 1px solid var(--line);
-    border-radius: 2px;
+    border-radius: var(--radius);
     background: var(--white);
+    transition: border-color var(--dur-fast) ease, box-shadow var(--dur) ease;
 }
 
 .tl-faq-item summary {
     color: var(--navy);
     font-size: 1.0625rem;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
 }
 
@@ -352,7 +441,7 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 28px;
+    gap: 40px;
 }
 
 .reason-item {
@@ -367,8 +456,8 @@
     align-items: flex-end;
     justify-content: space-between;
     gap: 16px;
-    margin-top: 72px;
-    margin-bottom: 18px;
+    margin-top: calc(var(--row-y) + 24px);
+    margin-bottom: 28px;
 }
 
 .tl-heading-row .tl-subheading {
@@ -379,19 +468,21 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 10px 18px;
-    border: 1px solid #fcd200;
-    border-radius: 20px;
-    background: #ffd814;
-    color: #0f1111;
+    padding: 11px 20px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--white);
+    color: var(--navy);
     font-size: 0.875rem;
-    font-weight: 500;
+    font-weight: 600;
     white-space: nowrap;
+    transition: background var(--dur-fast) ease, border-color var(--dur-fast) ease, transform var(--dur-fast) var(--ease-out);
 }
 
 .download-button:hover {
-    border-color: #f2c200;
-    background: #f7ca00;
+    border-color: var(--line-strong);
+    background: var(--light);
+    transform: translateY(-2px);
 }
 
 .download-button:focus-visible {
@@ -423,7 +514,7 @@
     display: block;
     margin-bottom: 8px;
     color: var(--muted);
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     font-weight: 500;
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -433,7 +524,7 @@
 .map-list {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
     margin: 0;
     padding: 0;
     list-style: none;
@@ -444,10 +535,10 @@
     grid-template-columns: auto 1fr 1fr;
     gap: 24px;
     align-items: start;
-    padding: 22px 24px;
+    padding: 28px 32px;
     border: 1px solid var(--line);
     border-left: 4px solid var(--orange);
-    border-radius: 2px;
+    border-radius: var(--radius);
     background: var(--white);
 }
 
@@ -462,7 +553,7 @@
     margin: 0 0 6px;
     color: var(--navy);
     font-size: 1.125rem;
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .map-main p {
@@ -475,7 +566,7 @@
 .role-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 18px;
+    gap: var(--grid-gap);
     margin: 0 0 8px;
     padding: 0;
     list-style: none;
@@ -487,6 +578,7 @@
     padding: 22px 0 0;
     border-top: 2px solid var(--orange);
     background: transparent;
+    transition: transform var(--dur) var(--ease-out);
 }
 
 .role-card:hover {
@@ -497,7 +589,7 @@
     margin: 6px 0 8px;
     color: var(--navy);
     font-size: 1.1875rem;
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .role-card p {
@@ -514,7 +606,7 @@
 .tl-table-wrap {
     overflow-x: auto;
     border: 1px solid var(--line);
-    border-radius: 2px;
+    border-radius: var(--radius);
     background: var(--white);
 }
 
@@ -527,15 +619,15 @@
 
 .tl-table th,
 .tl-table td {
-    padding: 14px 18px;
+    padding: 18px 22px;
     border-bottom: 1px solid var(--line);
     vertical-align: top;
     line-height: 1.5;
 }
 
 .tl-table thead th {
-    background: var(--navy);
-    color: var(--white);
+    background: var(--navy-solid);
+    color: #fff;
     font-weight: 500;
 }
 
@@ -559,18 +651,19 @@
 
 /* 2026 framework box */
 .framework-box {
-    margin-top: 72px;
-    padding: 32px;
+    margin-top: calc(var(--row-y) + 24px);
+    padding: clamp(28px, 4vw, 48px);
     border-left: 4px solid var(--orange);
-    background: var(--navy);
+    background: var(--navy-solid);
     color: #d8dee6;
+    border-radius: var(--radius);
 }
 
 .framework-box h3 {
     margin: 0 0 12px;
-    color: var(--white);
+    color: #fff;
     font-size: 1.5rem;
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .framework-box p,
@@ -588,14 +681,14 @@
 }
 
 .framework-box .tl-link:hover {
-    color: var(--white);
+    color: #fff;
 }
 
 /* Career timeline */
 .timeline {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 24px;
+    gap: var(--grid-gap);
     margin: 0;
     padding: 0;
     list-style: none;
@@ -612,7 +705,7 @@
     position: absolute;
     top: 22px;
     left: 44px;
-    right: -24px;
+    right: calc(-1 * var(--grid-gap));
     height: 3px;
     background: var(--orange);
 }
@@ -630,8 +723,8 @@
     height: 44px;
     margin-bottom: 16px;
     border-radius: 50%;
-    background: var(--navy);
-    color: var(--white);
+    background: var(--navy-solid);
+    color: #fff;
     font-weight: 500;
 }
 
@@ -643,7 +736,7 @@
     margin: 0 0 8px;
     color: var(--navy);
     font-size: 1.1875rem;
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .timeline-step p {
@@ -656,13 +749,13 @@
 .earn-callout {
     display: grid;
     grid-template-columns: 3fr 2fr;
-    gap: 40px;
+    gap: clamp(48px, 6vw, 96px);
     align-items: center;
-    margin-top: 64px;
-    padding: 32px;
+    margin-top: calc(var(--row-y) + 24px);
+    padding: clamp(28px, 4vw, 48px);
     border: 1px solid var(--line);
     border-top: 3px solid var(--orange);
-    border-radius: 2px;
+    border-radius: var(--radius);
     background: var(--white);
 }
 
@@ -670,7 +763,7 @@
     margin: 0 0 12px;
     color: var(--navy);
     font-size: 1.5rem;
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .earn-callout p {
@@ -695,7 +788,7 @@
 .principle-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 18px;
+    gap: var(--grid-gap);
 }
 
 .principle-card {
@@ -714,7 +807,7 @@
     margin: 6px 0 8px;
     color: var(--navy);
     font-size: 1.1875rem;
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .principle-card p {
@@ -761,9 +854,6 @@
 }
 
 @media (max-width: 650px) {
-    .tl-header-content {
-        padding: 56px 20px;
-    }
 
     .fact-grid {
         grid-template-columns: 1fr;
@@ -786,7 +876,7 @@
     }
 
     .tl-split {
-        gap: 32px;
+        gap: 40px;
     }
 
     .earn-callout,
@@ -794,7 +884,4 @@
         padding: 24px;
     }
 
-    .tl-subheading {
-        margin-top: 56px;
-    }
 }
