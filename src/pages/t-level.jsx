@@ -43,7 +43,7 @@ const phases = [
   {
     phase: 'Phase 3',
     weeks: 'Weeks 2 to 9',
-    title: 'Individual Team-based',
+    title: 'Individual Prject',
     text: 'Join an Amazon team and help solve real business challenges alongside employees. This starts at the same time as the group project and carries on until the end of your placement.',
     points: ['Work on real Amazon problems', 'Get regular feedback from your team', 'Reflect on your progress in a logbook'],
     image: '/assets/images/tl-team-challenge.jpg',
