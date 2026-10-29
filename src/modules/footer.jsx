@@ -21,6 +21,7 @@ const COLUMNS = [
     title: 'Your account',
     links: [
       ['/profile', 'My profile'],
+      ['/logbook', 'My logbook'],
       ['/settings', 'Settings'],
       ['/alumni', 'Career journey'],
     ],
@@ -31,6 +32,7 @@ const COLUMNS = [
       ['/about-us', 'About us'],
       ['/parents', 'Parents and carers'],
       ['/alumni/coffee-chats', 'Coffee chats'],
+      ['/community', 'Question board'],
       ['/t-level/advice', 'Advice'],
     ],
   },

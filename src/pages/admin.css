@@ -553,3 +553,21 @@ html[data-theme="dark"] .ak-u18 { background: #3a2a14; color: #ffc27a; }
     .ak-bars li, .ak-pages li { grid-template-columns: 1fr auto; }
     .ak-bar-track { display: none; }
 }
+
+/* Question board moderation */
+.ak-board { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+
+.ak-board-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 18px 0;
+    border-top: 1px solid var(--line);
+}
+
+.ak-board-item:last-child { border-bottom: 1px solid var(--line); }
+.ak-board-item strong { color: var(--navy); }
+.ak-board-item p { margin: 0; color: var(--ink); line-height: 1.55; white-space: pre-line; }
+.ak-board-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.ak-board-actions { display: flex; gap: 8px; margin-top: 6px; }
+.ak-csv.is-danger:hover { border-color: #f0c2c2; color: #b42318; }

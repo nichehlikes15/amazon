@@ -45,7 +45,7 @@ const phases = [
   {
     phase: 'Phase 3',
     weeks: 'Weeks 2 to 9',
-    title: 'Individual Prject',
+    title: 'Individual project',
     text: 'Join an Amazon team and help solve real business challenges alongside employees. This starts at the same time as the group project and carries on until the end of your placement.',
     points: ['Work on real Amazon problems', 'Get regular feedback from your team', 'Reflect on your progress in a logbook'],
     image: '/assets/images/tl-team-challenge.jpg',
@@ -365,8 +365,9 @@ function TLevel() {
 
                 <h2 className="tl-subheading" id="phases-heading">Your placement in three phases</h2>
                 <p className="section-intro">
-                  Your 45 days at Amazon build up step by step, from learning the basics to
-                  working on real challenges with an Amazon team.
+                  Your placement at Amazon lasts nine weeks, about 45 days. After an
+                  onboarding week, you work on a group project in weeks 2 to 4 while also
+                  taking part in team-based challenges, which carry on until week 9.
                 </p>
                 <ol className="phase-list" aria-labelledby="phases-heading">
                   {phases.map((item) => (
@@ -374,6 +375,7 @@ function TLevel() {
                       <Media image={item.image} alt={item.imageAlt} className="phase-media" />
                       <div className="phase-body">
                         <span className="phase-label">{item.phase}</span>
+                        <span className="phase-weeks">{item.weeks}</span>
                         <h3>{item.title}</h3>
                         <p>{item.text}</p>
                         <ul>
@@ -385,30 +387,6 @@ function TLevel() {
                     </li>
                   ))}
                 </ol>
-            <h2 className="tl-subheading" id="phases-heading">Your placement in three phases</h2>
-            <p className="section-intro">
-              Your placement at Amazon lasts nine weeks, about 45 days. After an
-              onboarding week, you work on a group project in weeks 2 to 4 while also
-              taking part in team-based challenges, which carry on until week 9.
-            </p>
-            <ol className="phase-list" aria-labelledby="phases-heading">
-              {phases.map((item) => (
-                <li className="phase-card" key={item.title}>
-                  <Media image={item.image} alt={item.imageAlt} className="phase-media" />
-                  <div className="phase-body">
-                    <span className="phase-label">{item.phase}</span>
-                    <span className="phase-weeks">{item.weeks}</span>
-                    <h3>{item.title}</h3>
-                    <p>{item.text}</p>
-                    <ul>
-                      {item.points.map((point) => (
-                        <li key={point}>{point}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </li>
-              ))}
-            </ol>
 
                 <h2 className="tl-subheading">Skills you will gain</h2>
                 <div className="skill-grid">
@@ -474,19 +452,8 @@ function TLevel() {
                       </article>
                     ))}
                   </div>
-                  <Media alt="Teacher and Amazon mentor reviewing a student's progress" />
+                  <Media image="/assets/images/tl-mentor-review.jpg" alt="A mentor leans over to help a student with work on his laptop, while other students study nearby" />
                 </div>
-            <div className="tl-split tl-split-flush">
-              <div className="reason-list">
-                {schoolReasons.map((item) => (
-                  <article className="reason-item" key={item.title}>
-                    <h3>{item.title}</h3>
-                    <p>{item.text}</p>
-                  </article>
-                ))}
-              </div>
-              <Media image="/assets/images/tl-mentor-review.jpg" alt="A mentor leans over to help a student with work on his laptop, while other students study nearby" />
-            </div>
 
                 <div className="tl-heading-row">
                   <h2 className="tl-subheading" id="benefits-heading">How placement activities map to your curriculum</h2>

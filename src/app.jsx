@@ -5,6 +5,7 @@ import Footer from "./modules/footer";
 import { PageTransition } from "./modules/motion";
 import { ReadAloudPlayer } from "./modules/read-aloud";
 import { PageFeedback } from "./modules/page-feedback";
+import { AskLaunchpad } from "./modules/assistant";
 
 import Home from "./pages/home";
 import AboutUs from "./pages/about-us";
@@ -32,6 +33,8 @@ import Parents from "./pages/parents";
 import Safeguarding from "./pages/safeguarding";
 import Terms from "./pages/terms";
 import { ForgotPassword, ResetPassword } from "./pages/password-reset";
+import Logbook from "./pages/logbook";
+import Community from "./pages/community";
 import NotFound from "./pages/not-found";
 
 // Keyboard users can jump past the menu straight to the page content.
@@ -80,6 +83,8 @@ function App() {
         <Route path="/parents" element={<Parents />} />
         <Route path="/safeguarding" element={<Safeguarding />} />
         <Route path="/terms" element={<Terms />} />
+        <Route path="/logbook" element={<Logbook />} />
+        <Route path="/community" element={<Community />} />
         <Route path="/help" element={<Help />} />
         <Route path="/accessibility" element={<Accessibility />} />
         <Route path="/privacy" element={<Privacy />} />
@@ -89,6 +94,7 @@ function App() {
       <PageFeedback />
       <Footer />
       <ReadAloudPlayer />
+      <AskLaunchpad />
     </div>
   );
 }

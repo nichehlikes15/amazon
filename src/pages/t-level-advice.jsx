@@ -183,35 +183,33 @@ function AdviceDetails({ items }) {
   )
 }
 
-// The STAR method - one row per letter: the letter in a star, how to do it on the right.
+// STAR for T Level success - four habits, each linked to one of Amazon's
+// Leadership Principles. (Not the interview STAR method - that's on the
+// Interview practice page.)
 const STAR_STEPS = [
   {
     letter: 'S',
-    word: 'Situation',
-    lead: 'Set the scene.',
-    how: 'Say when and where it happened, in one or two sentences. Keep it short - just enough for the listener to picture it.',
-    example: 'Last year at college, our group had two weeks to build a website for a local charity.',
+    word: 'Support',
+    lead: 'Learn and Be Curious',
+    how: "Always ask questions, whether this be to your peers or teachers. T Levels are still fairly new, which means all the resources and cheat codes haven't been released just yet, so you have to search for the answers!",
   },
   {
     letter: 'T',
-    word: 'Task',
-    lead: 'Say what needed to happen.',
-    how: 'Explain the goal or the problem, and what your job was.',
-    example: 'I was in charge of making sure the pages worked on phones.',
+    word: 'Track',
+    lead: 'Ownership',
+    how: "Track your goals, progress, experience and even failures. Being able to see what you've accomplished, and also where you didn't do your best, allows you to reflect and improve yourself for the next opportunity that comes your way.",
   },
   {
     letter: 'A',
-    word: 'Action',
-    lead: 'Say what you did.',
-    how: "This is the biggest part. Talk through the steps you took, and say \"I\", not \"we\", so they hear what you did yourself.",
-    example: 'I tested every page on my phone, made a list of the problems and fixed them one by one.',
+    word: 'Achieve',
+    lead: 'Insist on the Highest Standards',
+    how: "Starting a T Level now means you're part of the history of the greatest course available. This means you have a responsibility to set the bar high for those who come after you!",
   },
   {
     letter: 'R',
-    word: 'Result',
-    lead: 'Say how it ended.',
-    how: 'Share what happened in the end - use a number if you can - and what you learned.',
-    example: 'The site worked on every phone we tried, and I learned to test things early.',
+    word: 'Revise',
+    lead: 'Dive Deep',
+    how: 'Stay proactive in and out of your lessons. There is a lot of content within any T Level course, and although two years may seem like a long time, it can pass quickly - likewise with the information you learn along the way!',
   },
 ]
 
@@ -263,11 +261,10 @@ function StarMethod() {
   return (
     <section className="advice-section star-section" id="star" aria-labelledby="star-heading">
       <div className="advice-head">
-        <p className="advice-kicker">Interview tips</p>
-        <h2 id="star-heading" className="advice-h2">Answer with the STAR method</h2>
+        <p className="advice-kicker">For T Level students</p>
+        <h2 id="star-heading" className="advice-h2">STAR: how to succeed on your T Level</h2>
         <p className="advice-intro">
-          When an interviewer says &ldquo;Tell me about a time when&hellip;&rdquo;, use these four steps
-          to give a clear answer with a real example.
+          Four habits to help you do well on your course, each linked to one of Amazon&apos;s Leadership Principles.
         </p>
       </div>
 
@@ -281,19 +278,15 @@ function StarMethod() {
                 <span className="star-lead">{s.lead}</span>
               </h3>
               <p>{s.how}</p>
-              <p className="star-example">
-                <span>For example</span>
-                &ldquo;{s.example}&rdquo;
-              </p>
             </div>
           </li>
         ))}
       </ol>
 
       <div className="star-cta">
-        <p>Spend most of your answer on the <strong>Action</strong> - that's the part interviewers care about most.</p>
-        <Link className="primary-button" to="/interview">
-          Practise with the virtual interviewer <Icon name="arrowRight" size={15} />
+        <p>Keep <strong>Track</strong> of your goals, progress and feedback in your placement logbook.</p>
+        <Link className="primary-button" to="/logbook">
+          Open my logbook <Icon name="arrowRight" size={15} />
         </Link>
       </div>
     </section>
@@ -313,7 +306,7 @@ function TLevelAdvice() {
           </p>
           <ul className="advice-jump" aria-label="Jump to a section">
             <li><a href="#students">Student advice</a></li>
-            <li><a href="#star">The STAR method</a></li>
+            <li><a href="#star">STAR for success</a></li>
             <li><a href="#schools">School advice</a></li>
           </ul>
         </div>
@@ -343,30 +336,18 @@ function TLevelAdvice() {
         </div>
         <AdviceCarousel items={schoolAdvice} label="School advice" />
         <AdviceDetails items={schoolDetails} />
+        <p className="advice-source">
+          Source:{' '}
+          <a
+            href="https://www.gov.uk/government/publications/t-level-industry-placements-guidance-for-providers--2/t-level-industry-placements-guidance-for-education-providers"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            T Level industry placements: guidance for education providers, Department for Education (opens in a new tab)
+          </a>
+        </p>
       </section>
     </main>
-        <section className="advice-band">
-          <div className="content-section" id="schools" aria-labelledby="schools-heading">
-            <h2 id="schools-heading">School advice</h2>
-            <p className="section-intro">
-              How to set up and manage T Level placements, and how to collaborate with Amazon.
-            </p>
-            <AdviceCarousel items={schoolAdvice} label="School advice" />
-            <AdviceDetails items={schoolDetails} />
-            <p className="advice-source">
-              Source:{' '}
-              <a
-                href="https://www.gov.uk/government/publications/t-level-industry-placements-guidance-for-providers--2/t-level-industry-placements-guidance-for-education-providers"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                T Level industry placements: guidance for education providers, Department for Education (opens in a new tab)
-              </a>
-            </p>
-          </div>
-        </section>
-      </main>
-    </>
   )
 }
 

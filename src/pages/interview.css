@@ -1600,6 +1600,18 @@
     background: var(--muted);
 }
 
+/* Orange unless the AI has actually replied */
+.iv-ai-dot,
+.iv-ai.is-off .iv-ai-dot {
+    background: var(--orange);
+    box-shadow: 0 0 0 4px rgb(255 153 0 / 20%);
+}
+
+.iv-ai.is-checking .iv-ai-dot {
+    background: var(--orange);
+    animation: iv-blink 1.2s ease-in-out infinite;
+}
+
 .iv-ai.is-on .iv-ai-dot {
     background: #2f9e5a;
     box-shadow: 0 0 0 4px rgb(47 158 90 / 18%);
@@ -1778,3 +1790,54 @@ html[data-theme="dark"] .iv-dock-icon { box-shadow: none; }
 @media (max-width: 480px) {
     .iv-star { grid-template-columns: 1fr; }
 }
+
+/* AI status on Alex's name tag during the call */
+.iv-tag-ai {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: 4px;
+    padding-left: 10px;
+    border-left: 1px solid rgb(255 255 255 / 25%);
+    color: #ffd38a;
+    font-weight: 600;
+    transition: color var(--dur) ease;
+}
+
+.iv-tag-ai.is-on { color: #b7f0c8; }
+
+.iv-tag-ai-dot {
+    width: 8px;
+    height: 8px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--orange);
+    transition: background var(--dur) ease;
+}
+
+.iv-tag-ai.is-on .iv-tag-ai-dot {
+    background: #4ade80;
+    box-shadow: 0 0 0 3px rgb(74 222 128 / 22%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .iv-ai.is-checking .iv-ai-dot { animation: none; }
+}
+
+@media (max-width: 560px) {
+    .iv-tag-ai { display: none; }
+}
+
+/* "Upload your CV and Alex can ask you about it" */
+.iv-cv-tip {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+}
+
+.iv-cv-tip svg { flex-shrink: 0; margin-top: 3px; color: var(--orange-solid); }
+.iv-cv-tip a { color: var(--navy); font-weight: 600; }

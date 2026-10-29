@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import './interview.css'
 import { api } from '../modules/api'
 import { useAuth } from '../modules/auth'
@@ -124,6 +124,8 @@ function VoicePicker({ voiceURI, setVoiceURI }) {
 }
 
 /* ---------- 1. Set up ---------- */
+// Green only when the AI has actually replied. Orange while it's being checked
+// or when Alex is using his standard replies.
 function AiStatus({ status }) {
   if (!status) return null
   if (status.available) {
@@ -137,11 +139,23 @@ function AiStatus({ status }) {
       </p>
     )
   }
+  if (status.checking) {
+    return (
+      <p className="iv-ai is-checking" role="status">
+        <span className="iv-ai-dot" aria-hidden="true" />
+        <span>
+          <strong>Checking {INTERVIEWER}'s AI…</strong> This can take up to a minute the first time. You can start
+          now - {INTERVIEWER} will use standard replies until it's ready.
+          {import.meta.env.DEV && status.reason && <span className="iv-ai-dev">Developer note: {status.reason}</span>}
+        </span>
+      </p>
+    )
+  }
   return (
-    <p className="iv-ai" role="status">
+    <p className="iv-ai is-off" role="status">
       <span className="iv-ai-dot" aria-hidden="true" />
       <span>
-        <strong>{INTERVIEWER} will use standard replies today</strong> because his AI isn't running. Your scores
+        <strong>{INTERVIEWER} will use standard replies today</strong> because his AI isn't working. Your scores
         and feedback work the same.
         {import.meta.env.DEV && status.reason && <span className="iv-ai-dev">Developer note: {status.reason}</span>}
       </span>
@@ -157,7 +171,7 @@ const STAR = [
   { letter: 'R', word: 'Result', text: 'How did it end, and what did you learn?' },
 ]
 
-function Setup({ pathway, setPathway, mode, setMode, voiceOn, setVoiceOn, voiceURI, setVoiceURI, cameraWanted, setCameraWanted, bargeIn, setBargeIn, aiStatus, onStart, loading, error }) {
+function Setup({ pathway, setPathway, mode, setMode, voiceOn, setVoiceOn, voiceURI, setVoiceURI, cameraWanted, setCameraWanted, bargeIn, setBargeIn, aiStatus, signedIn, hasCv, useCv, setUseCv, onStart, loading, error }) {
   return (
     <>
       <section className="iv-setup" aria-label="Set up your practice call">
@@ -230,6 +244,25 @@ function Setup({ pathway, setPathway, mode, setMode, voiceOn, setVoiceOn, voiceU
                 </span>
               </label>
             )}
+            {signedIn && hasCv && (
+              <label className="iv-check">
+                <input type="checkbox" checked={useCv} onChange={(e) => setUseCv(e.target.checked)} />
+                <span className="iv-check-box" aria-hidden="true"><Icon name="check" size={12} /></span>
+                <span>
+                  Ask me about my CV
+                  <span className="iv-check-hint">
+                    {INTERVIEWER} swaps one question for one about something on the CV you uploaded. Your CV stays on
+                    the Launchpad server.
+                  </span>
+                </span>
+              </label>
+            )}
+            {signedIn && !hasCv && (
+              <p className="iv-cv-tip">
+                <Icon name="file" size={15} />
+                <span><Link to="/profile#cv">Upload your CV</Link> and {INTERVIEWER} can ask you about it.</span>
+              </p>
+            )}
             {hasCamera && (
               <label className="iv-check">
                 <input type="checkbox" checked={cameraWanted} onChange={(e) => setCameraWanted(e.target.checked)} />
@@ -248,7 +281,7 @@ function Setup({ pathway, setPathway, mode, setMode, voiceOn, setVoiceOn, voiceU
           <AiStatus status={aiStatus} />
           {error && <div className="iv-error" role="alert">{error}</div>}
           <button type="button" className="primary-button iv-start" onClick={onStart} disabled={loading}>
-            {loading ? 'Connecting…' : 'Start the call'}
+            {loading ? (useCv && hasCv ? `${INTERVIEWER} is reading your CV…` : 'Connecting…') : 'Start the call'}
             {!loading && <Icon name="arrowRight" size={16} />}
           </button>
           <p className="iv-small">Your answers aren't saved. If you're signed in, your scores are saved to your profile.</p>
@@ -468,7 +501,7 @@ function LiveFeedback({ review, answer, followUp, followAnswer, onRetry }) {
   )
 }
 
-function Call({ questions, mode, voiceOn, setVoiceOn, voiceURI, cameraDefault, bargeIn, firstName = '', pathway = '', roleContext = '', onFinish, onQuit }) {
+function Call({ questions, mode, voiceOn, setVoiceOn, voiceURI, cameraDefault, bargeIn, firstName = '', pathway = '', roleContext = '', aiStatus = null, onFinish, onQuit }) {
   const canListen = mode === 'speak' && Boolean(SpeechRecognition)
   const blank = () => questions.map(() => '')
 
@@ -1061,6 +1094,7 @@ function Call({ questions, mode, voiceOn, setVoiceOn, voiceURI, cameraDefault, b
         answer: answersRef.current[i] || '',
         followUp: fu && fa.trim() ? { question: fu.text, answer: fa } : null,
         followUpAsked: Boolean(fu),
+        asked: questions[i].text,
         seconds,
         pathway,
         history: historyFor(i),
@@ -1151,7 +1185,7 @@ function Call({ questions, mode, voiceOn, setVoiceOn, voiceURI, cameraDefault, b
     const first = answersRef.current[i] || ''
     if (s === 'main' && questions[i].id !== 'close' && wordCount(first) > 0) {
       try {
-        const f = await api.interviewFollowUp({ id: questions[i].id, answer: first, pathway, history: historyFor(i) })
+        const f = await api.interviewFollowUp({ id: questions[i].id, asked: questions[i].text, answer: first, pathway, history: historyFor(i) })
         if (!stillChecking(i)) return
         if (f.followUp) {
           setFollowUp(i, f.followUp)
@@ -1221,6 +1255,7 @@ function Call({ questions, mode, voiceOn, setVoiceOn, voiceURI, cameraDefault, b
     if (last) {
       onFinish(questions.map((qq, i) => ({
         id: qq.id,
+        asked: qq.text,
         answer: [answersRef.current[i], followAnswersRef.current[i]].filter((a) => a && a.trim()).join(' '),
         seconds: canListen && timings.current[i] > 0 ? Math.round(timings.current[i]) : null,
       })))
@@ -1522,6 +1557,13 @@ function Call({ questions, mode, voiceOn, setVoiceOn, voiceURI, cameraDefault, b
             <span className="iv-tag">
               <span className={speaking ? 'iv-bars is-on' : 'iv-bars'} aria-hidden="true"><span /><span /><span /></span>
               {INTERVIEWER} · Practice interviewer
+              <span
+                className={aiStatus?.available ? 'iv-tag-ai is-on' : 'iv-tag-ai'}
+                title={aiStatus?.available ? `${INTERVIEWER}'s AI is on and replying` : `${INTERVIEWER}'s AI isn't working, so he's using standard replies`}
+              >
+                <span className="iv-tag-ai-dot" aria-hidden="true" />
+                {aiStatus?.available ? 'AI on' : aiStatus?.checking ? 'Checking AI…' : 'Standard replies'}
+              </span>
             </span>
 
             {status && (
@@ -1856,8 +1898,13 @@ function Feedback({ result, pathway, onAgain, signedIn }) {
 /* ---------- Page ---------- */
 function Interview() {
   const { user } = useAuth()
+  const [params] = useSearchParams()
+  // ?pathway=Finance (e.g. from the career quiz) picks the pathway straight away.
+  const urlPathway = PATHWAYS.includes(params.get('pathway')) ? params.get('pathway') : null
   const [stage, setStage] = useState('setup') // setup | call | reviewing | feedback
-  const [pathway, setPathway] = useState('Digital')
+  const [pathway, setPathway] = useState(urlPathway || 'Digital')
+  const [hasCv, setHasCv] = useState(false)
+  const [useCv, setUseCv] = useState(false)
   const [mode, setMode] = useState(SpeechRecognition ? 'speak' : 'type')
   const [voiceOn, setVoiceOn] = useState(canSpeak)
   const [voiceURI, setVoiceURIState] = useState(savedVoiceURI)
@@ -1877,19 +1924,42 @@ function Interview() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  // Is Alex's AI running? Asking also loads the model, so his first reply is quick.
+  // Is Alex's AI working? Checked on the set-up screen and during the call, so
+  // the dot turns orange if the AI stops replying. Asking also loads the model.
   useEffect(() => {
-    if (stage !== 'setup') return
+    if (stage !== 'setup' && stage !== 'call') return undefined
     let live = true
-    api.interviewAiStatus()
-      .then((s) => { if (live) setAiStatus(s) })
-      .catch(() => { if (live) setAiStatus({ available: false, reason: 'Could not reach the Launchpad server.' }) })
-    return () => { live = false }
+    let timer = null
+    const check = () => {
+      api.interviewAiStatus()
+        .then((s) => {
+          if (!live) return
+          setAiStatus(s)
+          timer = setTimeout(check, s.checking ? 3000 : 15000)
+        })
+        .catch(() => {
+          if (!live) return
+          setAiStatus({ available: false, checking: false, reason: 'Could not reach the Launchpad server.' })
+          timer = setTimeout(check, 15000)
+        })
+    }
+    check()
+    return () => { live = false; clearTimeout(timer) }
   }, [stage])
+
+  // Has the signed-in user uploaded a CV? Then Alex can ask about it.
+  useEffect(() => {
+    if (!user) return undefined
+    let live = true
+    api.getCv()
+      .then((d) => { if (live) { setHasCv(Boolean(d.cv)); setUseCv(Boolean(d.cv)) } })
+      .catch(() => {})
+    return () => { live = false }
+  }, [user])
 
   // Start with the pathway from the career quiz, if there is one.
   useEffect(() => {
-    if (user?.quizPathway && PATHWAYS.includes(user.quizPathway)) setPathway(user.quizPathway)
+    if (!urlPathway && user?.quizPathway && PATHWAYS.includes(user.quizPathway)) setPathway(user.quizPathway)
   }, [user])
 
   const start = async () => {
@@ -1906,7 +1976,7 @@ function Interview() {
           return
         }
       }
-      const data = await api.interviewQuestions(pathway)
+      const data = await api.interviewQuestions(pathway, useCv && hasCv)
       setQuestions(data.questions)
       setRoleContext(data.context || '')
       setStage('call')
@@ -1964,6 +2034,7 @@ function Interview() {
             cameraWanted={cameraWanted} setCameraWanted={setCameraWanted}
             bargeIn={bargeIn} setBargeIn={setBargeIn}
             aiStatus={aiStatus}
+            signedIn={Boolean(user)} hasCv={hasCv} useCv={useCv} setUseCv={setUseCv}
             onStart={start} loading={loading} error={error}
           />
         )}
@@ -1980,6 +2051,7 @@ function Interview() {
             firstName={spokenFirstName(user?.fullName)}
             pathway={pathway}
             roleContext={roleContext}
+            aiStatus={aiStatus}
             onFinish={finish}
             onQuit={() => setStage('setup')}
           />

@@ -10,6 +10,7 @@ Security notes (prototype level):
 
 import hashlib
 import json
+import re
 import secrets
 import time
 from datetime import datetime, timedelta
@@ -24,12 +25,13 @@ from werkzeug.utils import secure_filename
 
 from cv_reviewer import extract_text, review_cv
 from interview_coach import (
-    classify_turn, faq_facts, follow_up, question_info, question_set, reflect_answer, review_answer,
-    review_interview, spoken_feedback,
+    SAFEGUARD_REPLY, assistant_reply, classify_turn, cv_question, faq_facts, follow_up, maybe_to_alex,
+    question_info, question_set, reflect_answer, review_answer, review_interview, safety_concern, site_facts,
+    small_talk_reply, spoken_feedback,
 )
 # Alex's words come from a local AI model (Ollama) when it's running; the
 # scores always come from the rules above. See llm_coach.py and AI_SETUP.md.
-from llm_coach import ai_feedback, ai_follow_up, ai_status, ai_summary, ai_turn, warm_up
+from llm_coach import ai_assistant, ai_cv_question, pick_facts, ai_feedback, ai_follow_up, ai_status, ai_summary, ai_turn
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "launchpad.db")
@@ -364,7 +366,7 @@ def list_interest():
 # src/modules/mentors.js on the frontend.
 MENTORS = {
     "Bea Galang": ["Monday", "Wednesday"],
-    "Michael Lawrence": ["Tuesday afternoon"],
+    "Michael Lawrence": ["Monday to Friday"],
     "Nahla Mitchell": ["Wednesday afternoon"],
     "Oliver Tappin": ["Thursday"],
     "Sarah Abwnawar": ["Friday morning"],
@@ -590,7 +592,43 @@ def interview_questions():
     """Five practice questions for a pathway (?pathway=Digital)."""
     pathway = (request.args.get("pathway") or "").strip()
     pathway = pathway if pathway in PATHWAYS else "Digital"
-    return jsonify({"pathway": pathway, "questions": question_set(pathway), "context": role_context(pathway)})
+    questions = question_set(pathway)
+    cv_used = False
+    # "Ask me about my CV": swap one question for one about the student's own CV.
+    # The CV is read here and (if the AI is on) sent to the local model only. Nothing is saved.
+    if request.args.get("cv") == "1":
+        text = _my_cv_text()
+        if text:
+            asked = ai_cv_question(text, pathway) or cv_question(text) or question_info("cv")["text"]
+            cv_q = {"id": "cv", "text": asked, "focus": question_info("cv")["focus"]}
+            questions = [cv_q if q["id"] == "problem" else q for q in questions]
+            cv_used = True
+    return jsonify({"pathway": pathway, "questions": questions, "context": role_context(pathway),
+                    "cvUsed": cv_used})
+
+
+def _my_cv_text():
+    """Text of the signed-in user's CV, or "" if there isn't one."""
+    user = current_user()
+    if user is None:
+        return ""
+    row = get_db().execute("SELECT stored_name FROM user_cvs WHERE user_id = ?", (user["id"],)).fetchone()
+    if row is None:
+        return ""
+    path = os.path.join(UPLOAD_DIR, row["stored_name"])
+    try:
+        return extract_text(path, os.path.splitext(row["stored_name"])[1].lower()) or ""
+    except Exception:
+        return ""
+
+
+def _asked_info(qid, data):
+    """Question text and focus. For the CV question, the page sends the text it was asked."""
+    info = question_info(qid)
+    asked = " ".join(str(data.get("asked") or "").split())[:300]
+    if info and qid == "cv" and asked:
+        info = {**info, "text": asked}
+    return info
 
 
 @app.post("/api/interview/review-answer")
@@ -621,10 +659,12 @@ def interview_review_answer():
     reflect_on = follow_answer if follow_answer.strip() else ("" if follow_asked else None)
     review["say"] = spoken_feedback(review, reflect_on=reflect_on)
     review["source"] = "rules"
+    info = _asked_info(qid, data)
+    review["question"] = info["text"]
     # Alex's reply in his own words, if the AI is running. The score above doesn't change.
     pathway = interview_pathway(data)
     ai_say = ai_feedback(
-        question_info(qid), qid, main, review,
+        info, qid, main, review,
         follow_question=str(fu.get("question") or "")[:300] or None,
         follow_answer=follow_answer,
         pathway=pathway, history=interview_history(data), context=role_context(pathway),
@@ -652,14 +692,14 @@ def interview_follow_up():
     context = role_context(pathway)
     if question:
         # ...and the AI, if it's running, writes it in Alex's own words.
-        ai = ai_follow_up(question_info(qid), qid, answer, question["why"], pathway, history, context)
+        ai = ai_follow_up(_asked_info(qid, data), qid, answer, question["why"], pathway, history, context)
         if ai:
             question = {**question, "text": ai["text"]}
             say = ai["say"] or say
             source = "ai"
     elif qid != "close" and len(answer.split()) >= 12:
         # Nothing missing - with the AI on, Alex still digs deeper, like a real interviewer.
-        ai = ai_follow_up(question_info(qid), qid, answer, None, pathway, history, context)
+        ai = ai_follow_up(_asked_info(qid, data), qid, answer, None, pathway, history, context)
         if ai:
             question = {"text": ai["text"], "why": ai["why"] or "To hear a bit more about your example."}
             say = ai["say"]
@@ -688,18 +728,26 @@ def interview_turn():
     asked = asked or info["text"]
 
     rules = classify_turn(qid, utterance, context, asked=asked, pathway=pathway, tip=tip)
+    fixed = rules.pop("fixed", False)
     result = {**rules, "source": "rules"}
-    # Safety replies, exact repeats and the closing question never go to the AI.
-    if rules["type"] in ("safeguard", "repeat") or (context == "answering" and qid == "close"):
+    # Safety replies, repeats, small talk and the closing question never go to the AI.
+    if fixed or rules["type"] in ("safeguard", "repeat") or (context == "answering" and qid == "close"):
+        return jsonify(result)
+    # A real answer goes straight through. The AI only takes a second look at
+    # short replies that might be aimed at Alex ("what do you mean?").
+    if context == "answering" and rules["type"] == "answer" and not maybe_to_alex(utterance):
         return jsonify(result)
     ai = ai_turn(asked, info, qid, utterance, context, faq_facts(), pathway, tip, role_context(pathway))
     if ai:
         if ai["type"] == "repeat" and context == "answering":
             return jsonify({"type": "repeat", "say": f"Sure. {asked}", "source": "ai"})
         if ai["type"] == "answer":
-            # Keep a clear question the rules spotted; otherwise it's an answer.
             if rules["type"] in ("answer", "other"):
                 return jsonify({**rules, "source": "ai"})
+        elif ai["type"] == "other":
+            # The AI isn't sure either: only use its words if the rules had nothing better.
+            if rules["type"] == "other" and ai["say"]:
+                return jsonify({"type": "other", "say": ai["say"], "source": "ai"})
         elif ai["type"] != "repeat":
             return jsonify({"type": ai["type"], "say": ai["say"], "source": "ai"})
     return jsonify(result)
@@ -707,11 +755,9 @@ def interview_turn():
 
 @app.get("/api/interview/ai-status")
 def interview_ai_status():
-    """Is Alex's AI running? Also starts loading the model so the first reply is quick."""
-    status = ai_status(refresh=request.args.get("refresh") == "1")
-    if status.get("available"):
-        warm_up()
-    return jsonify(status)
+    """Is Alex's AI running and working? Also loads the model so the first reply is quick."""
+    # Green only once the model has really replied; this also starts a test reply if needed.
+    return jsonify(ai_status(refresh=request.args.get("refresh") == "1"))
 
 
 @app.post("/api/interview/review")
@@ -735,10 +781,16 @@ def interview_review():
             seconds = None
         clean.append({"id": str(a.get("id") or "")[:40],
                       "answer": str(a.get("answer") or "")[:4000],
-                      "seconds": seconds})
+                      "seconds": seconds,
+                      "asked": " ".join(str(a.get("asked") or "").split())[:300]})
     result = review_interview(clean)
     if result is None:
         return jsonify({"error": "Those questions weren't recognised."}), 400
+    cv_asked = next((a["asked"] for a in clean if a["id"] == "cv" and a["asked"]), None)
+    if cv_asked:
+        for r in result["reviews"]:
+            if r["id"] == "cv":
+                r["question"] = cv_asked
     # A short summary in Alex's words, if the AI is running (not saved).
     pathway = interview_pathway(data)
     result["coachSummary"] = ai_summary(result, pathway, role_context(pathway))
@@ -1534,6 +1586,12 @@ def delete_me():
     db.execute("DELETE FROM coffee_chat_requests WHERE user_id = ?", (user["id"],))
     db.execute("DELETE FROM interview_practice WHERE user_id = ?", (user["id"],))
     db.execute("DELETE FROM password_resets WHERE user_id = ?", (user["id"],))
+    db.execute("DELETE FROM logbook_goals WHERE user_id = ?", (user["id"],))
+    db.execute("DELETE FROM logbook_entries WHERE user_id = ?", (user["id"],))
+    db.execute("DELETE FROM board_answers WHERE user_id = ? OR question_id IN "
+               "(SELECT id FROM board_questions WHERE user_id = ?)", (user["id"], user["id"]))
+    db.execute("DELETE FROM board_questions WHERE user_id = ?", (user["id"],))
+    db.execute("DELETE FROM board_reports WHERE user_id = ?", (user["id"],))
     db.execute("UPDATE expressions_of_interest SET user_id = NULL WHERE user_id = ?", (user["id"],))
     db.execute("DELETE FROM users WHERE id = ?", (user["id"],))
     db.commit()
@@ -1572,6 +1630,11 @@ def export_me():
             (uid, (user["email"] or "").lower())),
         "coffeeChatRequests": rows("SELECT * FROM coffee_chat_requests WHERE user_id = ?", (uid,)),
         "interviewPractice": rows("SELECT * FROM interview_practice WHERE user_id = ?", (uid,)),
+        "logbookGoals": rows("SELECT * FROM logbook_goals WHERE user_id = ?", (uid,)),
+        "logbookEntries": rows("SELECT * FROM logbook_entries WHERE user_id = ?", (uid,)),
+        "boardQuestions": rows("SELECT * FROM board_questions WHERE user_id = ?", (uid,)),
+        "boardAnswers": rows("SELECT * FROM board_answers WHERE user_id = ?", (uid,)),
+        "boardReports": rows("SELECT * FROM board_reports WHERE user_id = ?", (uid,)),
     })
 
 
@@ -1709,6 +1772,462 @@ def delete_cv():
         db.execute("DELETE FROM user_cvs WHERE user_id = ?", (user["id"],))
         db.commit()
     return jsonify({"ok": True})
+
+
+# ---------- Application tracker (My profile > Applications) ----------
+
+@app.get("/api/me/applications")
+def my_applications():
+    """Every opportunity the user has saved or set a stage for, with that stage."""
+    user = current_user()
+    if user is None:
+        return jsonify({"error": "You must be signed in."}), 401
+    rows = get_db().execute(
+        """SELECT o.*, p.status AS progress_status, p.notes AS progress_notes,
+                  p.updated_at AS progress_updated, s.opportunity_id AS saved_id
+           FROM opportunities o
+           LEFT JOIN application_progress p ON p.opportunity_id = o.id AND p.user_id = ?
+           LEFT JOIN saved_opportunities s ON s.opportunity_id = o.id AND s.user_id = ?
+           WHERE p.opportunity_id IS NOT NULL OR s.opportunity_id IS NOT NULL
+           ORDER BY o.closing_date""",
+        (user["id"], user["id"]),
+    ).fetchall()
+    items = []
+    for r in rows:
+        item = opportunity_to_dict(r, {r["id"]} if r["saved_id"] else set())
+        item.update({"status": r["progress_status"] or "Not started", "notes": r["progress_notes"] or "",
+                     "updatedAt": r["progress_updated"]})
+        items.append(item)
+    return jsonify({"items": items, "statuses": sorted(APPLICATION_STATUSES)})
+
+
+# ---------- Placement logbook ----------
+# T Level students keep a logbook and work towards technical and employability
+# goals (see the Advice page). Students can print it or save it as a PDF.
+LOGBOOK_KINDS = {"technical", "employability"}
+
+
+def _logbook(db, uid):
+    goals = [{"id": r["id"], "kind": r["kind"], "text": r["text"], "done": bool(r["done"])}
+             for r in db.execute("SELECT * FROM logbook_goals WHERE user_id = ? ORDER BY id", (uid,))]
+    entries = [{"id": r["id"], "weekOf": r["week_of"], "hours": r["hours"], "did": r["did"],
+                "learned": r["learned"] or "", "feedback": r["feedback"] or "", "updatedAt": r["updated_at"]}
+               for r in db.execute(
+                   "SELECT * FROM logbook_entries WHERE user_id = ? ORDER BY week_of DESC, id DESC", (uid,))]
+    total = round(sum(e["hours"] or 0 for e in entries), 1)
+    return {"goals": goals, "entries": entries, "totalHours": total, "targetHours": 315}
+
+
+def _logbook_user():
+    user = current_user()
+    if user is None:
+        return None, (jsonify({"error": "You must be signed in."}), 401)
+    return user, None
+
+
+@app.get("/api/me/logbook")
+def get_logbook():
+    user, err = _logbook_user()
+    if err:
+        return err
+    return jsonify(_logbook(get_db(), user["id"]))
+
+
+@app.post("/api/me/logbook/goals")
+def add_logbook_goal():
+    user, err = _logbook_user()
+    if err:
+        return err
+    data = request.get_json(silent=True) or {}
+    kind = (data.get("kind") or "").strip()
+    text = " ".join(str(data.get("text") or "").split())
+    if kind not in LOGBOOK_KINDS:
+        return jsonify({"error": "Please choose technical or employability."}), 400
+    if not 3 <= len(text) <= 200:
+        return jsonify({"error": "Please write a goal of 3 to 200 characters."}), 400
+    db = get_db()
+    count = db.execute("SELECT COUNT(*) FROM logbook_goals WHERE user_id = ? AND kind = ?",
+                       (user["id"], kind)).fetchone()[0]
+    if count >= 10:
+        return jsonify({"error": "You can have up to 10 goals of each kind."}), 400
+    db.execute("INSERT INTO logbook_goals (user_id, kind, text) VALUES (?, ?, ?)", (user["id"], kind, text))
+    db.commit()
+    return jsonify(_logbook(db, user["id"])), 201
+
+
+@app.put("/api/me/logbook/goals/<int:goal_id>")
+def update_logbook_goal(goal_id):
+    user, err = _logbook_user()
+    if err:
+        return err
+    data = request.get_json(silent=True) or {}
+    db = get_db()
+    row = db.execute("SELECT * FROM logbook_goals WHERE id = ? AND user_id = ?", (goal_id, user["id"])).fetchone()
+    if row is None:
+        return jsonify({"error": "Goal not found."}), 404
+    text = " ".join(str(data.get("text", row["text"]) or "").split())
+    if not 3 <= len(text) <= 200:
+        return jsonify({"error": "Please write a goal of 3 to 200 characters."}), 400
+    done = 1 if data.get("done", bool(row["done"])) else 0
+    db.execute("UPDATE logbook_goals SET text = ?, done = ? WHERE id = ?", (text, done, goal_id))
+    db.commit()
+    return jsonify(_logbook(db, user["id"]))
+
+
+@app.delete("/api/me/logbook/goals/<int:goal_id>")
+def delete_logbook_goal(goal_id):
+    user, err = _logbook_user()
+    if err:
+        return err
+    db = get_db()
+    db.execute("DELETE FROM logbook_goals WHERE id = ? AND user_id = ?", (goal_id, user["id"]))
+    db.commit()
+    return jsonify(_logbook(db, user["id"]))
+
+
+def _entry_fields(data):
+    """Check a logbook entry. Returns (values, error message)."""
+    week_of = (data.get("weekOf") or "").strip()
+    try:
+        week_of = datetime.strptime(week_of, "%Y-%m-%d").strftime("%Y-%m-%d")
+    except ValueError:
+        return None, "Please choose the week this entry is for."
+    try:
+        hours = float(data.get("hours") or 0)
+    except (TypeError, ValueError):
+        return None, "Hours must be a number."
+    if not 0 <= hours <= 60:
+        return None, "Hours must be between 0 and 60 for one week."
+    did = str(data.get("did") or "").strip()
+    learned = str(data.get("learned") or "").strip()
+    feedback = str(data.get("feedback") or "").strip()
+    if not did:
+        return None, "Please say what you did this week."
+    if max(len(did), len(learned), len(feedback)) > 2000:
+        return None, "Please keep each box under 2,000 characters."
+    return (week_of, round(hours, 1), did, learned or None, feedback or None), None
+
+
+@app.post("/api/me/logbook/entries")
+def add_logbook_entry():
+    user, err = _logbook_user()
+    if err:
+        return err
+    values, msg = _entry_fields(request.get_json(silent=True) or {})
+    if msg:
+        return jsonify({"error": msg}), 400
+    db = get_db()
+    db.execute("INSERT INTO logbook_entries (user_id, week_of, hours, did, learned, feedback) "
+               "VALUES (?, ?, ?, ?, ?, ?)", (user["id"], *values))
+    db.commit()
+    return jsonify(_logbook(db, user["id"])), 201
+
+
+@app.put("/api/me/logbook/entries/<int:entry_id>")
+def update_logbook_entry(entry_id):
+    user, err = _logbook_user()
+    if err:
+        return err
+    values, msg = _entry_fields(request.get_json(silent=True) or {})
+    if msg:
+        return jsonify({"error": msg}), 400
+    db = get_db()
+    cur = db.execute("UPDATE logbook_entries SET week_of = ?, hours = ?, did = ?, learned = ?, feedback = ?, "
+                     "updated_at = datetime('now') WHERE id = ? AND user_id = ?", (*values, entry_id, user["id"]))
+    if cur.rowcount == 0:
+        return jsonify({"error": "Entry not found."}), 404
+    db.commit()
+    return jsonify(_logbook(db, user["id"]))
+
+
+@app.delete("/api/me/logbook/entries/<int:entry_id>")
+def delete_logbook_entry(entry_id):
+    user, err = _logbook_user()
+    if err:
+        return err
+    db = get_db()
+    db.execute("DELETE FROM logbook_entries WHERE id = ? AND user_id = ?", (entry_id, user["id"]))
+    db.commit()
+    return jsonify(_logbook(db, user["id"]))
+
+
+# ---------- Question board (moderated) ----------
+# Most users are under 18, so: every post is checked by an admin before anyone
+# else sees it, personal details are blocked, there are no private messages,
+# names show as first name + initial, and reported posts are hidden until checked.
+BOARD_TOPICS = ["Choosing a pathway", "Placements", "Applying and interviews", "Apprenticeships", "Something else"]
+_PERSONAL = [
+    (re.compile(r"[\w.+-]+@[\w-]+\.[\w.]+"), "an email address"),
+    (re.compile(r"(\+44\s?7\d{3}|\b07\d{3})\s?\d{3}\s?\d{3}\b|\b0\d{10}\b"), "a phone number"),
+    (re.compile(r"https?://|www\.|\b[\w-]+\.(com|co\.uk|org|net|io|me|uk)\b", re.I), "a link"),
+    (re.compile(r"(?<![\w.])@[A-Za-z0-9_]{3,}"), "a social media username"),
+    (re.compile(r"\b(snapchat|snap me|insta|instagram|tiktok|whatsapp|discord|telegram|dm me|message me|"
+                r"add me)\b", re.I), "a way to contact you privately"),
+    (re.compile(r"\b[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}\b"), "a postcode"),
+]
+
+
+def personal_detail(text):
+    """What kind of personal detail the text contains, or None."""
+    for rx, label in _PERSONAL:
+        if rx.search(text or ""):
+            return label
+    return None
+
+
+def _public_name(full_name):
+    parts = (full_name or "").split()
+    if not parts:
+        return "Launchpad user"
+    return parts[0] + (f" {parts[-1][0].upper()}." if len(parts) > 1 else "")
+
+
+def _board_item(r, me):
+    return {
+        "id": r["id"],
+        "body": r["body"] or "",
+        "author": "Launchpad team" if r["is_admin"] else _public_name(r["full_name"]),
+        "team": bool(r["is_admin"]),
+        "mine": me is not None and r["user_id"] == me["id"],
+        "pending": r["status"] != "approved",
+        "createdAt": r["created_at"],
+    }
+
+
+def _personal_message(text):
+    found = personal_detail(text)
+    if found:
+        return (f"Please take out {found}. To keep everyone safe, never share personal or contact "
+                "details on the board.")
+    return None
+
+
+@app.get("/api/board")
+def list_board():
+    """Approved questions and answers, plus the signed-in user's own posts waiting for approval."""
+    me = current_user()
+    uid = me["id"] if me else -1
+    db = get_db()
+    qs = db.execute(
+        """SELECT q.*, u.full_name, u.is_admin FROM board_questions q JOIN users u ON u.id = q.user_id
+           WHERE q.status = 'approved' OR (q.user_id = ? AND q.status = 'pending')
+           ORDER BY q.created_at DESC, q.id DESC LIMIT 100""", (uid,)).fetchall()
+    ans = db.execute(
+        """SELECT a.*, u.full_name, u.is_admin FROM board_answers a JOIN users u ON u.id = a.user_id
+           WHERE a.status = 'approved' OR (a.user_id = ? AND a.status = 'pending')
+           ORDER BY a.created_at, a.id""", (uid,)).fetchall()
+    by_q = {}
+    for a in ans:
+        by_q.setdefault(a["question_id"], []).append(_board_item(a, me))
+    items = []
+    for q in qs:
+        item = _board_item(q, me)
+        item.update({"title": q["title"], "topic": q["topic"], "answers": by_q.get(q["id"], [])})
+        items.append(item)
+    return jsonify({"items": items, "topics": BOARD_TOPICS})
+
+
+@app.post("/api/board/questions")
+def ask_board_question():
+    me = current_user()
+    if me is None:
+        return jsonify({"error": "Please sign in to ask a question."}), 401
+    if rate_limited("board:" + str(me["id"]), 10, 3600):
+        return too_many()
+    data = request.get_json(silent=True) or {}
+    title = " ".join(str(data.get("title") or "").split())
+    body = str(data.get("body") or "").strip()
+    topic = (data.get("topic") or "").strip()
+    if topic not in BOARD_TOPICS:
+        return jsonify({"error": "Please choose a topic."}), 400
+    if not 8 <= len(title) <= 140:
+        return jsonify({"error": "Please write your question in 8 to 140 characters."}), 400
+    if len(body) > 1500:
+        return jsonify({"error": "Please keep the extra detail under 1,500 characters."}), 400
+    msg = _personal_message(f"{title} {body}")
+    if msg:
+        return jsonify({"error": msg}), 400
+    status = "approved" if me["is_admin"] else "pending"
+    db = get_db()
+    db.execute("INSERT INTO board_questions (user_id, title, body, topic, status) VALUES (?, ?, ?, ?, ?)",
+               (me["id"], title, body or None, topic, status))
+    db.commit()
+    return jsonify({"ok": True, "pending": status == "pending",
+                    "safety": safety_concern(f"{title} {body}")}), 201
+
+
+@app.post("/api/board/questions/<int:question_id>/answers")
+def answer_board_question(question_id):
+    me = current_user()
+    if me is None:
+        return jsonify({"error": "Please sign in to answer."}), 401
+    if rate_limited("board:" + str(me["id"]), 10, 3600):
+        return too_many()
+    db = get_db()
+    q = db.execute("SELECT id FROM board_questions WHERE id = ? AND status = 'approved'", (question_id,)).fetchone()
+    if q is None:
+        return jsonify({"error": "Question not found."}), 404
+    body = str((request.get_json(silent=True) or {}).get("body") or "").strip()
+    if not 2 <= len(body) <= 1500:
+        return jsonify({"error": "Please write an answer of up to 1,500 characters."}), 400
+    msg = _personal_message(body)
+    if msg:
+        return jsonify({"error": msg}), 400
+    status = "approved" if me["is_admin"] else "pending"
+    db.execute("INSERT INTO board_answers (question_id, user_id, body, status) VALUES (?, ?, ?, ?)",
+               (question_id, me["id"], body, status))
+    db.commit()
+    return jsonify({"ok": True, "pending": status == "pending", "safety": safety_concern(body)}), 201
+
+
+@app.post("/api/board/report")
+def report_board_post():
+    """Report a post. It's hidden straight away until an admin checks it."""
+    me = current_user()
+    if me is None:
+        return jsonify({"error": "Please sign in to report a post."}), 401
+    data = request.get_json(silent=True) or {}
+    kind = data.get("kind")
+    table = {"question": "board_questions", "answer": "board_answers"}.get(kind)
+    try:
+        item_id = int(data.get("id"))
+    except (TypeError, ValueError):
+        item_id = None
+    if table is None or item_id is None:
+        return jsonify({"error": "That post wasn't found."}), 400
+    reason = " ".join(str(data.get("reason") or "").split())[:300]
+    db = get_db()
+    row = db.execute(f"SELECT id FROM {table} WHERE id = ? AND status = 'approved'", (item_id,)).fetchone()
+    if row is None:
+        return jsonify({"error": "That post wasn't found."}), 404
+    db.execute("INSERT OR IGNORE INTO board_reports (kind, item_id, user_id, reason) VALUES (?, ?, ?, ?)",
+               (kind, item_id, me["id"], reason or None))
+    db.execute(f"UPDATE {table} SET status = 'pending', reported = reported + 1 WHERE id = ?", (item_id,))
+    db.commit()
+    return jsonify({"ok": True})
+
+
+@app.get("/api/admin/board")
+def admin_board():
+    """Posts waiting for a check: new ones, and reported ones (with the reasons)."""
+    _, err = require_admin()
+    if err:
+        return err
+    db = get_db()
+
+    def reasons(kind, item_id):
+        return [r["reason"] for r in db.execute(
+            "SELECT reason FROM board_reports WHERE kind = ? AND item_id = ? AND reason IS NOT NULL",
+            (kind, item_id))]
+
+    out = []
+    for r in db.execute("""SELECT q.*, u.full_name, u.email FROM board_questions q JOIN users u ON u.id = q.user_id
+                           WHERE q.status = 'pending' ORDER BY q.created_at""").fetchall():
+        out.append({"kind": "question", "id": r["id"], "title": r["title"], "body": r["body"] or "",
+                    "topic": r["topic"], "author": r["full_name"], "email": r["email"],
+                    "reported": r["reported"], "reasons": reasons("question", r["id"]),
+                    "safety": safety_concern(f"{r['title']} {r['body'] or ''}"), "createdAt": r["created_at"]})
+    for r in db.execute("""SELECT a.*, u.full_name, u.email, q.title AS q_title FROM board_answers a
+                           JOIN users u ON u.id = a.user_id JOIN board_questions q ON q.id = a.question_id
+                           WHERE a.status = 'pending' ORDER BY a.created_at""").fetchall():
+        out.append({"kind": "answer", "id": r["id"], "title": r["q_title"], "body": r["body"],
+                    "author": r["full_name"], "email": r["email"], "reported": r["reported"],
+                    "reasons": reasons("answer", r["id"]), "safety": safety_concern(r["body"]),
+                    "createdAt": r["created_at"]})
+    return jsonify({"items": out, "count": len(out)})
+
+
+@app.put("/api/admin/board/<kind>/<int:item_id>")
+def moderate_board_post(kind, item_id):
+    _, err = require_admin()
+    if err:
+        return err
+    table = {"question": "board_questions", "answer": "board_answers"}.get(kind)
+    action = (request.get_json(silent=True) or {}).get("action")
+    if table is None or action not in ("approve", "reject"):
+        return jsonify({"error": "Choose approve or reject."}), 400
+    db = get_db()
+    cur = db.execute(f"UPDATE {table} SET status = ?, reviewed_at = datetime('now') WHERE id = ?",
+                     ("approved" if action == "approve" else "rejected", item_id))
+    if cur.rowcount == 0:
+        return jsonify({"error": "Post not found."}), 404
+    db.commit()
+    return jsonify({"ok": True})
+
+
+# ---------- Ask Launchpad (help assistant) ----------
+# Answers questions about the site and T Levels, using only facts from the site.
+# Uses the local AI if it's running, otherwise fixed answers. Nothing is saved.
+ASSISTANT_LINKS = [
+    (r"\bquiz\b|which pathway|what pathway|suits? me", "/quiz", "Career quiz"),
+    (r"interview|practi[cs]e", "/interview", "Interview practice"),
+    (r"coffee|chat with|talk to|mentor|buddy|alum", "/alumni/coffee-chats", "Coffee chats"),
+    (r"opportunit|apprentice|vacanc|\bjobs?\b|apply|application", "/opportunities", "Opportunities"),
+    (r"track|my applications", "/profile#applications", "My applications"),
+    (r"t ?levels?|placement|hours|how long", "/tlevel", "T Levels"),
+    (r"parent|carer|my child|my son|my daughter", "/parents", "Parents and carers"),
+    (r"\bsafe|safety|safeguard|worried|hurt|bull", "/safeguarding", "Staying safe"),
+    (r"\bcv\b|resume", "/profile#cv", "Your CV"),
+    (r"logbook|log book|goals", "/logbook", "My logbook"),
+    (r"question board|community|other students", "/community", "Question board"),
+    (r"school|college|teacher", "/register-interest?role=school", "Register interest (schools)"),
+    (r"register|interest", "/register-interest", "Register interest"),
+    (r"pathway|digital|business|media|finance|engineering", "/information", "Pathways"),
+    (r"accessib|text size|bigger text|aloud|contrast|dark mode|colour.?blind", "/accessibility", "Accessibility"),
+    (r"privacy|my data|delete", "/privacy", "Privacy"),
+    (r"advice|tips", "/t-level/advice", "Advice"),
+]
+_ASSISTANT_LINKS = [(re.compile(p, re.I), to, label) for p, to, label in ASSISTANT_LINKS]
+
+
+def assistant_links(text, limit=3):
+    out = []
+    for rx, to, label in _ASSISTANT_LINKS:
+        if rx.search(text or "") and all(o["to"] != to for o in out):
+            out.append({"to": to, "label": label})
+        if len(out) >= limit:
+            break
+    return out
+
+
+@app.post("/api/assistant")
+def ask_assistant():
+    if rate_limited("assistant", 60, 3600):
+        return too_many()
+    data = request.get_json(silent=True) or {}
+    question = " ".join(str(data.get("message") or "").split())
+    if not question:
+        return jsonify({"error": "Please type a question."}), 400
+    if len(question) > 500:
+        return jsonify({"error": "Please keep your question under 500 characters."}), 400
+    history = []
+    raw = data.get("history")
+    if isinstance(raw, list):
+        for h in raw[-6:]:
+            if isinstance(h, dict) and h.get("role") in ("user", "assistant"):
+                history.append({"role": h["role"], "text": " ".join(str(h.get("text") or "").split())[:500]})
+
+    if safety_concern(question):
+        return jsonify({"answer": SAFEGUARD_REPLY, "links": [{"to": "/safeguarding", "label": "Staying safe"}],
+                        "source": "rules", "safety": True})
+    # "Thanks", "hi", "ok": a friendly fixed reply, no facts and no links.
+    small = small_talk_reply(question)
+    if small:
+        return jsonify({"answer": small, "links": [], "source": "rules", "safety": False})
+
+    # Only the facts that match the question (and the one before it, for "how long is that?").
+    last_user = next((h["text"] for h in reversed(history) if h["role"] == "user"), "")
+    facts = pick_facts(question, site_facts()) or pick_facts(f"{last_user} {question}", site_facts())
+    answer = ai_assistant(question, history, facts) if facts else None
+    source = "ai" if answer else "rules"
+    if not answer:
+        answer = assistant_reply(question)
+    links = assistant_links(question)
+    if not answer:
+        answer = ("I'm not sure about that one. Try the Help page, or ask on the question board and the "
+                  "Launchpad team will answer.")
+        links = links or [{"to": "/help", "label": "Help"}, {"to": "/community", "label": "Question board"}]
+    return jsonify({"answer": answer, "links": links, "source": source, "safety": False})
 
 
 if __name__ == "__main__":

@@ -5,7 +5,7 @@ import { api } from '../modules/api'
 import { useAuth } from '../modules/auth'
 import { Icon } from '../modules/icons'
 import { CHAT_STATUSES, formatChatTime } from '../modules/mentors'
-import { AdminFeedback, AdminKpis, downloadCsv } from './admin-insights'
+import { AdminBoard, AdminFeedback, AdminKpis, downloadCsv } from './admin-insights'
 
 const ROLE_NAMES = { student: 'Student', parent: 'Parent or carer', school: 'School or college' }
 
@@ -467,6 +467,9 @@ function Admin() {
             </div>
           )}
         </section>
+
+        {/* Question board moderation */}
+        <AdminBoard />
 
         {/* Page feedback */}
         <AdminFeedback />

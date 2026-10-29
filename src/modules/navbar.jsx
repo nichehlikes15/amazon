@@ -210,13 +210,6 @@ function Navbar() {
                 checked={a11y.reducedMotion}
                 onChange={(v) => setA11y({ reducedMotion: v })}
               />
-              <Switch
-                icon="moon"
-                label="Dark mode"
-                hint="Light text on a dark background"
-                checked={theme === 'dark'}
-                onChange={(v) => setA11y({ theme: v ? 'dark' : 'light' })}
-              />
 
               <Link className="a11y-more" to="/accessibility">
                 More about accessibility <Icon name="arrowRight" size={14} />
@@ -245,6 +238,7 @@ function Navbar() {
                   <span>{user.email}</span>
                 </p>
                 <Link to="/profile">My Profile</Link>
+                <Link to="/logbook">My logbook</Link>
                 <Link to="/settings">Settings</Link>
                 <Link to="/alumni">Career Journey</Link>
                 {user.isAdmin && <Link to="/admin">Admin</Link>}

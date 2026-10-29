@@ -51,7 +51,8 @@ export const api = {
     request('/coffee-chats', { method: 'POST', body: JSON.stringify(payload) }),
   myCoffeeChats: () => request('/me/coffee-chats'),
   exportMe: () => request('/me/export'),
-  interviewQuestions: (pathway) => request(`/interview/questions?pathway=${encodeURIComponent(pathway || '')}`),
+  interviewQuestions: (pathway, cv) =>
+    request(`/interview/questions?pathway=${encodeURIComponent(pathway || '')}${cv ? '&cv=1' : ''}`),
   // Is Alex's AI (Ollama) running? Also starts loading the model.
   interviewAiStatus: () => request('/interview/ai-status'),
   // Something said to Alex that might not be an answer (a question, "repeat that"...)
@@ -114,6 +115,25 @@ export const api = {
     request('/feedback', { method: 'POST', body: JSON.stringify(payload) }),
   listFeedback: () => request('/admin/feedback'),
   adminKpis: () => request('/admin/kpis'),
+  // Application tracker
+  myApplications: () => request('/me/applications'),
+  // Placement logbook
+  logbook: () => request('/me/logbook'),
+  addLogbookGoal: (payload) => request('/me/logbook/goals', { method: 'POST', body: JSON.stringify(payload) }),
+  updateLogbookGoal: (id, payload) => request(`/me/logbook/goals/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
+  deleteLogbookGoal: (id) => request(`/me/logbook/goals/${id}`, { method: 'DELETE' }),
+  addLogbookEntry: (payload) => request('/me/logbook/entries', { method: 'POST', body: JSON.stringify(payload) }),
+  updateLogbookEntry: (id, payload) => request(`/me/logbook/entries/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
+  deleteLogbookEntry: (id) => request(`/me/logbook/entries/${id}`, { method: 'DELETE' }),
+  // Question board
+  board: () => request('/board'),
+  askBoardQuestion: (payload) => request('/board/questions', { method: 'POST', body: JSON.stringify(payload) }),
+  answerBoardQuestion: (id, body) => request(`/board/questions/${id}/answers`, { method: 'POST', body: JSON.stringify({ body }) }),
+  reportBoardPost: (kind, id, reason) => request('/board/report', { method: 'POST', body: JSON.stringify({ kind, id, reason }) }),
+  adminBoard: () => request('/admin/board'),
+  moderateBoardPost: (kind, id, action) => request(`/admin/board/${kind}/${id}`, { method: 'PUT', body: JSON.stringify({ action }) }),
+  // Ask Launchpad (help assistant)
+  askAssistant: (payload) => request('/assistant', { method: 'POST', body: JSON.stringify(payload) }),
   saveQuizResult: (pathway) =>
     request('/me/quiz-result', { method: 'POST', body: JSON.stringify({ pathway }) }),
 }

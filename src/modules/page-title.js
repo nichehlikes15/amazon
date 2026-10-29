@@ -25,6 +25,8 @@ const TITLES = [
   ['/parents', 'Parents and carers'],
   ['/safeguarding', 'Staying safe'],
   ['/terms', 'Terms of use'],
+  ['/logbook', 'My logbook'],
+  ['/community', 'Question board'],
   ['/help', 'Help'],
   ['/accessibility', 'Accessibility'],
   ['/privacy', 'Privacy'],

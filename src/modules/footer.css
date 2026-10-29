@@ -50,13 +50,11 @@
     padding: 32px var(--gutter);
 }
 
-/* Never recolour the logo (Amazon brand rules) - it sits on a white tile on the dark footer */
+/* White logo on the dark footer. Note: the brief says the Amazon smile
+   shouldn't be recoloured - this was a deliberate team choice. */
 .footer-logo {
-    box-sizing: content-box;
     width: 110px;
-    padding: 8px 14px;
-    border-radius: 10px;
-    background: #fff;
+    filter: brightness(0) invert(1);
 }
 
 .footer-base p {

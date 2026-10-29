@@ -5,6 +5,7 @@ import { useAuth } from '../modules/auth'
 import { api } from '../modules/api'
 import { CoffeeChatList } from '../modules/coffee-chat-list'
 import PracticeScores from './profile-practice'
+import ApplicationBoard from './profile-applications'
 import { Icon, PathwayIcon, closingLabel, daysUntil } from '../modules/icons'
 import { formatChatTime } from '../modules/mentors'
 
@@ -19,6 +20,7 @@ import { formatChatTime } from '../modules/mentors'
 const TABS = [
   { id: 'overview', label: 'Overview', icon: 'layers' },
   { id: 'saved', label: 'Saved', icon: 'bookmark' },
+  { id: 'applications', label: 'Applications', icon: 'check' },
   { id: 'coffee-chats', label: 'Coffee chats', icon: 'calendar' },
   { id: 'interview-practice', label: 'Interview practice', icon: 'video' },
   { id: 'cv', label: 'CV', icon: 'file' },
@@ -27,10 +29,6 @@ const TABS = [
 function tabFromHash(hash) {
   const id = (hash || '').replace('#', '')
   return TABS.some((t) => t.id === id) ? id : 'overview'
-}
-
-function initials(name) {
-  return (name || '?').split(' ').filter(Boolean).slice(0, 2).map((p) => p[0].toUpperCase()).join('')
 }
 
 // Progress ring in the header
@@ -190,7 +188,7 @@ function Profile() {
       <header className="pr-hero">
         <div className="pr-hero-inner">
           <div className="pr-id">
-            <span className="pr-avatar" aria-hidden="true">{initials(user.fullName)}</span>
+            <span className="pr-avatar" aria-hidden="true"><img src="/assets/images/defaultprofile.svg" alt="" /></span>
             <div className="pr-id-text">
               <p className="pr-kicker">My profile</p>
               <h1>{user.fullName}</h1>
@@ -211,6 +209,7 @@ function Profile() {
                 <Link className="primary-button" to="/register-interest">
                   Register interest <Icon name="arrowRight" size={15} />
                 </Link>
+                <Link className="secondary-button" to="/logbook"><Icon name="book" size={15} /> My logbook</Link>
                 <Link className="secondary-button" to="/settings">Edit profile</Link>
               </div>
             </div>
@@ -498,6 +497,9 @@ function Profile() {
               )}
             </div>
           )}
+
+          {/* ---------- Applications ---------- */}
+          {tab === 'applications' && <ApplicationBoard />}
 
           {/* ---------- Interview practice ---------- */}
           {tab === 'interview-practice' && <PracticeScores />}

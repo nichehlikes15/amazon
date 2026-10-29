@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom'
 import './quiz.css'
 import { api } from '../modules/api'
 import { useAuth } from '../modules/auth'
-import { Icon, PathwayIcon } from '../modules/icons'
+import { Icon, PathwayIcon, closingLabel } from '../modules/icons'
+import { MENTORS } from '../modules/mentors'
 
 const PATHWAYS = ['Digital', 'Business', 'Media', 'Finance', 'Engineering']
 
@@ -64,6 +65,91 @@ function pickNext(order, alreadyAsked, currentScores) {
     return currentScores[b.pathway] - currentScores[a.pathway]
   })
   return best[0]
+}
+
+// What to do next, made for the pathway you matched: read about it, practise
+// an interview for it, talk to someone, see matching opportunities, register.
+function NextSteps({ pathway }) {
+  const [opps, setOpps] = useState(null)
+  useEffect(() => {
+    let live = true
+    api.listOpportunities()
+      .then((d) => { if (live) setOpps((d.items || []).filter((o) => o.pathway === pathway).slice(0, 3)) })
+      .catch(() => { if (live) setOpps([]) })
+    return () => { live = false }
+  }, [pathway])
+
+  const anchor = pathway.toLowerCase()
+  const person = MENTORS.find((m) => m.pathway === pathway)
+  const steps = [
+    {
+      title: `Read about ${pathway}`,
+      text: `What you study on the ${pathway} pathway, and the jobs it can lead to.`,
+      links: [{ to: `/information#${anchor}`, label: `Explore ${pathway}` }],
+    },
+    {
+      title: 'Practise an interview',
+      text: `A practice call with Alex, with a question about ${pathway} and four general ones.`,
+      links: [
+        { to: `/interview?pathway=${pathway}`, label: 'Start a practice call' },
+        { to: '/guides/interview-prep', label: 'Interview tips' },
+      ],
+    },
+    {
+      title: 'Talk to someone',
+      text: person
+        ? `${person.firstName} is on the ${pathway} pathway and happy to have a short chat.`
+        : 'A relaxed chat with a T Level student, a placement alum or an Amazon buddy.',
+      links: [{ to: '/alumni/coffee-chats', label: 'Book a coffee chat' }],
+    },
+    {
+      title: 'Register your interest',
+      text: 'Tell the Amazon Emerging Talent team you are interested in this pathway.',
+      links: [{ to: `/register-interest?pathway=${pathway}`, label: 'Register interest' }],
+    },
+  ]
+
+  return (
+    <section className="qz-next" aria-labelledby="qz-next-title">
+      <h3 id="qz-next-title">Your next steps</h3>
+      <ol className="qz-next-steps">
+        {steps.map((s, n) => (
+          <li key={s.title} style={{ '--n': n }}>
+            <span className="qz-next-n" aria-hidden="true">{String(n + 1).padStart(2, '0')}</span>
+            <h4>{s.title}</h4>
+            <p>{s.text}</p>
+            <div className="qz-next-links">
+              {s.links.map((l) => (
+                <Link key={l.to} to={l.to}>{l.label} <Icon name="arrowRight" size={14} /></Link>
+              ))}
+            </div>
+          </li>
+        ))}
+      </ol>
+
+      <div className="qz-next-opps">
+        <h4>{pathway} opportunities</h4>
+        {opps === null ? (
+          <p className="qz-next-quiet">Loading…</p>
+        ) : opps.length === 0 ? (
+          <p className="qz-next-quiet">There are no {pathway} opportunities listed right now.</p>
+        ) : (
+          <ul>
+            {opps.map((o) => {
+              const closing = closingLabel(o.closingDate)
+              return (
+                <li key={o.id}>
+                  <Link to={`/opportunities/${o.id}`}>{o.title}</Link>
+                  <span>{o.location}{closing ? ` · ${closing.text}` : ''}</span>
+                </li>
+              )
+            })}
+          </ul>
+        )}
+        <Link className="qz-next-all" to="/opportunities">See all opportunities <Icon name="arrowRight" size={14} /></Link>
+      </div>
+    </section>
+  )
 }
 
 function Quiz() {
@@ -205,13 +291,7 @@ function Quiz() {
               })}
             </div>
 
-            <div className="qz-actions">
-              <Link className="primary-button" to={`/information#${String(topPathway).toLowerCase()}`}>
-                Explore {topPathway}
-                <Icon name="arrowRight" size={15} />
-              </Link>
-              <Link className="secondary-button" to="/opportunities">See opportunities</Link>
-            </div>
+            <NextSteps pathway={topPathway} />
             <button type="button" className="qz-restart" onClick={restart}>Start again</button>
           </section>
         )}

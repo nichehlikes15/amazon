@@ -47,6 +47,14 @@ const GROUPS = [
         a: <>Anyone can read the start of each guide. Signing in (it's free) lets you read the rest and download the PDF versions.</>,
       },
       {
+        q: 'What is the question board?',
+        a: <>A place to ask questions about T Levels, placements and apprenticeships. Other students and the Launchpad team answer. Every post is checked before it appears, and you should never share personal details. <Link to="/community">Go to the question board</Link>.</>,
+      },
+      {
+        q: 'What is Ask Launchpad?',
+        a: <>The help chat in the bottom corner of each page. It answers questions about T Levels and Launchpad using only facts from this site, and can read its answers aloud. What you type isn&apos;t saved.</>,
+      },
+      {
         q: 'Is Alex a real person?',
         a: <>No. Alex is a virtual interviewer. When his AI is running, his replies and follow-up questions are written by an AI model that runs on the Launchpad server, based on what you said. Your score always comes from fixed checks, so the same answer gets the same score. AI can misunderstand things, so use it as a guide.</>,
       },

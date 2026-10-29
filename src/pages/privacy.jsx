@@ -22,6 +22,8 @@ const DATA = [
   ['Coffee chat safety check', "Whether you said you're under 18, and that a parent or carer knows about the chat", 'To help keep under-18s safe'],
   ['Password reset links', 'A scrambled code and when it runs out (after 30 minutes)', 'So you can choose a new password'],
   ['Page feedback', 'Which page, yes or no, and any comment - not linked to your name or account', 'To improve the site'],
+  ['Placement logbook', 'Your learning goals and weekly entries: the week, hours, what you did, what you learned and feedback', 'So you can keep and print your logbook'],
+  ['Question board', 'Your questions and answers, when you posted them, and any reports you make. Others only see your first name and initial', 'To run the question board safely'],
 ]
 
 function Privacy() {
@@ -91,6 +93,13 @@ function Privacy() {
           <h2>Interview practice</h2>
           <ul>
             <li>Your answers are sent to our server to work out your feedback, then thrown away. They are not saved.</li>
+            <li>
+              If you choose &quot;Ask me about my CV&quot;, our server reads your saved CV to write one question. Contact
+              details are taken out first, and nothing extra is saved.
+            </li>
+            <li>
+              Questions typed into Ask Launchpad (the help chat) are answered and then thrown away. They are not saved.
+            </li>
             <li>
               Alex's replies, follow-up questions and end summary can be written by an AI model. The AI runs on the
               Launchpad server itself (using a tool called Ollama), so your answers are not sent to an outside AI

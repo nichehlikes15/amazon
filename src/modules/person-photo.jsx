@@ -1,19 +1,17 @@
 import { useState } from 'react'
 import { findMentor } from './mentors'
 
-// Round photo of a coffee chat person. Falls back to their first initial
-// if there's no photo (or it fails to load).
+export const DEFAULT_PHOTO = '/assets/images/defaultprofile.svg'
+
+// Round photo of a coffee chat person (the team photos). Anyone without a
+// photo, or if it fails to load, gets the default profile picture.
 export function PersonPhoto({ name, className = '' }) {
   const person = findMentor(name)
   const [failed, setFailed] = useState(false)
-  const showPhoto = person?.photo && !failed
+  const src = person?.photo && !failed ? person.photo : DEFAULT_PHOTO
   return (
-    <span className={`${className}${showPhoto ? ' has-photo' : ''}`} aria-hidden="true">
-      {showPhoto ? (
-        <img src={person.photo} alt="" loading="lazy" decoding="async" onError={() => setFailed(true)} />
-      ) : (
-        (name || '?').charAt(0)
-      )}
+    <span className={`${className} has-photo`} aria-hidden="true">
+      <img src={src} alt="" loading="lazy" decoding="async" onError={() => setFailed(true)} />
     </span>
   )
 }

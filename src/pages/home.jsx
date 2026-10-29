@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import './home.css'
-import Events from '../modules/events'
 import { api } from '../modules/api'
 import { useAuth } from '../modules/auth'
 import { Icon, PathwayIcon, closingLabel, daysUntil } from '../modules/icons'

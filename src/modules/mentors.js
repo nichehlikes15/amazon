@@ -20,9 +20,9 @@ export const MENTORS = [
     name: 'Michael Lawrence',
     role: 'Digital T Level student',
     pathway: 'Digital',
-    times: ['Tuesday afternoon'],
-    about: 'Ask about what a placement is like and settling into a real team.',
-    topics: ['What a placement is like', 'Apprenticeships after T Levels'],
+    times: ['Monday to Friday'],
+    about: 'Feel free to converse with me regarding balancing academics alongside placement hours.',
+    topics: ['Time management', 'Organisation', 'Structure'],
   },
   {
     name: 'Nahla Mitchell',
@@ -34,11 +34,11 @@ export const MENTORS = [
   },
   {
     name: 'Oliver Tappin',
-    role: 'Digital T Level student',
+    role: 'Digital T Level student at Ada College',
     pathway: 'Digital',
     times: ['Thursday'],
-    about: 'Ask about applying, interviews and what to expect on placement.',
-    topics: ['Applying and interviews', 'What a placement is like'],
+    about: "I can help you get started with coding, plan your first project and share your work on GitHub.",
+    topics: ['Starting to code', 'Projects and GitHub', 'The Digital T Level'],
   },
   {
     name: 'Sarah Abwnawar',

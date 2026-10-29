@@ -36,10 +36,6 @@ const SIZES = [
   { id: 'large', label: 'Large' },
 ]
 
-function initials(name) {
-  return (name || '?').split(' ').filter(Boolean).slice(0, 2).map((p) => p[0].toUpperCase()).join('')
-}
-
 function Switch({ checked, onChange, label }) {
   return (
     <button
@@ -298,7 +294,7 @@ function Settings() {
           <p className="st-kicker">Settings</p>
           <h1>Make Launchpad <span>yours</span></h1>
           <div className="st-id">
-            <span className="st-avatar" aria-hidden="true">{initials(user.fullName)}</span>
+            <span className="st-avatar" aria-hidden="true"><img src="/assets/images/defaultprofile.svg" alt="" /></span>
             <span className="st-id-text">
               <strong>{user.fullName}</strong>
               <span>{user.email}{user.school ? ` · ${user.school}` : ''}</span>

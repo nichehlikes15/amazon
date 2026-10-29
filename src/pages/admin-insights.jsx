@@ -214,3 +214,72 @@ export function AdminFeedback() {
     </section>
   )
 }
+
+
+// Question board: posts waiting to be checked (new ones and reported ones).
+export function AdminBoard() {
+  const [items, setItems] = useState(null)
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState(null)
+
+  useEffect(() => {
+    let live = true
+    api.adminBoard()
+      .then((d) => { if (live) setItems(d.items || []) })
+      .catch((err) => { if (live) { setError(err.message); setItems([]) } })
+    return () => { live = false }
+  }, [])
+
+  const decide = async (item, action) => {
+    setBusy(`${item.kind}-${item.id}`)
+    setError('')
+    try {
+      await api.moderateBoardPost(item.kind, item.id, action)
+      setItems((list) => list.filter((i) => !(i.kind === item.kind && i.id === item.id)))
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  return (
+    <section className="content-section admin-eoi-section">
+      <h2 className="admin-section-title">Question board: waiting to be checked</h2>
+      <div className="admin-toolbar">
+        <span className="admin-count">
+          {items === null ? 'Loading…' : `${items.length} ${items.length === 1 ? 'post' : 'posts'} waiting`}
+        </span>
+      </div>
+      {error && <div className="auth-error" role="alert">{error}</div>}
+      {items && items.length === 0 && <p className="admin-status">Nothing to check. New posts will appear here.</p>}
+      {items && items.length > 0 && (
+        <ul className="ak-board">
+          {items.map((i) => (
+            <li key={`${i.kind}-${i.id}`} className="ak-board-item">
+              <div className="ak-board-tags">
+                <span className="ak-role">{i.kind === 'question' ? 'Question' : 'Answer'}</span>
+                {i.topic && <span className="ak-role">{i.topic}</span>}
+                {i.reported > 0 && <span className="ak-no">Reported {i.reported}x</span>}
+                {i.safety && <span className="ak-u18">Mentions safety - follow your safeguarding process</span>}
+              </div>
+              <strong>{i.kind === 'answer' ? `Answer to: ${i.title}` : i.title}</strong>
+              {i.body && <p>{i.body}</p>}
+              {i.reasons.length > 0 && <p className="ak-sub">Report reasons: {i.reasons.join('; ')}</p>}
+              <p className="ak-sub">From {i.author} ({i.email}) · {i.createdAt}</p>
+              <div className="ak-board-actions">
+                <button type="button" className="ak-csv" onClick={() => decide(i, 'approve')} disabled={busy === `${i.kind}-${i.id}`}>
+                  <Icon name="check" size={14} /> Approve
+                </button>
+                <button type="button" className="ak-csv is-danger" onClick={() => decide(i, 'reject')} disabled={busy === `${i.kind}-${i.id}`}>
+                  <Icon name="close" size={14} /> Reject
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  )
+}
+

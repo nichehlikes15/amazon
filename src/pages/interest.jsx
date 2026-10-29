@@ -65,7 +65,7 @@ function Interest() {
     school: user?.school || '',
     organisation: '',
     contactRole: '',
-    pathway: '',
+    pathway: PATHWAYS.includes(params.get('pathway')) ? params.get('pathway') : '',
     message: '',
   })
   const [consent, setConsent] = useState(false)

@@ -96,7 +96,7 @@ function Alummi() {
                 className={i === current ? 'al-picker is-active' : 'al-picker'}
                 onClick={() => setCurrent(i)}
               >
-                <span className="al-picker-avatar" aria-hidden="true">{s.name.charAt(0)}</span>
+                <span className="al-picker-avatar" aria-hidden="true"><img src="/assets/images/defaultprofile.svg" alt="" /></span>
                 <span className="al-picker-text">
                   <strong>{s.name}</strong>
                   <span>{s.pathway}</span>

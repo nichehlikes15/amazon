@@ -166,3 +166,65 @@ CREATE TABLE IF NOT EXISTS page_feedback (
     comment     TEXT,
     created_at  TEXT    NOT NULL DEFAULT (datetime('now'))
 );
+
+-- Placement logbook: learning goals and weekly entries (My logbook page).
+CREATE TABLE IF NOT EXISTS logbook_goals (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id     INTEGER NOT NULL,
+    kind        TEXT    NOT NULL,             -- technical / employability
+    text        TEXT    NOT NULL,
+    done        INTEGER NOT NULL DEFAULT 0,
+    created_at  TEXT    NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (user_id) REFERENCES users (id)
+);
+
+CREATE TABLE IF NOT EXISTS logbook_entries (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id     INTEGER NOT NULL,
+    week_of     TEXT    NOT NULL,             -- YYYY-MM-DD, the Monday of that week
+    hours       REAL    NOT NULL DEFAULT 0,
+    did         TEXT    NOT NULL,             -- what I did
+    learned     TEXT,                         -- what I learned
+    feedback    TEXT,                         -- feedback I was given
+    created_at  TEXT    NOT NULL DEFAULT (datetime('now')),
+    updated_at  TEXT    NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (user_id) REFERENCES users (id)
+);
+
+-- Question board. Every post is held as 'pending' until an admin approves it.
+-- A reported post goes back to 'pending' (hidden) until an admin checks it.
+CREATE TABLE IF NOT EXISTS board_questions (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id     INTEGER NOT NULL,
+    title       TEXT    NOT NULL,
+    body        TEXT,
+    topic       TEXT    NOT NULL,
+    status      TEXT    NOT NULL DEFAULT 'pending',   -- pending / approved / rejected
+    reported    INTEGER NOT NULL DEFAULT 0,
+    created_at  TEXT    NOT NULL DEFAULT (datetime('now')),
+    reviewed_at TEXT,
+    FOREIGN KEY (user_id) REFERENCES users (id)
+);
+
+CREATE TABLE IF NOT EXISTS board_answers (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    question_id INTEGER NOT NULL,
+    user_id     INTEGER NOT NULL,
+    body        TEXT    NOT NULL,
+    status      TEXT    NOT NULL DEFAULT 'pending',
+    reported    INTEGER NOT NULL DEFAULT 0,
+    created_at  TEXT    NOT NULL DEFAULT (datetime('now')),
+    reviewed_at TEXT,
+    FOREIGN KEY (question_id) REFERENCES board_questions (id),
+    FOREIGN KEY (user_id) REFERENCES users (id)
+);
+
+CREATE TABLE IF NOT EXISTS board_reports (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    kind        TEXT    NOT NULL,             -- question / answer
+    item_id     INTEGER NOT NULL,
+    user_id     INTEGER NOT NULL,
+    reason      TEXT,
+    created_at  TEXT    NOT NULL DEFAULT (datetime('now')),
+    UNIQUE (kind, item_id, user_id)
+);

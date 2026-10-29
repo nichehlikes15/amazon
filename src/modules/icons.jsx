@@ -21,6 +21,14 @@ const PATHS = {
 
   // UI
   search: <><circle cx="11" cy="11" r="7" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></>,
+  chat: <path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.8A8 8 0 1 1 21 12z" />,
+  send: <><path d="M21 3L10 14" /><path d="M21 3l-7 18-4-7-7-4 18-7z" /></>,
+  flag: <><path d="M5 21V4" /><path d="M5 4h11l-2 4 2 4H5" /></>,
+  printer: <><path d="M7 9V3h10v6" /><rect x="3" y="9" width="18" height="8" rx="2" /><path d="M7 14h10v7H7z" /></>,
+  plus: <><path d="M12 5v14" /><path d="M5 12h14" /></>,
+  home: <><path d="M3 11l9-7 9 7" /><path d="M5 10v10h5v-6h4v6h5V10" /></>,
+  expand: <><path d="M15 3h6v6" /><path d="M9 21H3v-6" /><path d="M21 3l-7 7" /><path d="M3 21l7-7" /></>,
+  shrink: <><path d="M4 14h6v6" /><path d="M20 10h-6V4" /><path d="M14 10l7-7" /><path d="M3 21l7-7" /></>,
   close: <><path d="M18 6L6 18" /><path d="M6 6l12 12" /></>,
   arrowRight: <><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></>,
   arrowLeft: <><path d="M19 12H5" /><path d="M11 18l-6-6 6-6" /></>,

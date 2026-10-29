@@ -148,7 +148,21 @@ def question_info(qid):
     return {"text": q["text"], "focus": q["focus"]} if q else None
 
 
+# A question about something on the student's own CV (Interview practice,
+# "Ask me about my CV"). The text shown and spoken is made for each student;
+# this is what it's scored against.
+CV_QUESTION = {
+    "text": "Tell me about something on your CV that you're proud of.",
+    "focus": "Talking confidently about your own experience",
+    "keywords": ["i", "my", "did", "made", "helped", "learned", "learnt", "team", "role", "job", "project",
+                 "school", "college", "customers", "people", "because", "result"],
+    "star": True,
+}
+
+
 def _find_question(qid):
+    if qid == "cv":
+        return CV_QUESTION
     if qid in GENERAL:
         return GENERAL[qid]
     for qs in SPECIFIC.values():
@@ -681,13 +695,23 @@ def _role_reply(pathway):
             "a T Level placement or apprenticeship at Amazon.")
 
 
-def answer_question(text, pathway=None):
-    """Alex's answer to a question about T Levels or placements, or None."""
+def answer_question(text, pathway=None, practice=True):
+    """Alex's answer to a question about T Levels or placements, or None.
+    practice=False skips the "this is a practice interview" answer."""
     low = text.lower()
     for rx, reply in _FAQ:
         if rx.search(low):
-            return _role_reply(pathway) if reply == "ROLE" else reply
+            if reply == "ROLE":
+                if not practice:
+                    continue
+                return _role_reply(pathway)
+            return reply
     return None
+
+
+def safety_concern(text):
+    """True if someone says they are being hurt, are unsafe or very upset."""
+    return bool(_SAFETY.search((text or "").lower()))
 
 
 def classify_turn(qid, utterance, context="answering", asked=None, pathway=None, tip=None):
@@ -732,6 +756,12 @@ def classify_turn(qid, utterance, context="answering", asked=None, pathway=None,
                 if q and q["star"] else " There's no wrong answer, so just say what you think.")
         return {"type": "stuck", "say": "That's okay, it happens in real interviews too. Take a moment to think."
                 + hint + " Go ahead when you're ready."}
+    if context == "feedback" and n <= 6 and _SMALL_TALK.match(low) and re.search(
+            r"\b(thank|thanks|thankyou|ta|cheers|ok|okay|cool|great|brilliant|got it|alright|nice|perfect)\b", low):
+        thanks = re.search(r"\b(thank|thanks|thankyou|ta|cheers)\b", low)
+        return {"type": "other", "fixed": True,
+                "say": ("You're welcome. " if thanks else "Great. ")
+                + "Say next when you're ready to move on, or try again to have another go."}
     if context == "feedback" and n <= 25 and re.search(r"\b(improve|better|differently|what should i|"
                                                         r"how (do|can|could|should) i|what (could|can) i)\b", low):
         say = f"Good question. {tip}" if tip else ("Good question. Give one clear example, say what you did yourself, "
@@ -747,3 +777,134 @@ def classify_turn(qid, utterance, context="answering", asked=None, pathway=None,
         return {"type": "other", "say": "Sorry, I didn't quite catch that. Say next when you're ready, "
                                         "or try again to have another go."}
     return {"type": "answer", "say": None}
+
+
+# ---------- A question about the student's CV (no AI) ----------
+_CV_VERBS = {"led", "built", "made", "created", "organised", "organized", "helped", "trained", "managed", "raised",
+             "designed", "improved", "ran", "started", "set", "served", "won", "planned", "coded", "developed",
+             "taught", "supported", "volunteered", "worked", "handled", "fixed", "tested", "wrote", "presented",
+             "coached", "cut", "sold", "delivered", "launched", "completed", "achieved"}
+
+
+def cv_question(cv_text):
+    """Pick one thing the student did from their CV and ask about it, or None."""
+    best, best_score = None, 0
+    for raw in (cv_text or "").splitlines():
+        line = re.sub(r"^[\s\-\u2022*\u00b7\d.)]+", "", raw).strip().rstrip(".;,")
+        words = line.split()
+        if not 5 <= len(words) <= 26:
+            continue
+        low = [w.lower().strip(",.()") for w in words]
+        if re.search(r"@|https?://|www\.|\d{5,}", line):  # contact details, not experience
+            continue
+        verb = next((i for i, w in enumerate(low[:4]) if w in _CV_VERBS), None)
+        if verb is None:
+            continue
+        score = 2 + (2 if re.search(r"\d", line) else 0) + (1 if len(words) >= 8 else 0)
+        if score > best_score:
+            best, best_score = " ".join(words[verb:verb + 16]), score
+    if not best:
+        return None
+    thing = best[0].lower() + best[1:]
+    return (f"On your CV you say you {thing}. Tell me about that. "
+            "What did you do yourself, and how did it turn out?")
+
+
+# ---------- Ask Launchpad (the help assistant, no AI) ----------
+# What each part of Launchpad is for, in plain words. The AI version gets the
+# same list, so it only talks about things that are really on the site.
+SITE_HOWTO = [
+    (r"\bquiz\b|which pathway|what pathway|suits? me|best for me",
+     "The career quiz asks a few quick questions and suggests the pathway that fits you best. "
+     "It only shows your result once you have finished."),
+    (r"interview|practi[cs]e",
+     "Interview practice is a practice video call with Alex, a virtual interviewer. You answer five questions "
+     "out loud or by typing, and get feedback after each answer."),
+    (r"coffee|chat with|talk to (a|an|someone)|alumni|alum",
+     "A coffee chat is a relaxed talk of about 15 minutes with a T Level student, a placement alum or an "
+     "Amazon buddy. You can request one on the Coffee chats page."),
+    (r"\bcv\b|resume|curriculum vitae",
+     "Upload your CV on My profile to get a score out of 100 and tips to improve it."),
+    (r"logbook|log book|my goals|learning goals",
+     "My logbook lets you set your learning goals, add an entry each week of your placement and save it as "
+     "a PDF for your review meetings."),
+    (r"question board|community|other students",
+     "On the question board you can ask a question for other students and the Launchpad team to answer. "
+     "Every post is checked by the team before it appears."),
+    (r"track|tracker|my applications",
+     "The Applications tab on My profile shows every opportunity you have saved or applied for, with the "
+     "stage you have reached."),
+    (r"accessib|text size|bigger text|read (it |this |the page )?aloud|contrast|dark mode|colour.?blind",
+     "Use the accessibility button in the top bar to change the text size, turn on high contrast, reduce "
+     "motion or have the page read aloud."),
+    (r"privacy|my data|delete my|download my",
+     "You can download your data or delete your account in Settings, under Privacy and data."),
+    (r"parent|carer|my child|my son|my daughter",
+     "There is a page for parents and carers that explains T Levels, placements and how students are "
+     "kept safe."),
+    (r"\bsafe\b|safety|safeguard|worried",
+     "The Staying safe page explains how coffee chats work, what never to share online and who to talk "
+     "to if something worries you."),
+    (r"sign ?up|create an account|account|log ?in|sign ?in",
+     "Creating an account is free. It lets you save opportunities, track your applications, keep your CV "
+     "and see your practice scores."),
+]
+_SITE_HOWTO = [(re.compile(p), a) for p, a in SITE_HOWTO]
+
+
+def site_facts():
+    """The facts the help assistant knows: what's on the site, then T Level facts."""
+    return [a for _, a in SITE_HOWTO] + faq_facts()
+
+
+def assistant_reply(text):
+    """The help assistant's answer without AI, or None if it doesn't know."""
+    low = _FILLER_START.sub("", " ".join((text or "").lower().split()))
+    if not low:
+        return None
+    if safety_concern(low):
+        return SAFEGUARD_REPLY
+    for rx, reply in _SITE_HOWTO:
+        if rx.search(low):
+            return reply
+    return answer_question(low, practice=False)
+
+
+# ---------- Small talk ("thanks", "hi", "ok") ----------
+# Answered with fixed words, so the AI never turns "thanks" into a random fact.
+_SMALL_TALK = re.compile(
+    r"^(?:(?:thanks|thank you|thank u|thankyou|ta|cheers|nice one|ok|okay|cool|great|brilliant|perfect|nice|"
+    r"got it|alright|all right|fine|hi|hiya|hello|hey|bye|goodbye|see you|see ya|good morning|good afternoon|"
+    r"yes|yeah|yep|no|nope|nah|sure|lol|wow)(?:\s+(?:so much|very much|a lot|loads|mate|alex|again|then|for that|"
+    r"for the help|for your help|you))*[\s.!,]*)+$")
+
+
+def small_talk_reply(text):
+    """A short friendly reply to small talk in the help chat, or None if it's a real question."""
+    low = " ".join((text or "").lower().split()).strip(" .!?,")
+    if not low or not _SMALL_TALK.match(low):
+        return None
+    if re.search(r"\b(thank|thanks|thankyou|ta|cheers|nice one)\b", low):
+        return "You're welcome! Is there anything else you'd like to know?"
+    if re.search(r"\b(bye|goodbye|see you|see ya)\b", low):
+        return "Bye for now, and good luck!"
+    if re.search(r"\b(hi|hiya|hello|hey|good morning|good afternoon)\b", low):
+        return "Hi! Ask me anything about T Levels, placements or how to use Launchpad."
+    if re.search(r"\b(yes|yeah|yep|sure)\b", low):
+        return "Great. What would you like to know?"
+    if re.search(r"\b(no|nope|nah)\b", low):
+        return "No problem. I'm here if you need me."
+    return "Great. Is there anything else I can help with?"
+
+
+def maybe_to_alex(utterance):
+    """Could this be the student talking TO Alex rather than answering?
+    Long answers never are, so only short ones get a second look from the AI."""
+    raw = " ".join((utterance or "").split())
+    low = _FILLER_START.sub("", raw.lower()).strip()
+    n = len(re.findall(r"[a-z0-9']+", low))
+    if n == 0 or n > 25:
+        return False
+    return bool(raw.endswith("?") or _QSTART.search(low) or _CLARIFY.search(low) or _STUCK.search(low)
+                or _SKIP.search(low) or _REPEAT.search(low)
+                or re.search(r"\b(alex|can you|could you|do you|would you|are you)\b", low))
