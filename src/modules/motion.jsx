@@ -28,6 +28,24 @@ function motionAllowed() {
   return 'IntersectionObserver' in window
 }
 
+// true while animations are allowed. Updates straight away when Reduce motion
+// is switched in the accessibility menu or Settings, or on the device.
+function useMotionAllowed() {
+  const [on, setOn] = useState(motionAllowed)
+  useEffect(() => {
+    // Wait a frame so the new setting is on <html> before checking it.
+    const check = () => requestAnimationFrame(() => setOn(motionAllowed()))
+    const mq = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null
+    window.addEventListener('launchpad-a11y', check)
+    mq?.addEventListener?.('change', check)
+    return () => {
+      window.removeEventListener('launchpad-a11y', check)
+      mq?.removeEventListener?.('change', check)
+    }
+  }, [])
+  return on
+}
+
 // How long the old page takes to fade out before the new one comes in.
 const LEAVE_MS = 240
 
@@ -39,6 +57,9 @@ export function PageTransition({ children }) {
   const [leaving, setLeaving] = useState(false)
   const { pathname, hash } = shown
   const ref = useRef(null)
+  const motionOn = useMotionAllowed()
+  const lastPath = useRef(null)
+  const lastMotion = useRef(motionOn)
 
   useEffect(() => {
     if (location.pathname === shown.pathname) {
@@ -64,10 +85,17 @@ export function PageTransition({ children }) {
   }, [pathname]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
+    // Same page, and motion was off a moment ago = Reduce motion was just
+    // switched back off. Then only content still below the screen animates,
+    // and the hero doesn't play again.
+    const rearm = lastPath.current === pathname && lastMotion.current === false
+    lastPath.current = pathname
+    lastMotion.current = motionOn
     const root = ref.current
-    if (!root || !motionAllowed()) return
+    if (!root || !motionOn) return undefined
 
     const seen = new WeakSet()
+    const belowScreen = (el) => el.getBoundingClientRect().top > window.innerHeight
     const io = new IntersectionObserver(
       (entries) => {
         entries.forEach((e) => {
@@ -119,6 +147,7 @@ export function PageTransition({ children }) {
         seen.add(el)
         if (h && (el === h || h.contains(el))) return
         if (el.closest(SKIP)) return
+        if (rearm && !belowScreen(el)) return
         // Only one level of nesting (section -> card), so content
         // doesn't fade in three times over.
         const parentTarget = el.parentElement && el.parentElement.closest('.reveal')
@@ -134,12 +163,12 @@ export function PageTransition({ children }) {
       })
     }
 
-    animateHero()
+    if (!rearm) animateHero()
     tag(root)
 
     // Content that loads later (fetched lists, filters, tabs).
     const mo = new MutationObserver((muts) => {
-      animateHero()
+      if (!rearm) animateHero()
       muts.forEach((m) => m.addedNodes.forEach((n) => n.nodeType === 1 && tag(n)))
     })
     mo.observe(root, { childList: true, subtree: true })
@@ -147,8 +176,14 @@ export function PageTransition({ children }) {
     return () => {
       mo.disconnect()
       io.disconnect()
+      // Reduce motion switched on (or a new page): show anything still waiting
+      // to fade in, so nothing is left hidden.
+      root.querySelectorAll('.reveal').forEach((el) => {
+        el.classList.remove('reveal', 'is-visible')
+        el.style.removeProperty('--reveal-delay')
+      })
     }
-  }, [pathname])
+  }, [pathname, motionOn])
 
   return (
     <div

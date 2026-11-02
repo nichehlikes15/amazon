@@ -21,6 +21,7 @@ const DATA = [
   ['Agreements', 'When you agreed to the privacy notice and terms (sign up, interest form and coffee chats)', 'To show you agreed'],
   ['Coffee chat safety check', "Whether you said you're under 18, and that a parent or carer knows about the chat", 'To help keep under-18s safe'],
   ['Password reset links', 'A scrambled code and when it runs out (after 30 minutes)', 'So you can choose a new password'],
+  ['Who you are', 'Whether you are a student, teacher or parent. Kept on your device, and on your account if you have one', 'To show you the links that are useful to you'],
   ['Page feedback', 'Which page, yes or no, and any comment - not linked to your name or account', 'To improve the site'],
   ['Placement logbook', 'Your learning goals and weekly entries: the week, hours, what you did, what you learned and feedback', 'So you can keep and print your logbook'],
   ['Question board', 'Your questions and answers, when you posted them, and any reports you make. Others only see your first name and initial', 'To run the question board safely'],

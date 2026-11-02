@@ -89,7 +89,7 @@ function NextSteps({ pathway }) {
     },
     {
       title: 'Practise an interview',
-      text: `A practice call with Alex, with a question about ${pathway} and four general ones.`,
+      text: `A practice call with Alex or Peccy, with a question about ${pathway} and four general ones.`,
       links: [
         { to: `/interview?pathway=${pathway}`, label: 'Start a practice call' },
         { to: '/guides/interview-prep', label: 'Interview tips' },

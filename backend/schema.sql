@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS users (
     email         TEXT    NOT NULL UNIQUE,
     password_hash TEXT    NOT NULL,
     is_admin      INTEGER NOT NULL DEFAULT 0,
+    role          TEXT,                       -- student / teacher / parent (who the account is for)
     consented_at  TEXT,                       -- when they agreed to the privacy notice and terms
     created_at    TEXT    NOT NULL DEFAULT (datetime('now'))
 );

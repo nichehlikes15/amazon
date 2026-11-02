@@ -47,7 +47,7 @@
 .opps-hero-stats li {
     padding: 8px 16px;
     border: 1px solid var(--line);
-    border-radius: 999px;
+    border-radius: var(--radius-sm);
     background: var(--glass);
     color: var(--muted);
     font-size: 0.875rem;
@@ -235,7 +235,7 @@
 .opps-pathway-count {
     min-width: 26px;
     padding: 2px 8px;
-    border-radius: 999px;
+    border-radius: var(--radius-sm);
     background: var(--white);
     color: var(--muted);
     font-size: 0.8125rem;
@@ -371,7 +371,7 @@
     gap: 6px;
     padding: 6px 12px;
     border: 1px solid var(--line);
-    border-radius: 999px;
+    border-radius: var(--radius-sm);
     background: var(--light);
     color: var(--navy);
     font-size: 0.8125rem;
@@ -566,7 +566,7 @@
 .opp-closing-pill {
     margin-left: auto;
     padding: 3px 10px;
-    border-radius: 999px;
+    border-radius: var(--radius-sm);
     background: var(--light);
     color: var(--navy);
     font-size: 0.8125rem;
@@ -777,7 +777,7 @@ html[data-reduced-motion="on"] .sk { animation: none; }
         width: auto;
         padding: 6px 12px 6px 6px;
         border: 1px solid var(--line);
-        border-radius: 999px;
+        border-radius: var(--radius-sm);
     }
     .opps-pathway-btn::before { display: none; }
     .opps-pathway-icon { width: 26px; height: 26px; border-radius: 50%; }

@@ -29,8 +29,8 @@ export const MENTORS = [
     role: 'Digital T Level student',
     pathway: 'Digital',
     times: ['Wednesday afternoon'],
-    about: 'Good to talk to if you are deciding which pathway is right for you.',
-    topics: ['Choosing a pathway', 'Applying and interviews'],
+    about: 'Open to talk about exams and how to use the skills gained in lesson in placement.',
+    topics: ['Exam prep', 'Transferring skills'],
   },
   {
     name: 'Oliver Tappin',
@@ -53,8 +53,8 @@ export const MENTORS = [
     role: 'Digital T Level student',
     pathway: 'Digital',
     times: ['Monday afternoon', 'Thursday afternoon'],
-    about: 'Ask about choosing a pathway and the options after T Levels.',
-    topics: ['Choosing a pathway', 'Apprenticeships after T Levels'],
+    about: 'Open to talk about apprenticeship opportunities.',
+    topics: ['Apprenticeship opportunities'],
   },
 ].map((p) => ({ ...p, firstName: p.name.split(' ')[0], photo: photo(p.name) }))
 

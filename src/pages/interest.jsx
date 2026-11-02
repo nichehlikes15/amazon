@@ -4,6 +4,7 @@ import './interest.css'
 import { api } from '../modules/api'
 import { useAuth } from '../modules/auth'
 import { Icon } from '../modules/icons'
+import { getLocalRole } from '../modules/role-store'
 
 // Who can register interest - the three customer groups in the brief.
 const ROLES = [
@@ -56,7 +57,9 @@ const COPY = {
 function Interest() {
   const { user } = useAuth()
   const [params] = useSearchParams()
-  const startRole = ROLES.some((r) => r.id === params.get('role')) ? params.get('role') : 'student'
+  // Start on the form that matches who they said they are (a teacher fills in the school form).
+  const siteRole = { student: 'student', parent: 'parent', teacher: 'school' }[user?.role || getLocalRole()]
+  const startRole = ROLES.some((r) => r.id === params.get('role')) ? params.get('role') : siteRole || 'student'
 
   const [role, setRole] = useState(startRole)
   const [form, setForm] = useState({

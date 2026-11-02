@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import './auth.css'
 import { api } from '../modules/api'
 import { Icon } from '../modules/icons'
+import { SignInLink } from '../modules/return-to'
 
 // "Forgot your password?" - ask for a reset link.
 export function ForgotPassword() {
@@ -68,7 +69,7 @@ export function ForgotPassword() {
         )}
 
         <p className="auth-switch">
-          Remembered it? <Link to="/login">Back to sign in</Link>
+          Remembered it? <SignInLink to="/login">Back to sign in</SignInLink>
         </p>
       </div>
     </main>

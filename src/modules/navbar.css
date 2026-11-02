@@ -25,6 +25,14 @@
     transition: filter var(--dur) ease;
 }
 
+/* Dark mode: the logo is all dark blue (#232F3E), which disappears on the
+   dark page. Show it in white instead, the same as the footer logo.
+   Note: the brief says the logo shouldn't be recoloured - this is a
+   deliberate team choice so it can be seen in dark mode. */
+html[data-theme="dark"] .brand img {
+    filter: brightness(0) invert(1);
+}
+
 .brand {
     flex-shrink: 0;
     padding-right: 56px;
@@ -193,7 +201,8 @@
 
 .nav-icon-btn:active { transform: scale(0.94); }
 
-/* Sun and moon swap with a spin */
+/* Sun and moon swap: the sun's rays pull in and it spins away,
+   then the moon swings up into place (and the other way round). */
 .theme-icons {
     position: relative;
     display: inline-block;
@@ -204,13 +213,45 @@
 .theme-icons svg {
     position: absolute;
     inset: 0;
-    transition: transform 0.5s var(--ease-spring), opacity 0.3s ease;
+    transform-origin: center;
+    transition: transform 0.6s var(--ease-spring), opacity 0.35s ease;
 }
 
+/* Sun */
 .theme-icons svg:first-child { transform: rotate(0deg) scale(1); opacity: 1; }
-.theme-icons svg:last-child { transform: rotate(-90deg) scale(0.4); opacity: 0; }
-.theme-icons.is-dark svg:first-child { transform: rotate(90deg) scale(0.4); opacity: 0; }
-.theme-icons.is-dark svg:last-child { transform: rotate(0deg) scale(1); opacity: 1; }
+
+.theme-icons svg:first-child path {
+    transform-box: view-box;
+    transform-origin: center;
+    transition: transform 0.45s var(--ease-out), opacity 0.3s ease;
+}
+
+.theme-icons.is-dark svg:first-child {
+    transform: rotate(160deg) scale(0.3);
+    opacity: 0;
+    transition: transform 0.5s var(--ease-out), opacity 0.3s ease 0.1s;
+}
+
+.theme-icons.is-dark svg:first-child path { transform: scale(0.45); opacity: 0; }
+
+/* Moon */
+.theme-icons svg:last-child {
+    transform: translateY(9px) rotate(-70deg) scale(0.4);
+    opacity: 0;
+    transition: transform 0.5s var(--ease-out), opacity 0.3s ease;
+}
+
+.theme-icons.is-dark svg:last-child {
+    transform: none;
+    opacity: 1;
+    transition: transform 0.65s var(--ease-spring) 0.08s, opacity 0.3s ease 0.08s;
+}
+
+/* Little hint on hover: the sun turns, the moon rocks */
+.theme-btn:hover .theme-icons:not(.is-dark) svg:first-child { transform: rotate(45deg) scale(1.06); }
+.theme-btn:hover .theme-icons.is-dark svg:last-child { transform: rotate(-14deg) scale(1.06); }
+.theme-btn:active .theme-icons { transform: scale(0.88); }
+.theme-icons { transition: transform var(--dur-fast) var(--ease-out); }
 
 /* Accessibility panel */
 .nav-a11y { position: relative; }
@@ -259,7 +300,7 @@
 /* At the 75% site zoom the height above gets shrunk to 75% too, which made
    the panel scroll. Undo that so it can use the full screen height. */
 @media (min-width: 1200px) {
-    html:not([data-zoom="full"]) .a11y-panel { max-height: calc((100vh - 90px) / 0.75); }
+    .a11y-panel { max-height: calc((100vh - 90px) / 0.75); }
 }
 
 .a11y-group {
@@ -455,7 +496,7 @@
     height: 42px;
     padding: 0 14px 0 3px;
     border: 0;
-    border-radius: 999px;
+    border-radius: var(--radius-sm);
     background: transparent;
     cursor: pointer;
     transition: border-color var(--dur) ease, box-shadow var(--dur) ease, transform var(--dur-fast) var(--ease-out);

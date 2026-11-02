@@ -172,6 +172,52 @@ def _find_question(qid):
     return None
 
 
+# More words that show an answer is on topic. Real answers use lots of
+# different words, and a strong answer about upgrading a laptop was marked
+# "off topic" because it never said "built" or "coded".
+_EXTRA_KEYWORDS = {
+    "intro": ["studying", "study", "t level", "digital", "technology", "coding", "code", "job", "future", "learning",
+              "goal", "hope", "excited", "interest", "experience", "work", "team", "people", "problem", "problems"],
+    "team": ["teammates", "partner", "others", "club", "pair", "colleagues", "split", "each", "plan", "planned",
+             "organised", "organized", "led", "lead", "presentation", "match", "sport", "charity", "class"],
+    "problem": ["broke", "broken", "error", "bug", "bugs", "missed", "forgot", "deadline", "went wrong", "fix",
+                "solve", "sorted", "apologised", "apologized", "told", "late", "lost", "crashed", "plan", "test"],
+    "customer": ["help", "customers", "person", "neighbour", "friend", "family", "teacher", "visitor", "explained",
+                 "showed", "kind", "listened"],
+    "learn": ["tutorial", "youtube", "practice", "practise", "skill", "understand", "studied", "research", "notes"],
+    "digital-build": ["laptop", "pc", "phone", "tablet", "installed", "install", "upgraded", "upgrade", "repaired",
+                      "repair", "set up", "network", "wifi", "router", "ram", "ssd", "hard drive", "printer", "tech",
+                      "technology", "device", "coding", "script", "bot", "server", "database", "spreadsheet", "robot",
+                      "arduino", "raspberry pi", "tested", "debugged", "debug", "bug", "bugs", "fix", "build", "mod",
+                      "programmed", "programming", "java", "c#", "lua", "css", "excel"],
+    "digital-explain": ["simply", "plain", "everyday", "analogy", "show", "showed", "demonstrate", "patient",
+                        "questions", "slowly", "diagram", "words"],
+    "business-organise": ["organise", "organize", "plan", "team", "money", "time", "tasks", "jobs", "fundraiser",
+                          "trip", "party", "club", "rota"],
+    "business-improve": ["process", "time", "waste", "automate", "change", "feedback", "team", "problem", "solution",
+                         "better", "easier"],
+    "media-create": ["video", "videos", "edit", "editing", "camera", "design", "logo", "poster", "website", "music",
+                     "art", "drawing", "instagram", "tiktok", "youtube", "blog", "story"],
+    "media-measure": ["analytics", "insights", "data", "watch time", "saves", "results", "test", "audience"],
+    "finance-numbers": ["savings", "save", "pocket money", "wages", "job", "accounts", "profit", "sales", "till",
+                        "change", "formula", "formulas", "percent"],
+    "finance-accurate": ["checklist", "proofread", "totals", "formula", "formulas", "calculator", "twice", "check",
+                         "checked", "errors", "accurate", "accuracy"],
+    "engineering-fix": ["fix", "repair", "screwdriver", "spanner", "wrench", "wood", "metal", "engine", "wheel",
+                        "chain", "lego", "model", "circuit", "wires", "soldered", "solder", "furniture", "assembled"],
+    "engineering-safe": ["hazard", "hazards", "goggles", "helmet", "boots", "guard", "switch off", "unplug",
+                         "supervisor", "first aid", "tidy", "clear"],
+}
+for _qid, _extra in _EXTRA_KEYWORDS.items():
+    _q = _find_question(_qid)
+    if _q:
+        _q["keywords"] = list(dict.fromkeys(_q["keywords"] + _extra))
+
+
+def _content_words(text):
+    return {w for w in re.findall(r"[a-z']+", (text or "").lower()) if len(w) >= 4 and w not in _CV_STOP}
+
+
 def _count_phrases(text, phrases):
     total = 0
     for p in phrases:
@@ -179,7 +225,32 @@ def _count_phrases(text, phrases):
     return total
 
 
-def review_answer(qid, answer, seconds=None):
+def _cv_keywords(asked):
+    """For the question about the student's CV: the words of the question that
+    was really asked (e.g. "troubleshoot", "computer"), so an answer has to be
+    about that, not just any story."""
+    words = [w for w in re.findall(r"[a-z']+", (asked or "").lower())
+             if len(w) >= 5 and w not in _CV_STOP]
+    return list(dict.fromkeys(words)) + ["project", "job", "role", "team", "customers", "result", "learned",
+                                         "learnt", "helped", "made", "built", "fixed"]
+
+
+_CV_STOP = {"about", "would", "could", "there", "their", "which", "something", "example", "tell", "times",
+            "yourself", "please", "where", "these", "those", "think", "thing", "things", "really", "while",
+            "what", "when", "your", "that", "with", "this", "have", "after", "before", "turned", "describe"}
+
+
+def _review_core(qid, answer, seconds=None, asked=None):
+    """Score one answer out of 100 with fixed rules (the same answer always gets
+    the same score). The AI never changes the score.
+
+    Out of 100: on topic 25, content 30 (a story for "tell me about a time"
+    questions), length 15, specific detail 15, your own part 10, delivery 5.
+    Then caps: a refusal ("I don't know") is at most 5, swearing at most 20,
+    a negative attitude (blaming others, "it was boring") at most 25, a very
+    short answer at most 10 + its word count, no example at most 30.
+    On the last question (asking the interviewer something), a question you
+    shouldn't ask in an interview scores 0 - see _review_close."""
     q = _find_question(qid)
     if q is None:
         return None
@@ -188,43 +259,90 @@ def review_answer(qid, answer, seconds=None):
     words = re.findall(r"[a-zA-Z0-9']+", text)
     n = len(words)
 
-    strengths, tips = [], []
-    score = 0
-
     if n == 0:
         return {
             "id": qid, "question": q["text"], "focus": q["focus"], "answer": "", "words": 0,
             "score": 0, "strengths": [],
             "tips": ["You didn't give an answer to this one. Even a short answer is better than none - "
                      "it's fine to say 'Can I take a moment to think?'"],
-            "pace": None,
+            "pace": None, "warning": None,
         }
 
-    # 1. Length (25)
-    is_close = qid == "close"
-    lo, hi = (8, 80) if is_close else (60, 260)
+    if qid == "close":
+        return _review_close(q, qid, text, low, n, seconds)
+    if qid == "cv" and asked:
+        q = {**q, "keywords": _cv_keywords(asked)}
+
+    strengths, tips, caps = [], [], []
+    score = 0
+    lo, hi = 60, 260
+
+    # Warnings first: these matter more than anything else in the answer.
+    warning = None
+    if _SWEAR.search(low):
+        warning = "Never swear in an interview, even casually. It's one of the quickest ways to lose a place."
+        caps.append(20)
+    elif n <= 30 and _REFUSAL.search(low):
+        if q["star"]:
+            warning = ("Saying you don't have an example, or that nothing goes wrong, makes it look like you haven't "
+                       "thought about it. Always give a real example - it can be from school, college, a job, a hobby or home.")
+        else:
+            warning = ("Saying you're not sure or don't know makes it look like you haven't thought about it. Before an "
+                       "interview, plan a few points for questions like this, even short ones.")
+        caps.append(5)
+    elif _MONEY.search(low):
+        warning = ("Saying you're only doing it for the money is a red flag for interviewers. Talk about what you want "
+                   "to learn or do instead.")
+        caps.append(20)
+    elif _NEGATIVE.search(low):
+        warning = ("Try not to blame other people or sound negative. Interviewers want to hear what you did and "
+                   "what you learned, not who was to blame.")
+        caps.append(25)
+    if warning:
+        tips.append(warning)
+
+    # 1. On topic (25): how many of the question's key words you used
+    hits = sum(1 for k in set(q["keywords"]) if _count_phrases(low, [k]))
+    if hits == 0 and len(_content_words(q["text"]) & _content_words(low)) >= 2:
+        hits = 1  # uses the question's own words, so it's at least partly on topic
+    if hits >= 3:
+        score += 25
+        strengths.append("You answered the question that was asked.")
+    elif hits == 2:
+        score += 18
+    elif hits == 1:
+        score += 10
+        tips.append(f"Make sure you answer the question directly. This one was about: {q['focus'].lower()}.")
+    else:
+        tips.append(f"Make sure you answer the question directly. This one was about: {q['focus'].lower()}.")
+        caps.append(30)
+
+    # 2. Length (15)
     if n < lo * 0.6:
-        score += 6
         tips.append(f"This answer was very short ({n} words). Aim for about {lo}-{hi} words "
                     "so you have time to give an example.")
+        caps.append(min(35, 10 + n))
     elif n < lo:
-        score += 15
+        score += 7
         tips.append(f"Try to say a little more ({n} words). Add one more detail about what you did.")
+        caps.append(65)
     elif n <= hi:
-        score += 25
+        score += 15
         strengths.append("A good length - enough detail without going on too long.")
     else:
-        score += 16
+        score += 10
         tips.append(f"This answer was quite long ({n} words). Try to keep to the main points - "
                     "about 1 to 2 minutes when spoken.")
 
-    # 2. Example structure (30) or relevance-heavy for non-example questions
+    # 3. Content (30)
+    i_count = _count_phrases(low, ["i", "i'm", "i've", "i'd", "my", "me"])
+    we_count = _count_phrases(low, ["we", "we're", "we've", "our", "us"])
     if q["star"]:
         has_s = _count_phrases(low, SITUATION) > 0
-        has_a = _count_phrases(low, ACTION) > 0
-        has_r = _count_phrases(low, RESULT) > 0
-        parts = sum([has_s, has_a, has_r])
-        score += parts * 10
+        has_a = _count_phrases(low, ACTION) > 0 or bool(_I_DID.search(low))
+        has_r = _count_phrases(low, RESULT) > 0 or bool(_IT_WORKED.search(low))
+        score += 8 * has_s + 12 * has_a + 10 * has_r
+        parts = has_s + has_a + has_r
         if parts == 3:
             strengths.append("You told a clear story: what happened, what you did and how it ended.")
         else:
@@ -236,22 +354,39 @@ def review_answer(qid, answer, seconds=None):
             if not has_r:
                 missing.append("finish with the result or what you learned")
             tips.append("Use the STAR method: " + "; ".join(missing) + ".")
+            caps.append({0: 30, 1: 50, 2: 75}[parts])
     else:
-        score += 20  # no example needed; relevance below carries more weight
-        if is_close:
-            asked = bool(re.search(r"\b(what|how|would|could|is there|are there|do you|will i|can i)\b", low))
-            if asked:
-                score += 10
-                strengths.append("You asked a question - this shows you're interested in the role.")
-            else:
-                tips.append("Always have a question ready, e.g. 'What does a typical day look like?' "
-                            "or 'What training would I get?'")
+        has_reason = bool(_REASON.search(low))
+        has_example = bool(_EXAMPLE.search(low))
+        has_detail = bool(_PERSONAL.search(low)) if qid == "intro" else bool(_STEPS.search(low))
+        score += 10 * has_reason + 10 * has_example + 10 * has_detail
+        if has_reason and has_example:
+            strengths.append("You gave a reason and backed it up with an example.")
+        if not has_reason:
+            tips.append("Say why, for example 'because I enjoy...' or 'so that...'. Reasons make an answer convincing.")
+        if not has_example:
+            tips.append("Add an example from something you've really done, like a project, a job or a hobby.")
+        if has_reason + has_example + has_detail == 0:
+            caps.append(30)
 
-    # 3. Your part: I vs we (10) - example questions only
-    i_count = _count_phrases(low, ["i", "i'm", "i've", "my", "me"])
-    we_count = _count_phrases(low, ["we", "we're", "we've", "our", "us"])
+    # 4. Specific detail (15): numbers, times, how many people
+    specifics = len(re.findall(r"\d+", text)) + _count_phrases(low, _SPECIFIC_WORDS)
+    if specifics >= 2:
+        score += 15
+        strengths.append("You used specific details, like numbers or times, which makes it believable.")
+    elif specifics == 1:
+        score += 9
+        tips.append("Add one or two more specific details, such as how many people, how long it took, or a result in numbers.")
+    else:
+        score += 0 if q["star"] else 4
+        tips.append("Make it specific: how many people, how long, what changed? Numbers stick in people's minds.")
+
+    # 5. Your own part (10)
     if q["star"]:
-        if i_count >= we_count or i_count >= 4:
+        if i_count == 0:
+            tips.append("You said 'we' more than 'I'. Interviewers want to hear what YOU did - "
+                        "say 'I' for your own actions.")
+        elif i_count >= we_count or i_count >= 4:
             score += 10
             if we_count:
                 strengths.append("You were clear about your own part, not just the group's.")
@@ -260,58 +395,26 @@ def review_answer(qid, answer, seconds=None):
             tips.append("You said 'we' more than 'I'. Interviewers want to hear what YOU did - "
                         "say 'I' for your own actions.")
     else:
-        score += 10
+        score += 10 if i_count else 3
 
-    # 4. Specific detail (15)
-    specifics = len(re.findall(r"\d", text)) + _count_phrases(
-        low, ["minutes", "hours", "days", "weeks", "months", "year", "percent", "%", "people", "pounds", "£"])
-    if specifics >= 2:
-        score += 15
-        strengths.append("You used specific details, like numbers or times, which makes it believable.")
-    elif specifics == 1:
-        score += 9
-        tips.append("Add one or two more specific details, such as how many people, how long it took, or a result in numbers.")
-    else:
-        score += 3 if not is_close else 12
-        if not is_close:
-            tips.append("Make it specific: how many people, how long, what changed? Numbers stick in people's minds.")
-
-    # 5. Fillers (10)
+    # 6. Delivery (5): filler words, only once there's enough to judge
     low_f = re.sub(r"\b(look|looks|would|i'd|feel|feels|sound|sounds|seem|seems|just) like\b", r"\1", low)
     fillers = _count_phrases(low_f, FILLERS)
     rate = fillers / max(n, 1)
-    if rate <= 0.02:
-        score += 10
-    elif rate <= 0.05:
-        score += 6
-        tips.append(f"You used filler words like 'um' or 'like' {fillers} times. A short pause sounds more confident.")
-    else:
-        score += 2
-        tips.append(f"Lots of filler words ({fillers}). Slow down and take a breath instead of saying 'um' or 'like'.")
-
-    # 6. On topic (10)
-    hits = _count_phrases(low, q["keywords"])
-    if hits >= 2:
-        score += 10
-        strengths.append("You answered the question that was asked.")
-    elif hits == 1:
-        score += 6
-    else:
-        score += 2
-        tips.append(f"Make sure you answer the question directly. This one was about: {q['focus'].lower()}.")
-
-    # Pace (only if spoken and timed) - advice only, not scored
-    pace = None
-    if seconds and seconds > 5 and n > 10:
-        wpm = round(n / (seconds / 60))
-        pace = wpm
-        if wpm > 180:
-            tips.append(f"You spoke quite fast (about {wpm} words a minute). Slowing down a little helps people follow you.")
-        elif wpm < 90:
-            tips.append(f"You spoke quite slowly (about {wpm} words a minute). Practising the answer out loud will help it flow.")
+    if n >= lo * 0.6:
+        if rate <= 0.02:
+            score += 5
+        elif rate <= 0.05:
+            score += 3
+            tips.append(f"You used filler words like 'um' or 'like' {fillers} times. A short pause sounds more confident.")
         else:
-            strengths.append(f"A good speaking pace (about {wpm} words a minute).")
+            tips.append(f"Lots of filler words ({fillers}). Slow down and take a breath instead of saying 'um' or 'like'.")
 
+    pace = _pace(n, seconds, tips, strengths)
+    if caps:
+        score = min(score, min(caps))
+    if warning:
+        strengths = []
     return {
         "id": qid,
         "question": q["text"],
@@ -322,14 +425,183 @@ def review_answer(qid, answer, seconds=None):
         "strengths": strengths[:3],
         "tips": tips[:3],
         "pace": pace,
+        "warning": warning,
     }
+
+
+def _pace(n, seconds, tips, strengths):
+    """Speaking pace (only if spoken and timed). Advice only, not scored."""
+    if not (seconds and seconds > 5 and n > 10):
+        return None
+    wpm = round(n / (seconds / 60))
+    if wpm > 180:
+        tips.append(f"You spoke quite fast (about {wpm} words a minute). Slowing down a little helps people follow you.")
+    elif wpm < 90:
+        tips.append(f"You spoke quite slowly (about {wpm} words a minute). Practising the answer out loud will help it flow.")
+    else:
+        strengths.append(f"A good speaking pace (about {wpm} words a minute).")
+    return wpm
+
+
+def _review_close(q, qid, text, low, n, seconds):
+    """The last question: the student asks the interviewer something.
+    A question you shouldn't ask in an interview scores 0, with the reason why."""
+    strengths, tips = [], []
+    warning = None
+    if _SWEAR.search(low):
+        warning = "Never swear in an interview, even casually. It's one of the quickest ways to lose a place."
+    else:
+        for rx, why in _CLOSE_FLAGS:
+            if rx.search(low):
+                warning = why
+                break
+
+    asked = "?" in text or bool(_ASKS.search(low))
+    declined = not asked and bool(_DECLINE.search(low))
+
+    if warning:
+        score = 0
+        tips.append(warning)
+        tips.append("Good questions to ask instead: 'What would a typical day look like?', "
+                    "'What training would I get?' or 'What do the best students on this placement do well?'")
+    elif declined:
+        score = 10
+        tips.append("Always have a question ready, e.g. 'What does a typical day look like?' "
+                    "or 'What training would I get?'")
+    elif not asked:
+        score = 20
+        tips.append("This is your chance to ask the interviewer something. Always have a question ready, e.g. "
+                    "'What does a typical day look like?' or 'What training would I get?'")
+    else:
+        score = 45
+        strengths.append("You asked a question - this shows you're interested in the role.")
+        if _GOOD_CLOSE.search(low):
+            score += 30
+            strengths.append("A thoughtful question about the work, the training or how to do well.")
+        else:
+            tips.append("Ask something that shows you've thought about the role, like 'What training would I get?' "
+                        "or 'What would a typical day look like?'")
+        if _ROLE_LINK.search(low):
+            score += 15
+            strengths.append("You linked your question to this placement.")
+        else:
+            tips.append("Link your question to this placement or to Amazon, so it's clear you've thought about the role.")
+        if 6 <= n <= 60:
+            score += 10
+        elif n > 60:
+            score += 5
+            tips.append("Keep your question short and clear - one or two questions is plenty.")
+    pace = _pace(n, seconds, tips, strengths)
+    return {
+        "id": qid, "question": q["text"], "focus": q["focus"], "answer": text, "words": n,
+        "score": max(0, min(100, score)), "strengths": [] if warning else strengths[:3], "tips": tips[:3],
+        "pace": pace, "warning": warning,
+    }
+
+
+# ---------- Things that pull a score down ----------
+_SWEAR = re.compile(r"\b(fuck\w*|f\*+k\w*|shit\w*|bullshit|crap|bollocks|bastard\w*|twat\w*|wank\w*|piss(ed)?|"
+                    r"arse|dickhead|bitch\w*|damn)\b")
+# "I don't know", "I've never worked in a team", "nothing goes wrong"
+_REFUSAL = re.compile(
+    r"\b(i don'?t know|dunno|idk|no idea|not sure|can'?t think of (one|any|anything)|i don'?t have (one|any|an example)|"
+    r"i'?ve never (really )?(done|had|worked|been|made|built|fixed|organised|organized|helped|created)|"
+    r"nothing (ever )?(really )?(goes|went|has gone) wrong|never (really )?(goes|went) wrong|i don'?t make mistakes|"
+    r"i have never (really )?(done|had|worked|been|made))\b")
+# Blaming others, sounding negative or only in it for the money
+_NEGATIVE = re.compile(
+    r"\b(useless|lazy|annoying|stupid|idiots?|rubbish|boring|i hate|hated|can'?t be bothered|i don'?t care|"
+    r"(was|were) (their|his|her|the teacher'?s|everyone else'?s) fault|(their|his|her) fault|"
+    r"nothing i could (do|have done)|not my fault|copied|cheated|cheat)\b")
+_MONEY = re.compile(r"\b(just (want|wanted|need) (the )?money|only (want|wanted|doing it|doing this|here) (for|because of) the money|"
+                    r"(just|only) for the money|in it for the money)\b")
+_I_DID = re.compile(r"\bi (\w+ed|made|did|took|went|led|ran|built|wrote|set|got|told|gave|kept|found|began|spoke|"
+                    r"taught|chose|drew|bought|brought|caught|met|put|said|sent|stayed|won|sorted|split|stuck)\b")
+_IT_WORKED = re.compile(r"\b(it|that|this) (worked|helped|paid off)\b|\bwe (won|finished|passed|got|managed)\b")
+_SPECIFIC_WORDS = ["minutes", "hours", "days", "weeks", "months", "year", "years", "percent", "%", "people",
+                   "pounds", "£", "a week", "a month", "a day", "two", "three", "four", "five", "six", "seven",
+                   "eight", "nine", "ten", "twenty", "hundred", "half", "first", "second", "third"]
+_REASON = re.compile(r"\b(because|so that|so i can|that'?s why|which is why|the reason|i want to|i'?d like to|"
+                     r"i would like to|interested in|i'?m keen|i enjoy|i love|passion|it means|this means|that way)\b")
+_EXAMPLE = re.compile(r"\b(for example|for instance|such as|like when|one time|once|last year|at school|at college|"
+                      r"in year|when i|i have|i'?ve|i built|i made|i worked|i helped|i did|i used|i was)\b")
+_PERSONAL = re.compile(r"\b(i'?m|i am|my name|studying|years? old|\d\d|college|school|course|hobby|hobbies|in my spare time)\b")
+_STEPS = re.compile(r"\b(first|firstly|then|after that|next|finally|step|steps|i would|i'?d|i always|i make sure|"
+                    r"i check|i start|start by|by)\b")
+
+# ---------- The last question: what you ask the interviewer ----------
+# Questions you shouldn't ask in an interview score 0. Each comes with the reason.
+_CLOSE_FLAGS = [
+    (re.compile(r"\b(how old are you|are you (single|married)|do you have (a )?(girlfriend|boyfriend|wife|husband|partner|kids|children)|"
+                r"where do you live|what'?s your (number|address|instagram|snapchat)|how much do you (earn|make|get paid)|"
+                r"can i (have|get) your (number|instagram|snapchat))\b"),
+     "Personal questions about the interviewer aren't appropriate in an interview. Keep your questions about the role, "
+     "the team or the training."),
+    (re.compile(r"\b(did i (get|pass|do (ok|okay|well|good))|how did i do|have i got (the|this|it)|am i (hired|in|through)|"
+                r"do i get the (job|place|placement)|did i get it)\b"),
+     "Asking if you got the job puts the interviewer on the spot - they can't tell you yet. Ask about the next steps "
+     "instead, like 'What happens after today?'"),
+    (re.compile(r"\b(pay|paid|salary|salaries|wage|wages|money|bonus|bonuses|earn|earnings)\b|"
+                r"\bhow much (do|will|would|can) (i|we|you|they) (get|make)\b"),
+     "Asking about pay as your question can make it look like money is all you care about. Ask about the role or the "
+     "training instead, and save pay for later, once you've been offered a place."),
+    (re.compile(r"\b(holidays?|days? off|time off|annual leave|sick days?|leave early|finish early|go home early|"
+                r"how many breaks|long (are|is) the breaks?|lunch break|work from home|wfh|lie in|how late can i|"
+                r"do i (have|need) to (work|come in|do)|can i skip|how little|least amount)\b"),
+     "Asking about time off, leaving early or doing less can make it sound like you don't want to be there. Ask about "
+     "the work itself instead."),
+    (re.compile(r"\bwhat (does|do) (amazon|you|the company)( actually| even| really)? (do|sell)\b|"
+                r"\bwhat('?s| is) amazon( actually| even)?[?.!\s]*$|\bwho (is|are) amazon\b"),
+     "Asking what the company does shows you haven't looked it up. Always read about the company before an interview."),
+]
+_ASKS = re.compile(r"^(what|how|why|who|where|when|which|is|are|do|does|did|can|could|would|will|should)\b|"
+                   r"\b(i was wondering|i'?d like to know|i would like to know|could you tell me|can you tell me)\b")
+_DECLINE = re.compile(r"^(no|nope|nah|not really|i'?m good|i am good|i think i'?m (good|ok|okay|fine)|that'?s all|"
+                      r"nothing|all good)\b|\bno questions\b|\bi don'?t have any( more)? questions\b|\bnothing (else|really)\b")
+_GOOD_CLOSE = re.compile(r"\b(train|training|learn|learning|mentor|buddy|support|typical day|day look like|day to day|"
+                         r"day-to-day|team|progress|progression|career|next steps?|what happens (next|after)|skills?|"
+                         r"success|successful|do well|best students|challenge|challenging|hardest|projects?|feedback|"
+                         r"culture|improve|develop|responsibilit\w*|work on|after the placement|apprenticeship after)\b")
+_ROLE_LINK = re.compile(r"\b(amazon|placement|this role|the role|this job|t ?levels?|apprentice\w*|digital|business|"
+                        r"media|finance|engineering|my mentor|the team|first (few )?(weeks|days|months?)|here)\b")
+
+
+# Talking over the interviewer while they speak (picked up in the practice call).
+INTERRUPT_PENALTY = 10   # points off each time
+INTERRUPT_MAX = 30       # most that can come off one answer
+
+
+def review_answer(qid, answer, seconds=None, interruptions=0, asked=None):
+    """Score one answer (see _review_core), then take points off for each time
+    the student talked over the interviewer during this question."""
+    review = _review_core(qid, answer, seconds, asked)
+    if review is None:
+        return None
+    try:
+        n = max(0, min(10, int(interruptions or 0)))
+    except (TypeError, ValueError):
+        n = 0
+    base = review["score"]
+    penalty = min(INTERRUPT_MAX, INTERRUPT_PENALTY * n)
+    review.update({"interruptions": n, "baseScore": base, "interruptPenalty": penalty if n else 0})
+    if n:
+        review["score"] = max(0, base - penalty)
+        times = "once" if n == 1 else "twice" if n == 2 else f"{n} times"
+        tip = (f"You talked over Alex {times} while he was speaking. In a real interview, let the interviewer "
+               "finish before you start - it shows you're listening.")
+        warning = review.get("warning")
+        rest = [t for t in review["tips"] if t != warning]
+        review["tips"] = ([warning] if warning else []) + [tip] + rest[:2]
+        review["tips"] = review["tips"][:3]
+    return review
 
 
 def review_interview(answers):
     """answers: list of {id, answer, seconds}. Returns per-question reviews and a summary."""
     reviews = []
     for a in answers:
-        r = review_answer(str(a.get("id") or ""), str(a.get("answer") or ""), a.get("seconds"))
+        r = review_answer(str(a.get("id") or ""), str(a.get("answer") or ""), a.get("seconds"), a.get("interruptions"),
+                          a.get("asked"))
         if r is not None:
             reviews.append(r)
     if not reviews:
@@ -348,6 +620,8 @@ def review_interview(answers):
     seen, focus = set(), []
     for r in sorted(reviews, key=lambda r: r["score"]):
         for t in r["tips"]:
+            if t.startswith("Good questions to ask instead"):
+                continue  # a helper line under a warning, not a separate thing to work on
             key = t.split(":")[0][:40]
             if key not in seen:
                 seen.add(key)
@@ -374,6 +648,7 @@ _PRAISE = [
     ("A good speaking pace", "Your pace was good."),
 ]
 _TIPS = [
+    ("You talked over", "let me finish before you start talking. It shows you're listening."),
     ("You didn't give an answer", None),
     ("Use the STAR method", "use the STAR method. Set the scene, say what you did, then finish with the result."),
     ("This answer was very short", "say a bit more, and give a real example."),
@@ -386,6 +661,11 @@ _TIPS = [
     ("Lots of filler words", "slow down and take a breath instead of saying um or like."),
     ("You used filler words", "pause for a second instead of saying um or like."),
     ("Always have a question ready", "have a question ready, like what a typical day looks like."),
+    ("This is your chance to ask", "have a question ready, like what a typical day looks like."),
+    ("Ask something that shows", "ask about the role itself, like what training you'd get."),
+    ("Link your question", "link your question to this placement, so it's clear you've thought about it."),
+    ("Say why", "say why, for example because you enjoy it."),
+    ("Add an example", "add an example from something you've really done."),
     ("You spoke quite fast", "slow down a little, so it's easy to follow."),
     ("You spoke quite slowly", "practise it out loud a few times so it flows."),
 ]
@@ -483,7 +763,10 @@ def reflect_answer(qid, answer):
         if lw in _DROP:
             continue
         # "like" as a filler word (but keep "look like", "would like"...)
-        if lw == "like" and not (words and words[-1].lower() in ("look", "looks", "would", "i'd", "feel", "feels", "sound", "sounds", "seem", "seems")):
+        # ("I like pizza" keeps it: after I / you / we / they / really / don't it's a real word)
+        if lw == "like" and not (words and words[-1].lower() in (
+                "look", "looks", "would", "i'd", "feel", "feels", "sound", "sounds", "seem", "seems",
+                "i", "you", "we", "they", "really", "don't", "didn't", "do", "would", "also", "still", "just")):
             continue
         words.append(w)
     if len(words) < 5:
@@ -530,11 +813,22 @@ def reflect_answer(qid, answer):
 _spoken_feedback_base = spoken_feedback
 
 
+def _warning_feedback(review):
+    """Something you shouldn't say in an interview: Alex says so plainly."""
+    w = review["warning"]
+    if review["id"] == "close":
+        better = "" if "'" in w else " A better question would be, what would a typical day look like for me?"
+        return f"Hmm, I'd steer clear of that one in a real interview. {w}{better}"
+    return f"Thanks. One important thing first. {w}"
+
+
 def spoken_feedback(review, reflect_on=None):
     """What Alex says straight after an answer: react, repeat back, then one tip.
 
     reflect_on: text to repeat back. None = the whole answer. "" = don't repeat
     anything back (Alex already did that before asking his follow-up)."""
+    if review.get("warning"):
+        return _warning_feedback(review)
     base = _spoken_feedback_base(review)
     if review["words"] == 0:
         return base
@@ -552,7 +846,8 @@ def spoken_feedback(review, reflect_on=None):
     rest_parts = [p for p in rest.split(". ") if p]
     closing = tip or (rest_parts[0] if rest_parts else "")
     if review["id"] == "close":
-        return reflection
+        # A good question: say it back. A weak one: say what would make it better.
+        return reflection if review["score"] >= 60 else base
     out = f"{first}. {reflection}"
     if closing:
         out += " " + (closing if closing.endswith(".") else closing + ".")
@@ -584,6 +879,10 @@ def follow_up(qid, answer):
         specifics = len(re.findall(r"\d", text)) + _count_phrases(
             low, ["minutes", "hours", "days", "weeks", "months", "year", "percent", "%", "people", "pounds", "£"])
         if n < 25:
+            # Already named one time ("Last year I broke my phone...")? Then ask for more of it.
+            if _count_phrases(low, SITUATION) > 0:
+                return {"text": "Tell me a bit more about that. What did you do yourself, and how did it turn out?",
+                        "why": "Your answer was quite short, so Alex asked for more detail."}
             return {"text": "Can you give me a specific example? Tell me about one time in particular. What happened?",
                     "why": "Your answer was quite short, so Alex asked for a real example."}
         if not has_a or (we_count > i_count and i_count < 4):
@@ -664,7 +963,7 @@ def faq_facts():
     return [a for _, a in FAQ if a != "ROLE"]
 
 
-_FILLER_START = re.compile(r"^(?:(?:sorry|so|um+|uh+|erm?|okay|ok|right|wait|alex|hang on|hmm+)[,.!]?\s+)+")
+_FILLER_START = re.compile(r"^(?:(?:sorry|so|um+|uh+|erm?|okay|ok|right|wait|alex|peccy|hang on|hmm+)[,.!]?\s+)+")
 _SAFETY = re.compile(r"\b(hurt(s|ing)? me|hit(s|ting)? me|not safe|unsafe|abus(e|ed|ing)|kill myself|suicid\w*|"
                      r"self.?harm|want to die|bull(y|ied|ying))\b")
 _REPEAT = re.compile(r"\b(repeat|say (that|it) again|pardon|come again|what was the question|didn'?t (catch|hear)|"
@@ -675,6 +974,8 @@ _CLARIFY = re.compile(r"\b(what do you mean|what does that mean|(don'?t|do not) 
                       r"what (are you|do you want me to) (asking|say|talk about))\b")
 _STUCK = re.compile(r"\b(i (don'?t|do not) know|not sure|no idea|(can'?t|cannot) think|mind'?s? (gone )?blank|"
                     r"nothing comes to mind)\b")
+# "I don't know what to say" is asking for help, even when it's a longer sentence.
+_STUCK_ASK = re.compile(r"\b(what to say|how to answer|where to start|what to talk about|can'?t think of (anything|one|an example))\b")
 _QSTART = re.compile(r"^(what|what's|whats|how (long|many|much|do|does|did|will|would|can|could|should|often|is|are)|why|who|"
                      r"where|which|when (do|does|will|would|is|are)|is (it|there|this|that|the)|are (there|you|they|the)|"
                      r"can (i|you|we)|could (i|you)|do (i|you|we|they)|does (it|the|this|that|amazon)|"
@@ -751,7 +1052,9 @@ def classify_turn(qid, utterance, context="answering", asked=None, pathway=None,
         else:
             say = f"Sure. This question is about {focus}. There's no wrong answer, so just tell me in your own words."
         return {"type": "clarify", "say": say + ready}
-    if n <= 12 and _STUCK.search(low) and not answerish:
+    # A short "I don't know" (or "I don't know what to say") gets help. Anything
+    # longer, like "Not sure really, it just seems fine", is a (weak) answer.
+    if _STUCK.search(low) and not answerish and (n <= 6 or (n <= 14 and _STUCK_ASK.search(low))):
         hint = (" Your example can come from school, college, a part-time job, a hobby or home."
                 if q and q["star"] else " There's no wrong answer, so just say what you think.")
         return {"type": "stuck", "say": "That's okay, it happens in real interviews too. Take a moment to think."
@@ -875,7 +1178,7 @@ def assistant_reply(text):
 _SMALL_TALK = re.compile(
     r"^(?:(?:thanks|thank you|thank u|thankyou|ta|cheers|nice one|ok|okay|cool|great|brilliant|perfect|nice|"
     r"got it|alright|all right|fine|hi|hiya|hello|hey|bye|goodbye|see you|see ya|good morning|good afternoon|"
-    r"yes|yeah|yep|no|nope|nah|sure|lol|wow)(?:\s+(?:so much|very much|a lot|loads|mate|alex|again|then|for that|"
+    r"yes|yeah|yep|no|nope|nah|sure|lol|wow)(?:\s+(?:so much|very much|a lot|loads|mate|alex|peccy|again|then|for that|"
     r"for the help|for your help|you))*[\s.!,]*)+$")
 
 
@@ -907,4 +1210,4 @@ def maybe_to_alex(utterance):
         return False
     return bool(raw.endswith("?") or _QSTART.search(low) or _CLARIFY.search(low) or _STUCK.search(low)
                 or _SKIP.search(low) or _REPEAT.search(low)
-                or re.search(r"\b(alex|can you|could you|do you|would you|are you)\b", low))
+                or re.search(r"\b(alex|peccy|can you|could you|do you|would you|are you)\b", low))

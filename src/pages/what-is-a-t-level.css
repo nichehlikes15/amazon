@@ -195,7 +195,7 @@
 .wtl-subject-count {
     flex-shrink: 0;
     padding: 3px 10px;
-    border-radius: 999px;
+    border-radius: var(--radius-sm);
     background: var(--light);
     color: var(--muted);
     font-size: 0.8125rem;

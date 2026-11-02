@@ -55,8 +55,8 @@ const GROUPS = [
         a: <>The help chat in the bottom corner of each page. It answers questions about T Levels and Launchpad using only facts from this site, and can read its answers aloud. What you type isn&apos;t saved.</>,
       },
       {
-        q: 'Is Alex a real person?',
-        a: <>No. Alex is a virtual interviewer. When his AI is running, his replies and follow-up questions are written by an AI model that runs on the Launchpad server, based on what you said. Your score always comes from fixed checks, so the same answer gets the same score. AI can misunderstand things, so use it as a guide.</>,
+        q: 'Are Alex and Peccy real people?',
+        a: <>No. They are virtual interviewers, and you choose which one you talk to when you set up a practice call. Peccy is Amazon&apos;s orange mascot. Both ask the same questions and give the same feedback. When the AI is running, his replies and follow-up questions are written by an AI model that runs on the Launchpad server, based on what you said. Your score always comes from fixed checks, so the same answer gets the same score. AI can misunderstand things, so use it as a guide.</>,
       },
       {
         q: 'How does the CV check work?',

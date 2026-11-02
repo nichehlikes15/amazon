@@ -88,7 +88,7 @@ export function useVoices() {
 
 // Split into sentences so each one can have its own pause and pace.
 // (This also avoids a Chrome bug that cuts off long speech after ~15 seconds.)
-function sentences(text) {
+export function sentences(text) {
   const clean = text.replace(/\s+-\s+/g, ', ').replace(/\s+/g, ' ').trim()
   const parts = clean.match(/[^.!?]+[.!?]+["')\]]*|[^.!?]+$/g) || [clean]
   return parts.map((p) => p.trim()).filter(Boolean)
@@ -97,10 +97,11 @@ function sentences(text) {
 /*
   Speak text in a more natural way.
   Returns a function that stops the speech.
-  Callbacks: onStart (first sound), onWord (each word, if the browser reports
-  it - used for the mouth), onEnd (finished, or speech failed).
+  Callbacks: onStart (first sound), onSentence (each sentence as it starts -
+  used for the captions), onWord (each word, if the browser reports it - used
+  for the mouth), onEnd (finished, or speech failed).
 */
-export function speakNatural(text, { voice, onStart, onWord, onEnd, volume = 1 } = {}) {
+export function speakNatural(text, { voice, onStart, onSentence, onWord, onEnd, volume = 1 } = {}) {
   if (!canSpeak) {
     onEnd?.()
     return () => {}
@@ -123,6 +124,7 @@ export function speakNatural(text, { voice, onStart, onWord, onEnd, volume = 1 }
     }
     const part = parts[i]
     i += 1
+    onSentence?.(part, i - 1)
     const u = new SpeechSynthesisUtterance(part)
     if (voice) {
       u.voice = voice

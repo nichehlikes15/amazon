@@ -68,7 +68,7 @@
 /* Status pill */
 .ccl-status {
     padding: 4px 12px;
-    border-radius: 999px;
+    border-radius: var(--radius-sm);
     background: #fff4e6;
     color: #b25e00;
     font-size: 0.8125rem;
@@ -193,7 +193,7 @@
 .ccl-yes,
 .ccl-no {
     padding: 6px 14px;
-    border-radius: 999px;
+    border-radius: var(--radius-sm);
     font: inherit;
     font-size: 0.8125rem;
     font-weight: 600;

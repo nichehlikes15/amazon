@@ -4,6 +4,7 @@ import './opportunities.css'
 import { api } from '../modules/api'
 import { useAuth } from '../modules/auth'
 import { Icon, PathwayIcon, closingLabel, daysUntil, formatDate } from '../modules/icons'
+import { signInPath } from '../modules/return-to'
 
 const PATHWAYS = ['All', 'Digital', 'Business', 'Media', 'Finance', 'Engineering']
 
@@ -63,7 +64,7 @@ function Opportunities() {
 
   const toggleSave = async (opp) => {
     if (!user) {
-      navigate('/login')
+      navigate(signInPath())
       return
     }
     setBusyId(opp.id)

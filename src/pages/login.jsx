@@ -1,12 +1,16 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import './auth.css'
 import { useAuth } from '../modules/auth'
 import { Icon } from '../modules/icons'
+import { SignInLink, nextPageName, useNextPath } from '../modules/return-to'
 
 function Login() {
   const { login } = useAuth()
   const navigate = useNavigate()
+  // Where you were before being asked to sign in (My profile if nowhere).
+  const next = useNextPath()
+  const goingTo = nextPageName(next)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -18,7 +22,7 @@ function Login() {
     setBusy(true)
     try {
       await login(email, password)
-      navigate('/profile')
+      navigate(next, { replace: true })
     } catch (err) {
       setError(err.message)
     } finally {
@@ -33,7 +37,9 @@ function Login() {
           <div className="auth-head">
             <p className="auth-kicker">Launchpad</p>
             <h1 className="auth-title">Sign in</h1>
-            <p className="auth-subtitle">Welcome back to Launchpad.</p>
+            <p className="auth-subtitle">
+              {goingTo ? <>Sign in to carry on to <strong>{goingTo}</strong>.</> : 'Welcome back to Launchpad.'}
+            </p>
           </div>
 
           {error && <div className="auth-error" role="alert">{error}</div>}
@@ -60,7 +66,7 @@ function Login() {
                 autoComplete="current-password"
                 required
               />
-              <p className="auth-forgot"><Link to="/forgot-password">Forgot your password?</Link></p>
+              <p className="auth-forgot"><SignInLink to="/forgot-password">Forgot your password?</SignInLink></p>
             </div>
             <button className="primary-button auth-submit" type="submit" disabled={busy}>
               {busy ? 'Signing in…' : 'Sign in'}
@@ -74,7 +80,7 @@ function Login() {
           </p>
 
           <p className="auth-switch">
-            New to Launchpad? <Link to="/signup">Create an account</Link>
+            New to Launchpad? <SignInLink to="/signup">Create an account</SignInLink>
           </p>
         </div>
       </main>

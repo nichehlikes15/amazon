@@ -165,7 +165,7 @@
     gap: 8px;
     padding: 11px 20px;
     border: 1px solid var(--line);
-    border-radius: 999px;
+    border-radius: var(--radius-sm);
     background: var(--white);
     color: var(--navy);
     font-weight: 600;
@@ -317,7 +317,7 @@
     gap: 6px;
     padding: 9px 16px;
     border: 1px solid var(--line);
-    border-radius: 999px;
+    border-radius: var(--radius-sm);
     background: var(--white);
     color: var(--navy);
     font: inherit;
@@ -746,7 +746,7 @@
     gap: 6px;
     padding: 7px 14px;
     border: 1px solid var(--line);
-    border-radius: 999px;
+    border-radius: var(--radius-sm);
     background: var(--white);
     color: var(--navy);
     font: inherit;
@@ -802,7 +802,7 @@
     gap: 6px;
     margin: 14px 0 0;
     padding: 5px 12px;
-    border-radius: 999px;
+    border-radius: var(--radius-sm);
     background: #e8f6ec;
     color: #1e7e34;
     font-size: 0.8125rem;
@@ -1049,7 +1049,7 @@
     gap: 8px;
     margin: 0 0 24px;
     padding: 6px 14px;
-    border-radius: 999px;
+    border-radius: var(--radius-sm);
     background: #e8f6ec;
     color: #1e7e34;
     font-size: 0.875rem;
@@ -1248,7 +1248,7 @@
     align-items: center;
     gap: 8px;
     padding: 6px 12px;
-    border-radius: 999px;
+    border-radius: var(--radius-sm);
     background: rgb(0 0 0 / 48%);
     color: #fff;
     font-size: 0.8125rem;
@@ -1325,7 +1325,7 @@
     left: 8px;
     bottom: 8px;
     padding: 3px 9px;
-    border-radius: 999px;
+    border-radius: var(--radius-sm);
     background: rgb(0 0 0 / 50%);
     color: #fff;
     font-size: 0.8125rem;
@@ -1340,7 +1340,7 @@
     align-items: center;
     gap: 8px;
     padding: 6px 12px;
-    border-radius: 999px;
+    border-radius: var(--radius-sm);
     background: rgb(0 0 0 / 48%);
     color: #fff;
     font-size: 0.8125rem;
@@ -1628,7 +1628,7 @@
     display: inline-block;
     margin-left: 8px;
     padding: 1px 8px;
-    border-radius: 999px;
+    border-radius: var(--radius-sm);
     background: #f3ecfb;
     color: #5b2a9e;
     font-size: 0.6875rem;
@@ -1841,3 +1841,219 @@ html[data-theme="dark"] .iv-dock-icon { box-shadow: none; }
 
 .iv-cv-tip svg { flex-shrink: 0; margin-top: 3px; color: var(--orange-solid); }
 .iv-cv-tip a { color: var(--navy); font-weight: 600; }
+
+/* ----- Choose your interviewer (Alex or Peccy) ----- */
+.iv-who {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    max-width: 640px;
+    margin: 0 auto;
+}
+
+.iv-who-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--white);
+    text-align: left;
+    cursor: pointer;
+    transition: border-color var(--dur) ease, box-shadow var(--dur) ease, transform var(--dur) var(--ease-out);
+}
+
+.iv-who-card input { position: absolute; opacity: 0; pointer-events: none; }
+.iv-who-card:hover { box-shadow: var(--shadow-soft); transform: translateY(-2px); }
+.iv-who-card.is-on { border-color: var(--orange); box-shadow: inset 0 0 0 1px var(--orange), var(--shadow-soft); }
+.iv-who-card:has(input:focus-visible) { outline: 2px solid var(--orange); outline-offset: 2px; }
+
+.iv-who-face {
+    display: block;
+    aspect-ratio: 16 / 9;
+    background: #c9d3df;
+}
+
+.iv-who-face svg { display: block; width: 100%; height: 100%; }
+
+.iv-who-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 12px 16px 14px;
+}
+
+.iv-who-text strong { color: var(--navy); font-size: 1.0625rem; }
+.iv-who-text span { color: var(--muted); font-size: 0.875rem; }
+
+.iv-who-tick {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--orange-solid);
+    color: #fff;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: opacity var(--dur) ease, transform var(--dur) var(--ease-spring);
+}
+
+.iv-who-card.is-on .iv-who-tick { opacity: 1; transform: none; }
+
+@media (max-width: 520px) {
+    .iv-who { grid-template-columns: 1fr; }
+}
+
+/* "Avoid this in a real interview" (score 0 or a very low cap) */
+.iv-warning {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 0 0 14px;
+    padding: 12px 14px;
+    border: 1px solid #f0c2c2;
+    border-left: 4px solid #e5484d;
+    border-radius: var(--radius-sm);
+    background: #fdeaea;
+    color: #7a1d14;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    text-align: left;
+    animation: iv-warning-in 0.35s var(--ease-out) both;
+}
+
+.iv-warning svg { flex-shrink: 0; margin-top: 2px; color: #b42318; }
+.iv-warning strong { color: #b42318; }
+
+/* A score of 0 stands out more than other low scores */
+.iv-review-score.is-low { font-weight: 800; }
+
+html[data-theme="dark"] .iv-warning { border-color: #5c2424; border-left-color: #ff6b6b; background: #3a1717; color: #ffd2cc; }
+html[data-theme="dark"] .iv-warning strong,
+html[data-theme="dark"] .iv-warning svg { color: #ff8f85; }
+
+@keyframes iv-warning-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) { .iv-warning { animation: none; } }
+
+/* Points taken off for talking over the interviewer */
+.iv-fb-penalty {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0 0 12px;
+    color: #b42318;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+html[data-theme="dark"] .iv-fb-penalty { color: #ff8f85; }
+
+/* The interviewers are moved by interviewer-rig.js, so the old CSS loops are off */
+.iv-person.is-rigged .iv-head,
+.iv-person.is-rigged .iv-body,
+.iv-person.is-rigged .iv-lid,
+.iv-person.is-rigged .iv-brows,
+.iv-person.is-rigged .iv-eyes {
+    animation: none !important;
+    transition: none !important;
+}
+
+/* ===== Hidden "scripted replies" panel ===== */
+.iv-hero .iv-kicker { user-select: none; -webkit-user-select: none; }
+/* Quiet sign that scripted replies are on: the live dot becomes a ring */
+.iv-live-dot.is-ring { background: transparent; box-shadow: inset 0 0 0 2px #e5484d; }
+
+.ivs-backdrop {
+    position: fixed; inset: 0; z-index: 1000;
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: 6vh var(--gutter);
+    overflow-y: auto;
+    background: rgb(20 26 34 / 45%);
+    animation: ivs-fade var(--dur) var(--ease-out) both;
+}
+.ivs-backdrop.is-closing { animation: ivs-fade-out 0.2s ease both; }
+.ivs-panel {
+    width: min(780px, 100%);
+    padding: 32px clamp(20px, 4vw, 40px) 28px;
+    border-top: 3px solid var(--orange);
+    border-radius: var(--radius-lg);
+    background: var(--white);
+    color: var(--ink);
+    box-shadow: var(--shadow-lift);
+    outline: none;
+    animation: ivs-rise var(--dur) var(--ease-out) both;
+}
+.ivs-backdrop.is-closing .ivs-panel { animation: ivs-sink 0.2s ease both; }
+.ivs-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.ivs-head h2 { margin: 0 0 6px; color: var(--navy); font-size: var(--h3); }
+.ivs-intro { margin: 0; color: var(--muted); font-size: 0.9375rem; line-height: 1.55; }
+.ivs-close {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; flex-shrink: 0;
+    border: 0; border-radius: 50%; background: transparent; color: var(--muted); cursor: pointer;
+    transition: background var(--dur-fast) ease, color var(--dur-fast) ease;
+}
+.ivs-close:hover { background: var(--light); color: var(--navy); }
+.ivs-bar {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px;
+    margin: 24px 0 8px; padding: 14px 0;
+    border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+}
+.ivs-switch { color: var(--navy); font-size: 0.9375rem; }
+.ivs-count { color: var(--muted); font-size: 0.875rem; }
+.ivs-pathway { display: inline-flex; align-items: center; gap: 8px; margin-left: auto; color: var(--muted); font-size: 0.875rem; }
+.ivs-pathway select {
+    padding: 6px 10px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm);
+    background: var(--white); color: var(--ink); font: inherit;
+}
+.ivs-list { margin: 0; padding: 0; list-style: none; }
+.ivs-q { display: flex; gap: 18px; padding: 20px 0; border-bottom: 1px solid var(--line); }
+.ivs-n {
+    flex-shrink: 0; width: 40px; padding-top: 2px;
+    color: transparent; -webkit-text-stroke: 1px var(--orange-solid);
+    font-size: 1.5rem; font-weight: 700; line-height: 1;
+}
+.ivs-n svg { color: var(--orange-solid); }
+.ivs-q-body { flex: 1; min-width: 0; }
+.ivs-q-text { margin: 0 0 12px; color: var(--navy); font-weight: 600; line-height: 1.5; }
+.ivs-field { display: block; margin-top: 10px; }
+.ivs-field span { display: block; margin-bottom: 6px; color: var(--muted); font-size: 0.8125rem; font-weight: 600; }
+.ivs-field textarea {
+    width: 100%; padding: 10px 12px; resize: vertical;
+    border: 1px solid var(--line-strong); border-radius: var(--radius-sm);
+    background: var(--white); color: var(--ink); font: inherit; font-size: 0.9375rem; line-height: 1.5;
+    transition: border-color var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
+}
+.ivs-field textarea:focus { border-color: var(--orange-solid); box-shadow: 0 0 0 3px rgb(255 153 0 / 20%); outline: none; }
+.ivs-error { color: #c4352b; }
+.ivs-loading { color: var(--muted); }
+.ivs-foot { display: flex; justify-content: space-between; gap: 12px; margin-top: 24px; }
+.ivs-clear, .ivs-done {
+    padding: 10px 20px; border: 0; border-radius: var(--radius-sm); font: inherit; font-weight: 600; cursor: pointer;
+    transition: background var(--dur-fast) ease, color var(--dur-fast) ease;
+}
+.ivs-clear { background: transparent; color: var(--muted); }
+.ivs-clear:hover { background: var(--light); color: var(--navy); }
+.ivs-done { background: var(--orange-solid); color: #fff; }
+.ivs-done:hover { background: var(--orange-solid-hover); }
+
+@keyframes ivs-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ivs-fade-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes ivs-rise { from { opacity: 0; transform: translateY(16px) scale(0.98); } to { opacity: 1; transform: none; } }
+@keyframes ivs-sink { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(10px) scale(0.98); } }
+
+@media (max-width: 640px) {
+    .ivs-pathway { margin-left: 0; }
+    .ivs-q { gap: 12px; }
+    .ivs-n { width: 28px; font-size: 1.2rem; }
+}

@@ -1,12 +1,16 @@
-import { useEffect, useRef, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import './interview.css'
-import { api } from '../modules/api'
+import { api, setApiInterviewer } from '../modules/api'
 import { useAuth } from '../modules/auth'
 import { Icon, PathwayIcon } from '../modules/icons'
 import InterviewerVideo from './interviewer-video'
+import PeccyVideo from './peccy-video'
 import { createVoiceDetector } from '../modules/voice-activity'
-import { canSpeak, useVoices, findVoice, speakNatural, voiceLabel, isNatural, savedVoiceURI, saveVoiceURI } from '../modules/voice'
+import { canSpeak, useVoices, findVoice, speakNatural, sentences, voiceLabel, isNatural, savedVoiceURI, saveVoiceURI } from '../modules/voice'
+import { SignInLink } from '../modules/return-to'
+import { useScript, useSecretWord } from '../modules/interview-script'
+import ScriptPanel from './interview-script-panel'
 
 /*
   Interview practice "call".
@@ -20,11 +24,23 @@ import { canSpeak, useVoices, findVoice, speakNatural, voiceLabel, isNatural, sa
     Ollama - see backend/AI_SETUP.md), Alex's replies, follow-up questions and
     the end summary are written by the AI from what you actually said.
     If it isn't, Alex uses the standard rule-based replies.
+  - Hidden "scripted replies" (modules/interview-script.js) can replace what
+    Alex says with lines written in advance, e.g. for a demo. When they're on,
+    the "Interview practice" label ends with a full stop and the live dot is a ring.
   - Answers are checked on our server and not saved.
 */
 
 const PATHWAYS = ['Digital', 'Business', 'Media', 'Finance', 'Engineering']
-const INTERVIEWER = 'Alex'
+// Who runs the call. Both ask the same questions and give the same feedback;
+// only the name, the face and how the AI talks change.
+const INTERVIEWERS = [
+  { id: 'alex', name: 'Alex', blurb: 'A friendly practice interviewer' },
+  { id: 'peccy', name: 'Peccy', blurb: "Amazon's cheerful orange mascot" },
+]
+const FACES = { alex: InterviewerVideo, peccy: PeccyVideo }
+const INTERVIEWER_KEY = 'launchpad-interviewer'
+const InterviewerContext = createContext(INTERVIEWERS[0])
+const useInterviewer = () => useContext(InterviewerContext)
 
 const SpeechRecognition =
   typeof window !== 'undefined' ? window.SpeechRecognition || window.webkitSpeechRecognition : null
@@ -59,9 +75,10 @@ function ScoreRing({ value, size = 140 }) {
 }
 
 /* ---------- Voice picker (set up screen) ---------- */
-const PREVIEW_LINE = `Hi, I'm ${INTERVIEWER}. Thanks for joining me. This is how I'll sound in your practice interview.`
+const previewLine = (name) => `Hi, I'm ${name}. Thanks for joining me. This is how I'll sound in your practice interview.`
 
 function VoicePicker({ voiceURI, setVoiceURI }) {
+  const INTERVIEWER = useInterviewer().name
   const voices = useVoices()
   const [playing, setPlaying] = useState(false)
   const stopRef = useRef(null)
@@ -80,7 +97,7 @@ function VoicePicker({ voiceURI, setVoiceURI }) {
       return
     }
     setPlaying(true)
-    stopRef.current = speakNatural(PREVIEW_LINE, { voice: current, onEnd: () => setPlaying(false) })
+    stopRef.current = speakNatural(previewLine(INTERVIEWER), { voice: current, onEnd: () => setPlaying(false) })
   }
 
   const choose = (uri) => {
@@ -127,6 +144,7 @@ function VoicePicker({ voiceURI, setVoiceURI }) {
 // Green only when the AI has actually replied. Orange while it's being checked
 // or when Alex is using his standard replies.
 function AiStatus({ status }) {
+  const INTERVIEWER = useInterviewer().name
   if (!status) return null
   if (status.available) {
     return (
@@ -171,13 +189,42 @@ const STAR = [
   { letter: 'R', word: 'Result', text: 'How did it end, and what did you learn?' },
 ]
 
-function Setup({ pathway, setPathway, mode, setMode, voiceOn, setVoiceOn, voiceURI, setVoiceURI, cameraWanted, setCameraWanted, bargeIn, setBargeIn, aiStatus, signedIn, hasCv, useCv, setUseCv, onStart, loading, error }) {
+function Setup({ interviewerId, setInterviewerId, pathway, setPathway, mode, setMode, voiceOn, setVoiceOn, voiceURI, setVoiceURI, cameraWanted, setCameraWanted, bargeIn, setBargeIn, aiStatus, signedIn, hasCv, useCv, setUseCv, onStart, loading, error }) {
+  const INTERVIEWER = useInterviewer().name
   return (
     <>
       <section className="iv-setup" aria-label="Set up your practice call">
-        {/* 01 Pathway */}
-        <div className="iv-step" role="group" aria-labelledby="iv-step-1">
+        {/* 01 Interviewer */}
+        <div className="iv-step" role="group" aria-labelledby="iv-step-who">
           <span className="iv-step-n" aria-hidden="true">01</span>
+          <h2 id="iv-step-who">Choose your interviewer</h2>
+          <p className="iv-step-intro">
+            Both ask the same questions and give the same feedback. Pick who you&apos;d like to talk to.
+          </p>
+          <div className="iv-who" role="radiogroup" aria-labelledby="iv-step-who">
+            {INTERVIEWERS.map((w) => {
+              const Preview = FACES[w.id]
+              return (
+                <label key={w.id} className={interviewerId === w.id ? 'iv-who-card is-on' : 'iv-who-card'}>
+                  <input type="radio" name="interviewer" value={w.id} checked={interviewerId === w.id}
+                    onChange={() => setInterviewerId(w.id)} />
+                  <span className="iv-who-face" aria-hidden="true">
+                    <Preview speaking={false} listening={false} asking={false} wordTick={0} />
+                  </span>
+                  <span className="iv-who-text">
+                    <strong>{w.name}</strong>
+                    <span>{w.blurb}</span>
+                  </span>
+                  <span className="iv-who-tick" aria-hidden="true"><Icon name="check" size={12} /></span>
+                </label>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* 02 Pathway */}
+        <div className="iv-step" role="group" aria-labelledby="iv-step-1">
+          <span className="iv-step-n" aria-hidden="true">02</span>
           <h2 id="iv-step-1">Choose your pathway</h2>
           <p className="iv-step-intro">
             {INTERVIEWER} will ask one question about this pathway, plus four general interview questions.
@@ -193,9 +240,9 @@ function Setup({ pathway, setPathway, mode, setMode, voiceOn, setVoiceOn, voiceU
           </div>
         </div>
 
-        {/* 02 Speak or type */}
+        {/* 03 Speak or type */}
         <div className="iv-step" role="group" aria-labelledby="iv-step-2">
-          <span className="iv-step-n" aria-hidden="true">02</span>
+          <span className="iv-step-n" aria-hidden="true">03</span>
           <h2 id="iv-step-2">How do you want to answer?</h2>
           <p className="iv-step-intro">
             Speaking is the closest to a real interview. You can pause the microphone at any point to type or edit.
@@ -220,9 +267,9 @@ function Setup({ pathway, setPathway, mode, setMode, voiceOn, setVoiceOn, voiceU
           </div>
         </div>
 
-        {/* 03 Settings */}
+        {/* 04 Settings */}
         <div className="iv-step" role="group" aria-labelledby="iv-step-3">
-          <span className="iv-step-n" aria-hidden="true">03</span>
+          <span className="iv-step-n" aria-hidden="true">04</span>
           <h2 id="iv-step-3">Call settings</h2>
           <p className="iv-step-intro">You can turn {INTERVIEWER}'s voice and your camera on or off during the call too.</p>
           <div className="iv-checks">
@@ -239,8 +286,11 @@ function Setup({ pathway, setPathway, mode, setMode, voiceOn, setVoiceOn, voiceU
                 <input type="checkbox" checked={bargeIn} onChange={(e) => setBargeIn(e.target.checked)} />
                 <span className="iv-check-box" aria-hidden="true"><Icon name="check" size={12} /></span>
                 <span>
-                  Let me interrupt {INTERVIEWER} by talking
-                  <span className="iv-check-hint">Works best with headphones, so {INTERVIEWER} doesn't hear himself</span>
+                  Notice if I talk over {INTERVIEWER}
+                  <span className="iv-check-hint">
+                    {INTERVIEWER} will ask you to let him finish, and it takes points off, like in a real interview.
+                    Works best with headphones.
+                  </span>
                 </span>
               </label>
             )}
@@ -319,13 +369,13 @@ function spokenFirstName(fullName) {
   return first.charAt(0).toUpperCase() + first.slice(1)
 }
 
-const greeting = (canInterrupt, name, pathway, roleContext) =>
-  `Hi${name ? ` ${name}` : ''}, I'm ${INTERVIEWER}. Thanks for joining me today. ` +
+const greeting = (canInterrupt, name, pathway, roleContext, who) =>
+  `Hi${name ? ` ${name}` : ''}, I'm ${who}. Thanks for joining me today. ` +
   (pathway ? `Today we're practising for a ${pathway} T Level placement at Amazon. ` : '') +
   (roleContext ? `${roleContext.split('. ')[0].replace(/\.$/, '')}. ` : '') +
   "Don't worry, this is just practice, so take your time. " +
   "I might ask a follow-up question or two, and after each answer I'll give you some quick feedback. " +
-  (canInterrupt ? "If you want to jump in at any point, just start talking. " : '') +
+  (canInterrupt ? "Please let me finish each question before you answer, just like in a real interview. " : '') +
   "Okay, let's get started."
 const NEXT_LEADS = ['Okay, next question.', "Right, here's the next one.", 'Okay, moving on.', 'Great. Next question.']
 // "This one's about working with others..." so you know why Alex is asking.
@@ -339,8 +389,14 @@ const END_UNSURE_MS = 3000
 const END_SHORT_MS = 3200
 const NO_NEW_WORDS_MS = 6000
 const BACKCHANNEL_AFTER_MS = 750
-// How long you need to talk over Alex before he stops to listen.
+// How loud-for-how-long counts as your voice (not Alex's echo) while he talks.
 const BARGE_IN_MS = 350
+// Talking over Alex: he only stops if you say several words, not one.
+const TALK_OVER_WORDS = 3
+// No speech-to-text while he talks: about this long of talking instead.
+const TALK_OVER_FALLBACK_MS = 1500
+// What he says when you talk over him, before carrying on where he was.
+const NUDGE_LINES = ['Sorry, please let me finish.', 'Just a moment, please let me finish.', 'Please let me finish first.']
 // Ignore the first moment of each line, while Alex's own voice settles.
 const BARGE_IN_GRACE_MS = 450
 const MIN_WORDS = 8
@@ -361,7 +417,7 @@ const ALEX_SOUNDS = /\b(m+-?h?m+|mhm+|uh[- ]?huh)\b/gi
 const ASIDE_ACKS = ['Mm.', 'Mm-hmm.']
 // Things that sound like you're talking TO Alex, not answering: a question,
 // "can you repeat that?", "I don't know"... The backend makes the final call.
-const ASIDE_START = /^(?:(?:sorry|so|um+|uh+|erm?|okay|ok|right|wait|alex|hmm+|actually)[,.!]?\s+)*(what|what's|whats|how|why|who|where|which|is|are|can|could|do|does|will|would|should|am|have you|tell me|repeat|pardon|say that again|come again|i don'?t (know|understand|get)|not sure|no idea|skip|pass)\b/i
+const ASIDE_START = /^(?:(?:sorry|so|um+|uh+|erm?|okay|ok|right|wait|alex|peccy|hmm+|actually)[,.!]?\s+)*(what|what's|whats|how|why|who|where|which|is|are|can|could|do|does|will|would|should|am|have you|tell me|repeat|pardon|say that again|come again|i don'?t (know|understand|get)|not sure|no idea|skip|pass)\b/i
 const SAFETY_WORDS = /\b(hurt(s|ing)? me|hit(s|ting)? me|not safe|unsafe|abus(e|ed|ing)|kill myself|suicid\w*|self.?harm|want to die|bull(y|ied|ying))\b/i
 function mightBeAside(text, qid) {
   const t = (text || '').trim()
@@ -425,7 +481,34 @@ function parseCommand(text) {
 }
 
 // Short feedback shown straight after each question (and its follow-up).
+// Something you shouldn't say in a real interview (a question about pay,
+// swearing, "I don't know"...). Shown in red above the rest of the feedback.
+function AnswerWarning({ text }) {
+  if (!text) return null
+  return (
+    <p className="iv-warning" role="alert">
+      <Icon name="flag" size={16} />
+      <span><strong>Avoid this in a real interview.</strong> {text}</span>
+    </p>
+  )
+}
+
+// The interviewer's face after your answer: pleased for a strong one,
+// concerned for a weak one or something to avoid in an interview.
+const faceMood = (phase, review) => {
+  if (phase !== 'feedback' || !review || review.error) return null
+  if (review.warning || review.score < 40) return 'concerned'
+  return review.score >= 70 ? 'happy' : null
+}
+
+// What the interviewer says at the end of the call, while waving goodbye.
+const goodbyeLine = (firstName) =>
+  `That's the end of our practice${firstName ? `, ${firstName}` : ''}. Thanks for your time!`
+
+const scoreTone = (score) => (score >= 75 ? 'good' : score >= 50 ? 'ok' : 'low')
+
 function LiveFeedback({ review, answer, followUp, followAnswer, onRetry }) {
+  const INTERVIEWER = useInterviewer().name
   if (review.error) {
     return (
       <div className="iv-live-fb is-error" role="alert">
@@ -436,8 +519,9 @@ function LiveFeedback({ review, answer, followUp, followAnswer, onRetry }) {
       </div>
     )
   }
-  const tone = review.score >= 75 ? 'good' : review.score >= 50 ? 'ok' : 'low'
+  const tone = scoreTone(review.score)
   const boost = review.scoreBefore != null ? review.score - review.scoreBefore : 0
+  const tips = review.tips.filter((s) => s !== review.warning)
   return (
     <div className="iv-live-fb" role="status">
       <div className="iv-live-fb-head">
@@ -447,6 +531,8 @@ function LiveFeedback({ review, answer, followUp, followAnswer, onRetry }) {
           <Icon name="motion" size={14} /> Try this answer again
         </button>
       </div>
+
+      <AnswerWarning text={review.warning} />
 
       {answer ? (
         <blockquote className="iv-live-fb-answer">{answer}</blockquote>
@@ -477,6 +563,12 @@ function LiveFeedback({ review, answer, followUp, followAnswer, onRetry }) {
         </p>
       )}
 
+      {review.interruptPenalty > 0 && (
+        <p className="iv-fb-penalty">
+          <Icon name="flag" size={14} /> {review.interruptPenalty} points off for talking over {INTERVIEWER}.
+        </p>
+      )}
+
       {boost > 0 && (
         <p className="iv-fb-boost">
           <Icon name="check" size={14} /> Your follow-up answer added {boost} {boost === 1 ? 'point' : 'points'}.
@@ -490,10 +582,10 @@ function LiveFeedback({ review, answer, followUp, followAnswer, onRetry }) {
             <ul>{review.strengths.slice(0, 2).map((s) => <li key={s}>{s}</li>)}</ul>
           </div>
         )}
-        {review.tips.length > 0 && (
+        {tips.length > 0 && (
           <div>
             <h4 className="is-tip">Try this</h4>
-            <ul>{review.tips.slice(0, 2).map((s) => <li key={s}>{s}</li>)}</ul>
+            <ul>{tips.slice(0, 2).map((s) => <li key={s}>{s}</li>)}</ul>
           </div>
         )}
       </div>
@@ -502,6 +594,9 @@ function LiveFeedback({ review, answer, followUp, followAnswer, onRetry }) {
 }
 
 function Call({ questions, mode, voiceOn, setVoiceOn, voiceURI, cameraDefault, bargeIn, firstName = '', pathway = '', roleContext = '', aiStatus = null, onFinish, onQuit }) {
+  const interviewer = useInterviewer()
+  const INTERVIEWER = interviewer.name
+  const Face = FACES[interviewer.id] || InterviewerVideo
   const canListen = mode === 'speak' && Boolean(SpeechRecognition)
   const blank = () => questions.map(() => '')
 
@@ -524,6 +619,11 @@ function Call({ questions, mode, voiceOn, setVoiceOn, voiceURI, cameraDefault, b
   const [speaking, setSpeaking] = useState(false)
   const [asking, setAsking] = useState(false)
   const [wordTick, setWordTick] = useState(0)
+  const script = useScript()
+  // One-off gestures for the interviewer: wave, bye, thumbs, nod, offer
+  const [gesture, setGesture] = useState({ kind: '', id: 0 })
+  const gestureNow = (kind) => setGesture((g) => ({ kind, id: g.id + 1 }))
+  const leaving = useRef(false)
   const [caption, setCaption] = useState('')
   const [captionsOn, setCaptionsOn] = useState(true)
   const [connecting, setConnecting] = useState(true)
@@ -607,6 +707,10 @@ function Call({ questions, mode, voiceOn, setVoiceOn, voiceURI, cameraDefault, b
   const bcDecided = useRef(0)
   const cutInAt = useRef(0)
   const cutInTimer = useRef(null)
+  // Talking over Alex: how many times for each question, and where he was in his line.
+  const interruptsRef = useRef(questions.map(() => 0))
+  const lineRef = useRef(null) // { token, parts, k (sentence he's on), onDone, nudged }
+  const talkBase = useRef(0) // words heard before this line started don't count
 
   // Camera
   const videoRef = useRef(null)
@@ -718,7 +822,7 @@ function Call({ questions, mode, voiceOn, setVoiceOn, voiceURI, cameraDefault, b
     spokenLines.current = [...spokenLines.current.filter((l) => now - l.at < 12000), { text, at: now }]
   }
 
-  const speakLine = (text, onDone) => {
+  const speakLine = (text, onDone, { nudged = false } = {}) => {
     stopSpeech()
     rememberLine(text)
     // Keep listening while Alex talks, so you can cut in and he hears what you say.
@@ -730,13 +834,18 @@ function Call({ questions, mode, voiceOn, setVoiceOn, voiceURI, cameraDefault, b
     if (canListen && bargeRef.current && !recRef.current && !bgFailed.current) startListening('background')
     lineKind.current = 'line'
     clearTimeout(captionTimer.current)
-    setCaption(text)
+    // Captions show one sentence at a time, in step with what Alex is saying.
+    const parts = sentences(text)
+    if (!parts.length) parts.push(text)
+    setCaption(parts[0])
     setAsking(true)
     clearTimeout(askTimer.current)
     askTimer.current = setTimeout(() => setAsking(false), 1400)
 
     const token = {}
     lineToken.current = token
+    lineRef.current = { token, parts, k: 0, onDone, nudged }
+    talkBase.current = heardParts.current.length
     const done = () => {
       if (lineToken.current !== token) return
       lineToken.current = null
@@ -754,6 +863,11 @@ function Call({ questions, mode, voiceOn, setVoiceOn, voiceURI, cameraDefault, b
       speechStop.current = speakNatural(text, {
         voice: findVoice(voiceURI),
         onStart: () => setAlexSpeaking(true),
+        onSentence: (s, idx) => {
+          if (lineToken.current !== token) return
+          setCaption(s)
+          lineRef.current.k = idx
+        },
         onWord: () => setWordTick((n) => n + 1),
         onEnd: done,
       })
@@ -763,9 +877,19 @@ function Call({ questions, mode, voiceOn, setVoiceOn, voiceURI, cameraDefault, b
         done()
       }, Math.max(8000, words * 700 + 5000))
     } else {
-      // Voice off: Alex still "talks" silently with captions.
+      // Voice off: Alex still "talks" silently, one caption sentence at a time.
       setAlexSpeaking(true)
-      fakeTimer.current = setTimeout(done, Math.max(1800, (words / 2.6) * 1000))
+      let k = 0
+      const step = () => {
+        if (lineToken.current !== token) return
+        const part = parts[k]
+        lineRef.current.k = k
+        k += 1
+        setCaption(part)
+        const ms = Math.max(1400, (part.split(/\s+/).length / 2.6) * 1000)
+        fakeTimer.current = setTimeout(k < parts.length ? step : done, ms)
+      }
+      step()
     }
   }
 
@@ -773,6 +897,7 @@ function Call({ questions, mode, voiceOn, setVoiceOn, voiceURI, cameraDefault, b
   const backchannel = () => {
     if (!canSpeak || !voiceRef.current || alexTalking.current) return
     lastBackchannel.current = Date.now()
+    gestureNow('nod')
     lineKind.current = 'backchannel'
     const text = BACKCHANNELS[Math.floor(Math.random() * BACKCHANNELS.length)]
     rememberLine(text)
@@ -831,7 +956,11 @@ function Call({ questions, mode, voiceOn, setVoiceOn, voiceURI, cameraDefault, b
   // Use what the speech-to-text has heard so far, for the current mode.
   const handleHeard = () => {
     const kind = recMode.current
-    if (!kind || kind === 'background') return
+    if (kind === 'background') {
+      handlersRef.current.checkTalkOver?.()
+      return
+    }
+    if (!kind) return
     const parts = heardParts.current
     const cut = Math.min(preCount.current, parts.length)
     // Words heard while Alex was still talking: keep only yours.
@@ -989,6 +1118,7 @@ function Call({ questions, mode, voiceOn, setVoiceOn, voiceURI, cameraDefault, b
 
   /* ---- Flow ---- */
   const beginAnswer = () => {
+    gestureNow('offer')
     if (!mounted.current) return
     setPhase('answering')
     bcDecided.current = 0
@@ -1004,20 +1134,65 @@ function Call({ questions, mode, voiceOn, setVoiceOn, voiceURI, cameraDefault, b
     beginAnswer()
   }
 
-  const flashCutIn = () => {
-    cutInPending.current = true
-    cutInAt.current = Date.now()
+  /* ---- Talking over Alex ---- */
+  // Like a real interviewer, he stops for a moment, asks you to let him
+  // finish, then carries on from the sentence he was on. It takes points off
+  // this question (see INTERRUPT_PENALTY in the backend).
+  const flashTalkOver = () => {
     setCutIn(true)
     clearTimeout(cutInTimer.current)
-    cutInTimer.current = setTimeout(() => setCutIn(false), 2200)
+    cutInTimer.current = setTimeout(() => setCutIn(false), 2600)
   }
 
-  // You started talking while Alex was asking - he stops and listens.
-  const interrupt = () => {
-    stopSpeech()
-    finishLine()
-    flashCutIn()
-    beginAnswer()
+  // Already given feedback for this question: show the points off straight away
+  // (the same sum as the backend: 10 a time, up to 30).
+  const penaliseReview = (i, n) => setReviews((prev) => prev.map((r, k) => {
+    if (k !== i || !r || r.error) return r
+    const base = r.baseScore ?? r.score
+    const penalty = Math.min(30, 10 * n)
+    const times = n === 1 ? 'once' : n === 2 ? 'twice' : `${n} times`
+    const tip = `You talked over ${INTERVIEWER} ${times} while he was speaking. In a real interview, let the interviewer finish before you start - it shows you're listening.`
+    const rest = (r.tips || []).filter((s) => s !== r.warning && !s.startsWith('You talked over'))
+    return {
+      ...r,
+      score: Math.max(0, base - penalty),
+      baseScore: base,
+      interruptions: n,
+      interruptPenalty: penalty,
+      tips: [...(r.warning ? [r.warning] : []), tip, ...rest].slice(0, 3),
+    }
+  }))
+
+  const nudgeTalkOver = () => {
+    const line = lineRef.current
+    if (!line || line.nudged) return
+    const i = indexRef.current
+    const n = (interruptsRef.current[i] || 0) + 1
+    interruptsRef.current[i] = n
+    if (phaseRef.current === 'feedback') penaliseReview(i, n)
+    flashTalkOver()
+    const nudge = NUDGE_LINES[(n - 1) % NUDGE_LINES.length]
+    const rest = line.parts.slice(line.k).join(' ')
+    speakLine(rest ? `${nudge} ${rest}` : nudge, line.onDone, { nudged: true })
+  }
+
+  // Several of your words (not his echo) while he's talking = talking over him.
+  const checkTalkOver = (now = Date.now()) => {
+    if (!alexTalking.current || lineKind.current !== 'line' || !bargeRef.current) return
+    if (phaseRef.current !== 'asking' && phaseRef.current !== 'feedback') return
+    const line = lineRef.current
+    if (!line || line.nudged || line.token !== lineToken.current) return
+    if (now - alexSince.current < BARGE_IN_GRACE_MS) return
+    const wordsOn = recRef.current && recMode.current === 'background' && !bgFailed.current
+    if (wordsOn) {
+      // With the volume meter, the words must come with your voice louder than his echo.
+      if (vadRef.current && !(lastVoice.current > alexSince.current && now - lastVoice.current < 1200)) return
+      const yours = stripEcho(cleanHeard(heardParts.current.slice(talkBase.current).join(' ')), echoText())
+      if (wordCount(yours) < TALK_OVER_WORDS) return
+    } else if (!vadRef.current || aboveMs.current < TALK_OVER_FALLBACK_MS) {
+      return
+    }
+    nudgeTalkOver()
   }
 
   // Listen for "next", "try again", "repeat" or "wait".
@@ -1074,14 +1249,6 @@ function Call({ questions, mode, voiceOn, setVoiceOn, voiceURI, cameraDefault, b
     speakLine(say, () => listenForCommand(true))
   }
 
-  // You talked over Alex's feedback - he stops and waits for you.
-  const interruptFeedback = () => {
-    stopSpeech()
-    finishLine()
-    setCountdown(null)
-    flashCutIn()
-    listenForCommand(true)
-  }
 
   // Feedback on this question: the first answer plus the follow-up answer (if any).
   const getFeedback = async (i, afterAck) => {
@@ -1096,12 +1263,14 @@ function Call({ questions, mode, voiceOn, setVoiceOn, voiceURI, cameraDefault, b
         followUpAsked: Boolean(fu),
         asked: questions[i].text,
         seconds,
+        interruptions: interruptsRef.current[i] || 0,
         pathway,
         history: historyFor(i),
       })
       if (!stillChecking(i)) return
       setReview(i, r)
       setPhase('feedback')
+      if (!r.warning && r.score >= 80) gestureNow('thumbs')
       if (r.say) {
         // Let the quick "Okay." finish, then give the feedback, then count down.
         const asked = Date.now()
@@ -1131,6 +1300,7 @@ function Call({ questions, mode, voiceOn, setVoiceOn, voiceURI, cameraDefault, b
     const acked = new Promise((resolve) => { ackDone = resolve })
     const asideLikely = mightBeAside(turnText(i, s), questions[i].id)
     const acks = asideLikely ? ASIDE_ACKS : ACK_LINES
+    gestureNow('nod')
     speakLine(acks[Math.floor(Math.random() * acks.length)], ackDone)
     const afterAck = () => Promise.race([acked, wait(1800)])
     if (canListen) await wait(300) // let the last few words arrive
@@ -1243,9 +1413,21 @@ function Call({ questions, mode, voiceOn, setVoiceOn, voiceURI, cameraDefault, b
     setFollowUp(i, null)
     setReview(i, null)
     timings.current[i] = 0
+    interruptsRef.current[i] = 0
     setStep('main')
     setPhase('asking')
     speakLine(RETRY_LINE, beginAnswer)
+  }
+
+  const finishCall = () => {
+    if (!mounted.current) return
+    onFinish(questions.map((qq, i) => ({
+      id: qq.id,
+      asked: qq.text,
+      answer: [answersRef.current[i], followAnswersRef.current[i]].filter((a) => a && a.trim()).join(' '),
+      seconds: canListen && timings.current[i] > 0 ? Math.round(timings.current[i]) : null,
+      interruptions: interruptsRef.current[i] || 0,
+    })))
   }
 
   const goNext = () => {
@@ -1253,12 +1435,15 @@ function Call({ questions, mode, voiceOn, setVoiceOn, voiceURI, cameraDefault, b
     dropListening()
     stopSpeech()
     if (last) {
-      onFinish(questions.map((qq, i) => ({
-        id: qq.id,
-        asked: qq.text,
-        answer: [answersRef.current[i], followAnswersRef.current[i]].filter((a) => a && a.trim()).join(' '),
-        seconds: canListen && timings.current[i] > 0 ? Math.round(timings.current[i]) : null,
-      })))
+      // Pressing "Finish" again while Alex says goodbye skips the goodbye.
+      if (leaving.current) {
+        finishCall()
+        return
+      }
+      // Say goodbye and wave, then show the results.
+      leaving.current = true
+      gestureNow('bye')
+      speakLine(goodbyeLine(firstName), () => setTimeout(finishCall, 500))
     } else {
       setIndex((n) => n + 1)
     }
@@ -1361,22 +1546,13 @@ function Call({ questions, mode, voiceOn, setVoiceOn, voiceURI, cameraDefault, b
     if (voiced) lastVoice.current = now
     if (phaseRef.current === 'answering' || recMode.current === 'command') setHearingOnce(now - lastVoice.current < 450)
 
-    // Talking over Alex makes him stop and listen.
-    if (alex && voiced && bargeRef.current && lineKind.current === 'line' && now - alexSince.current > BARGE_IN_GRACE_MS) {
-      if (phaseRef.current === 'asking') {
-        interrupt()
-        return
-      }
-      if (phaseRef.current === 'feedback') {
-        interruptFeedback()
-        return
-      }
-    }
+    // Talking over Alex (several words, not one): he asks you to let him finish.
+    if (alex && voiced) checkTalkOver(now)
     if (phaseRef.current === 'answering' && wantListening.current && recMode.current === 'answer') checkTurn(now)
     if (phaseRef.current === 'feedback' && recMode.current === 'command') checkCommandTurn(now)
   }
 
-  handlersRef.current = { runCommand, checkTurn, checkCommandTurn, holdCountdown }
+  handlersRef.current = { runCommand, checkTurn, checkCommandTurn, holdCountdown, checkTalkOver }
   tickRef.current = onTick
 
   // Microphone volume, for fast turn-taking and interruptions.
@@ -1449,9 +1625,12 @@ function Call({ questions, mode, voiceOn, setVoiceOn, voiceURI, cameraDefault, b
     setStep('main')
     setPhase('asking')
     setAside(null)
-    const lead = index === 0 ? greeting(bargeRef.current, firstName, pathway, roleContext) : NEXT_LEADS[(index - 1) % NEXT_LEADS.length]
+    const lead = index === 0 ? greeting(bargeRef.current, firstName, pathway, roleContext, INTERVIEWER) : NEXT_LEADS[(index - 1) % NEXT_LEADS.length]
     const about = index > 0 && q.id !== 'close' ? ` ${aboutLine(q.focus)}` : ''
-    const t = setTimeout(() => speakLine(`${lead}${about} ${q.text}`, beginAnswer), index === 0 ? 350 : 400)
+    const t = setTimeout(() => {
+      if (index === 0) gestureNow('wave')
+      speakLine(`${lead}${about} ${q.text}`, beginAnswer)
+    }, index === 0 ? 350 : 400)
     return () => { clearTimeout(t); stopSpeech() }
   }, [index, connecting]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -1506,7 +1685,7 @@ function Call({ questions, mode, voiceOn, setVoiceOn, voiceURI, cameraDefault, b
 
   let status = null
   if (!connecting) {
-    if (cutIn) status = { tone: 'hear', text: `You jumped in - ${INTERVIEWER} is listening` }
+    if (cutIn) status = { tone: 'think', text: `Please let ${INTERVIEWER} finish` }
     else if (phase === 'asking') status = { tone: 'speak', text: inFollow ? `${INTERVIEWER} is asking a follow-up` : `${INTERVIEWER} is speaking` }
     else if (phase === 'answering') {
       if (answerListening) status = hearing ? { tone: 'hear', text: 'Listening · I can hear you' } : { tone: 'listen', text: 'Listening · start talking' }
@@ -1532,7 +1711,7 @@ function Call({ questions, mode, voiceOn, setVoiceOn, voiceURI, cameraDefault, b
   return (
     <section className="iv-call" aria-label="Practice interview call">
       <div className="iv-call-bar">
-        <span className="iv-live"><span className="iv-live-dot" /> Practice call{pathway ? ` · ${pathway}` : ''}</span>
+        <span className="iv-live"><span className={script.on ? 'iv-live-dot is-ring' : 'iv-live-dot'} /> Practice call{pathway ? ` · ${pathway}` : ''}</span>
         <ol className="iv-progress" aria-label={`Question ${index + 1} of ${questions.length}`}>
           {questions.map((qq, n) => (
             <li key={qq.id} className={n === index ? 'is-now' : n < index ? 'is-done' : ''}>
@@ -1547,11 +1726,14 @@ function Call({ questions, mode, voiceOn, setVoiceOn, voiceURI, cameraDefault, b
         {/* Left: the video call */}
         <div className="iv-call-main">
           <div className={speaking ? 'iv-stage is-speaking' : 'iv-stage'}>
-            <InterviewerVideo
+            <Face
               speaking={speaking}
               listening={phase === 'answering' && answerListening}
               asking={asking}
+              thinking={phase === 'checking'}
+              mood={faceMood(phase, review)}
               wordTick={wordTick}
+              gesture={gesture}
             />
 
             <span className="iv-tag">
@@ -1594,7 +1776,7 @@ function Call({ questions, mode, voiceOn, setVoiceOn, voiceURI, cameraDefault, b
             </div>
 
             {captionsOn && caption && (
-              <p className="iv-caption" aria-live="polite">{caption}</p>
+              <p className="iv-caption" aria-live="polite" key={caption}>{caption}</p>
             )}
 
             <div className={connecting ? 'iv-connecting' : 'iv-connecting is-done'} aria-hidden={!connecting}>
@@ -1706,7 +1888,7 @@ function Call({ questions, mode, voiceOn, setVoiceOn, voiceURI, cameraDefault, b
                   placeholder={
                     canListen
                       ? phase === 'asking'
-                        ? bargeIn ? `Start talking any time - ${INTERVIEWER} will stop and listen…` : `${INTERVIEWER} will start listening when the question is finished…`
+                        ? `${INTERVIEWER} will start listening when he's finished…`
                         : 'Start talking - your words will appear here…'
                       : 'Type your answer here…'
                   }
@@ -1802,6 +1984,7 @@ function Call({ questions, mode, voiceOn, setVoiceOn, voiceURI, cameraDefault, b
 
 /* ---------- 3. Feedback ---------- */
 function Feedback({ result, pathway, onAgain, signedIn }) {
+  const INTERVIEWER = useInterviewer().name
   return (
     <section className="iv-feedback">
       <div className="iv-summary">
@@ -1824,7 +2007,7 @@ function Feedback({ result, pathway, onAgain, signedIn }) {
             </p>
           ) : !signedIn && (
             <p className="iv-saved is-off">
-              <Link to="/login">Sign in</Link> to save your scores and see your progress over time.
+              <SignInLink>Sign in</SignInLink> to save your scores and see your progress over time.
             </p>
           )}
           <div className="iv-summary-actions">
@@ -1857,15 +2040,17 @@ function Feedback({ result, pathway, onAgain, signedIn }) {
             <summary>
               <span className="iv-review-n">{String(i + 1).padStart(2, '0')}</span>
               <span className="iv-review-q">{r.question}</span>
-              <span className={`iv-review-score is-${r.score >= 75 ? 'good' : r.score >= 50 ? 'ok' : 'low'}`}>{r.score}</span>
+              <span className={`iv-review-score is-${scoreTone(r.score)}`}>{r.score}</span>
             </summary>
             <div className="iv-review-body">
               <p className="iv-review-focus">What this question tests: {r.focus.toLowerCase()}</p>
+              <AnswerWarning text={r.warning} />
               <blockquote className="iv-review-answer">
                 {r.answer || <em>No answer given</em>}
               </blockquote>
               <p className="iv-review-meta">
                 {r.words} words{r.pace ? ` · about ${r.pace} words a minute` : ''}
+                {r.interruptPenalty > 0 ? ` · ${r.interruptPenalty} points off for talking over ${INTERVIEWER}` : ''}
               </p>
               <div className="iv-review-cols">
                 {r.strengths.length > 0 && (
@@ -1874,10 +2059,10 @@ function Feedback({ result, pathway, onAgain, signedIn }) {
                     <ul>{r.strengths.map((s) => <li key={s}>{s}</li>)}</ul>
                   </div>
                 )}
-                {r.tips.length > 0 && (
+                {r.tips.filter((s) => s !== r.warning).length > 0 && (
                   <div>
                     <h4 className="is-tip">How to improve</h4>
-                    <ul>{r.tips.map((s) => <li key={s}>{s}</li>)}</ul>
+                    <ul>{r.tips.filter((s) => s !== r.warning).map((s) => <li key={s}>{s}</li>)}</ul>
                   </div>
                 )}
               </div>
@@ -1897,6 +2082,23 @@ function Feedback({ result, pathway, onAgain, signedIn }) {
 
 /* ---------- Page ---------- */
 function Interview() {
+  // Alex or Peccy, remembered on this device.
+  const [interviewerId, setInterviewerIdState] = useState(() => {
+    try {
+      const saved = localStorage.getItem(INTERVIEWER_KEY)
+      return INTERVIEWERS.some((w) => w.id === saved) ? saved : 'alex'
+    } catch {
+      return 'alex'
+    }
+  })
+  const setInterviewerId = (id) => {
+    setInterviewerIdState(id)
+    try { localStorage.setItem(INTERVIEWER_KEY, id) } catch { /* private mode */ }
+  }
+  const interviewer = INTERVIEWERS.find((w) => w.id === interviewerId) || INTERVIEWERS[0]
+  const INTERVIEWER = interviewer.name
+  // The server uses the same name in what the interviewer says.
+  useEffect(() => { setApiInterviewer(interviewer.id) }, [interviewer.id])
   const { user } = useAuth()
   const [params] = useSearchParams()
   // ?pathway=Finance (e.g. from the career quiz) picks the pathway straight away.
@@ -1923,6 +2125,22 @@ function Interview() {
   const [aiStatus, setAiStatus] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  // Hidden "scripted replies" panel: type "script" on the page, or click the
+  // "Interview practice" label 5 times. See modules/interview-script.js.
+  const script = useScript()
+  const [scriptOpen, setScriptOpen] = useState(false)
+  const openScript = useCallback(() => setScriptOpen(true), [])
+  useSecretWord('script', openScript)
+  const kickerClicks = useRef([])
+  const kickerClick = () => {
+    const now = Date.now()
+    kickerClicks.current = [...kickerClicks.current.filter((at) => now - at < 2500), now]
+    if (kickerClicks.current.length >= 5) {
+      kickerClicks.current = []
+      setScriptOpen(true)
+    }
+  }
 
   // Is Alex's AI working? Checked on the set-up screen and during the call, so
   // the dot turns orange if the AI stops replying. Asking also loads the model.
@@ -2002,10 +2220,11 @@ function Interview() {
   }
 
   return (
+    <InterviewerContext.Provider value={interviewer}>
     <main className="iv">
       <header className={stage === 'setup' ? 'iv-hero' : 'iv-hero is-compact'}>
         <div className="iv-hero-inner">
-          <p className="iv-kicker">Interview practice</p>
+          <p className="iv-kicker" onClick={kickerClick}>Interview practice{script.on ? '.' : ''}</p>
           <h1>Practise with a <span>virtual interviewer</span></h1>
           {stage === 'setup' && (
             <>
@@ -2027,6 +2246,7 @@ function Interview() {
       <div className="iv-body">
         {stage === 'setup' && (
           <Setup
+            interviewerId={interviewerId} setInterviewerId={setInterviewerId}
             pathway={pathway} setPathway={setPathway}
             mode={mode} setMode={setMode}
             voiceOn={voiceOn} setVoiceOn={setVoiceOn}
@@ -2068,7 +2288,10 @@ function Interview() {
           <Feedback result={result} pathway={pathway} signedIn={Boolean(user)} onAgain={() => { setResult(null); setStage('setup') }} />
         )}
       </div>
+
+      {scriptOpen && <ScriptPanel pathway={pathway} who={INTERVIEWER} onClose={() => setScriptOpen(false)} />}
     </main>
+    </InterviewerContext.Provider>
   )
 }
 

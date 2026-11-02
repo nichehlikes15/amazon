@@ -5,6 +5,7 @@ import { api } from '../modules/api'
 import { useAuth } from '../modules/auth'
 import { Icon, PathwayIcon, closingLabel, daysUntil } from '../modules/icons'
 import { formatChatTime } from '../modules/mentors'
+import { RoleChoice, roleInfo, useRole } from '../modules/role'
 
 const PATHWAYS = [
   {
@@ -101,6 +102,97 @@ function StatCard({ stat, run }) {
 }
 
 // Signed-in summary: your quiz match, saved opportunities and next coffee chat.
+// What to look at first, for each type of visitor.
+const ROLE_NEXT = {
+  student: [
+    { to: '/quiz', icon: 'all', label: 'Start here', title: 'Find your pathway', sub: 'Take the two-minute career quiz' },
+    { to: '/opportunities', icon: 'search', label: 'Explore', title: 'Opportunities', sub: 'Placements and apprenticeships at Amazon' },
+    { to: '/interview', icon: 'video', label: 'Get ready', title: 'Interview practice', sub: 'Practise with Alex or Peccy, our virtual interviewers' },
+  ],
+  teacher: [
+    { to: '/tlevel', icon: 'book', label: 'Start here', title: 'T Levels at Amazon', sub: 'How placements work for your students' },
+    { to: '/t-level/advice', icon: 'file', label: 'Guidance', title: 'Advice', sub: 'Setting up and supporting a placement' },
+    { to: '/register-interest?role=school', icon: 'building', label: 'Partner with us', title: 'Register your school', sub: 'Tell Amazon you would like to take part' },
+  ],
+  parent: [
+    { to: '/parents', icon: 'heart', label: 'Start here', title: 'Parents and carers', sub: 'What T Levels and placements involve' },
+    { to: '/what-is-a-t-level', icon: 'book', label: 'The basics', title: 'What is a T Level?', sub: 'The course explained simply' },
+    { to: '/safeguarding', icon: 'shield', label: 'Peace of mind', title: 'Staying safe', sub: 'How students are kept safe' },
+  ],
+}
+
+// Older accounts made before roles: ask once, at the top of the welcome card.
+function AccountRolePrompt() {
+  const [, setRole] = useRole()
+  return (
+    <div className="h-role-prompt">
+      <p><strong>Tell us who you are</strong> so we only show you the links you need.</p>
+      <RoleChoice value={null} name="account-role" compact onChange={setRole} />
+    </div>
+  )
+}
+
+function RoleTiles({ role }) {
+  return (
+    <div className="h-welcome-grid">
+      {ROLE_NEXT[role].map((tile, i) => (
+        <Link className="h-tile h-role-tile" to={tile.to} key={tile.to} style={{ '--i': i }}>
+          <span className="h-tile-icon"><Icon name={tile.icon} size={20} /></span>
+          <span className="h-tile-label">{tile.label}</span>
+          <strong>{tile.title}</strong>
+          <span className="h-tile-sub">{tile.sub}</span>
+        </Link>
+      ))}
+    </div>
+  )
+}
+
+// Signed out: "I am a..." instead of the signed-in summary. The choice is kept
+// on this device, and added to the account if they sign up or sign in later.
+function RoleWelcome() {
+  const [role, setRole] = useRole()
+  const [changing, setChanging] = useState(false)
+  const info = roleInfo(role)
+
+  if (!info || changing) {
+    return (
+      <section className="h-welcome h-role" aria-labelledby="h-role-title">
+        <div className="h-role-swap" key="pick">
+          <div className="h-welcome-head">
+            <h2 id="h-role-title">Welcome to Launchpad. I am a…</h2>
+            {changing && (
+              <button type="button" className="h-welcome-link h-role-btn" onClick={() => setChanging(false)}>
+                Keep {info.label.toLowerCase()}
+              </button>
+            )}
+          </div>
+          <p className="h-role-lead">
+            Pick one and we&apos;ll show you the parts of Launchpad that are useful to you. You can change it at any time.
+          </p>
+          <RoleChoice value={role} name="home-role" onChange={(r) => { setRole(r); setChanging(false) }} />
+        </div>
+      </section>
+    )
+  }
+
+  return (
+    <section className="h-welcome h-role" aria-labelledby="h-role-title">
+      <div className="h-role-swap" key={role}>
+        <div className="h-welcome-head">
+          <h2 id="h-role-title">Launchpad for {info.plural}</h2>
+          <button type="button" className="h-welcome-link h-role-btn" onClick={() => setChanging(true)}>
+            Not a {info.label.toLowerCase()}? Change
+          </button>
+        </div>
+        <RoleTiles role={role} />
+        <p className="h-role-note">
+          <Icon name="check" size={14} /> Saved on this device. If you create an account, it&apos;s saved to your account too.
+        </p>
+      </div>
+    </section>
+  )
+}
+
 function WelcomeBack({ user }) {
   const [saved, setSaved] = useState(null)
   const [chats, setChats] = useState([])
@@ -129,6 +221,7 @@ function WelcomeBack({ user }) {
         <h2>Welcome back, {firstName}</h2>
         <Link className="h-welcome-link" to="/profile">Go to my profile <Icon name="arrowRight" size={14} /></Link>
       </div>
+      {!user.role && <AccountRolePrompt />}
       <div className="h-welcome-grid">
         {/* Quiz match */}
         <Link className="h-tile" to={pathway ? `/information#${pathway.toLowerCase()}` : '/quiz'}>
@@ -195,7 +288,7 @@ function Home() {
         </div>
       </section>
 
-      {user && <WelcomeBack user={user} />}
+      {user ? <WelcomeBack user={user} /> : <RoleWelcome />}
 
       {/* ===== Stats band with count-up ===== */}
       <section

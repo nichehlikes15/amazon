@@ -107,7 +107,7 @@ amazon/
 │   │                         accessibility, read aloud, voice, Ask Launchpad,
 │   │                         page feedback, icons, coffee chat people
 │   ├── pages/                one .jsx (and usually one .css) per page
-│   └── styles/global.css     colours, spacing, dark mode, high contrast, zoom
+│   └── styles/global.css     colours, spacing, dark mode, high contrast, 75% zoom on big screens
 ├── .env.example              example settings
 ├── index.html
 ├── package.json
@@ -424,7 +424,6 @@ From the accessibility button in the top bar, or in Settings:
 - High contrast and dark mode
 - Colour-blind friendly colours
 - Reduce motion
-- Full-size page (turns off the 75% zoom used on large screens)
 
 There's also a "Skip to main content" link and keyboard support. Ask Launchpad can read
 its answers aloud, and interview practice works by voice or by typing.
@@ -446,4 +445,4 @@ its answers aloud, and interview practice works by voice or by typing.
 ## Brand
 
 Amazon Orange `#FF9900` and Amazon Dark Blue `#232F3E` are the main colours. The
-Launchpad and Amazon logos must never be changed, rotated or recoloured.
+Launchpad and Amazon logos must never be changed, rotated or recoloured. The one exception is a deliberate team choice: the logo shows in white on the dark footer and in dark mode, because the original dark blue can't be seen on a dark background.

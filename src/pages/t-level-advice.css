@@ -61,7 +61,7 @@
     display: inline-flex;
     padding: 9px 18px;
     border: 1px solid var(--line);
-    border-radius: 999px;
+    border-radius: var(--radius-sm);
     background: var(--glass);
     color: var(--navy);
     font-size: 0.9375rem;
@@ -260,7 +260,7 @@
 .advice-detail-placeholder span {
     padding: 8px 16px;
     border: 1px solid var(--line);
-    border-radius: 999px;
+    border-radius: var(--radius-sm);
     background: var(--glass);
 }
 

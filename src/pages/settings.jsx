@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import './settings.css'
 import { api } from '../modules/api'
 import { useAuth } from '../modules/auth'
 import { useAccessibility } from '../modules/accessibility'
 import { Icon } from '../modules/icons'
+import { SignInRedirect } from '../modules/return-to'
+import { RoleChoice } from '../modules/role'
 
 /*
   Settings - one section at a time, picked from the side menu.
@@ -159,13 +161,13 @@ function Settings() {
   useEffect(() => () => clearTimeout(toastTimer.current), [])
 
   // ---- Profile ----
-  const [form, setForm] = useState({ fullName: '', email: '', school: '', emailUpdates: true })
+  const [form, setForm] = useState({ fullName: '', email: '', school: '', emailUpdates: true, role: '' })
   const [ready, setReady] = useState(false)
   const [savingProfile, setSavingProfile] = useState(false)
   const [profileError, setProfileError] = useState('')
 
   const baseline = user
-    ? { fullName: user.fullName || '', email: user.email || '', school: user.school || '', emailUpdates: user.emailUpdates !== false }
+    ? { fullName: user.fullName || '', email: user.email || '', school: user.school || '', emailUpdates: user.emailUpdates !== false, role: user.role || '' }
     : null
 
   useEffect(() => {
@@ -175,6 +177,7 @@ function Settings() {
       email: user.email || '',
       school: user.school || '',
       emailUpdates: user.emailUpdates !== false,
+      role: user.role || '',
     })
     setReady(true)
   }, [user])
@@ -283,7 +286,7 @@ function Settings() {
   }
 
   if (loading) return null
-  if (!user) return <Navigate to="/login" replace />
+  if (!user) return <SignInRedirect />
 
   const tab = TABS.find((t) => t.id === shown)
 
@@ -367,6 +370,11 @@ function Settings() {
                       <input id="st-school" type="text" value={form.school} placeholder="For example, Riverside College"
                         onChange={(e) => setForm({ ...form, school: e.target.value })} />
                       <span className="st-hint">Shown on your profile.</span>
+                    </div>
+                    <div className="st-field st-field-wide">
+                      <span className="st-role-label">I am a…</span>
+                      <RoleChoice value={form.role} onChange={(r) => setForm({ ...form, role: r })} compact name="settings-role" />
+                      <span className="st-hint">We hide links you don&apos;t need from the menu. You can still open every page.</span>
                     </div>
                   </div>
                 </div>
@@ -543,14 +551,6 @@ function Settings() {
                       onChange={(v) => setDisplay({ highContrast: v })} />}
                   >
                     Darker text, clearer edges and underlined links. Helpful for low vision.
-                  </Row>
-                  <Row
-                    icon="monitor"
-                    title="Full-size page"
-                    control={<Switch label="Full-size page" checked={a11y.zoom === 'full'}
-                      onChange={(v) => setDisplay({ zoom: v ? 'full' : 'compact' })} />}
-                  >
-                    On bigger screens the site shows at 75% so more fits on screen. Turn this on to see it at 100%.
                   </Row>
                   <Row
                     icon="eye"

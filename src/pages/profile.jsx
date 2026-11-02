@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import './profile.css'
 import { useAuth } from '../modules/auth'
 import { api } from '../modules/api'
@@ -8,6 +8,7 @@ import PracticeScores from './profile-practice'
 import ApplicationBoard from './profile-applications'
 import { Icon, PathwayIcon, closingLabel, daysUntil } from '../modules/icons'
 import { formatChatTime } from '../modules/mentors'
+import { SignInRedirect } from '../modules/return-to'
 
 /*
   My profile - a personal dashboard.
@@ -136,7 +137,7 @@ function Profile() {
   }
 
   if (loading) return null
-  if (!user) return <Navigate to="/login" replace />
+  if (!user) return <SignInRedirect />
 
   // Steps built from real account data. Each one links to where you do it.
   const steps = [

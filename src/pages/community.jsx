@@ -4,6 +4,7 @@ import './community.css'
 import { api } from '../modules/api'
 import { useAuth } from '../modules/auth'
 import { Icon } from '../modules/icons'
+import { SignInLink } from '../modules/return-to'
 
 /*
   Question board: students ask questions; other students and the Launchpad
@@ -184,7 +185,7 @@ function Community() {
           )}
           {!user ? (
             <p className="qb-signin">
-              <Link to="/login">Sign in</Link> or <Link to="/signup">create a free account</Link> to ask or answer questions.
+              <SignInLink>Sign in</SignInLink> or <SignInLink to="/signup">create a free account</SignInLink> to ask or answer questions.
             </p>
           ) : (
             <form className="qb-form" onSubmit={ask} noValidate>
@@ -252,7 +253,7 @@ function Community() {
 
                 {!q.pending && (
                   <div className="qb-q-actions">
-                    {user ? <AnswerForm questionId={q.id} onPosted={afterPost} /> : <Link to="/login">Sign in to answer</Link>}
+                    {user ? <AnswerForm questionId={q.id} onPosted={afterPost} /> : <SignInLink>Sign in to answer</SignInLink>}
                     {user && !q.mine && <ReportButton kind="question" id={q.id} onDone={refresh} />}
                   </div>
                 )}

@@ -175,7 +175,7 @@
 .qb-topics button {
     padding: 8px 16px;
     border: 1px solid var(--line);
-    border-radius: 999px;
+    border-radius: var(--radius-sm);
     background: var(--white);
     color: var(--navy);
     font-size: 0.875rem;
@@ -229,7 +229,7 @@
 
 .qb-waiting {
     padding: 2px 9px;
-    border-radius: 999px;
+    border-radius: var(--radius-sm);
     background: #fff4e6;
     color: #8a4b00;
     font-weight: 600;
@@ -237,7 +237,7 @@
 
 .qb-team {
     padding: 2px 9px;
-    border-radius: 999px;
+    border-radius: var(--radius-sm);
     background: rgb(255 153 0 / 14%);
     color: var(--navy);
     font-weight: 700;
@@ -312,7 +312,7 @@
 .qb-small-btn {
     padding: 8px 16px;
     border: 0;
-    border-radius: 999px;
+    border-radius: var(--radius-sm);
     background: var(--orange-solid);
     color: #fff;
     font-size: 0.875rem;

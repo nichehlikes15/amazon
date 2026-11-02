@@ -152,7 +152,7 @@
     gap: 6px;
     margin: 0 0 18px;
     padding: 5px 12px;
-    border-radius: 999px;
+    border-radius: var(--radius-sm);
     background: #e8f6ec;
     color: #1e7e34;
     font-size: 0.875rem;

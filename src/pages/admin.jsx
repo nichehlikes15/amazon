@@ -6,6 +6,7 @@ import { useAuth } from '../modules/auth'
 import { Icon } from '../modules/icons'
 import { CHAT_STATUSES, formatChatTime } from '../modules/mentors'
 import { AdminBoard, AdminFeedback, AdminKpis, downloadCsv } from './admin-insights'
+import { SignInRedirect } from '../modules/return-to'
 
 const ROLE_NAMES = { student: 'Student', parent: 'Parent or carer', school: 'School or college' }
 
@@ -74,7 +75,7 @@ function Admin() {
 
   // Wait for the session check, then require an admin account.
   if (authLoading) return null
-  if (!user) return <Navigate to="/login" replace />
+  if (!user) return <SignInRedirect />
   if (!user.isAdmin) return <Navigate to="/profile" replace />
 
   const update = (field) => (e) => setForm({ ...form, [field]: e.target.value })

@@ -6,6 +6,7 @@ import { Icon } from '../modules/icons'
 import { setPageTitle } from '../modules/page-title'
 import { useAuth } from '../modules/auth'
 import { api } from '../modules/api'
+import { SignInLink } from '../modules/return-to'
 
 // PDF version of each guide. The files are kept on the server and only
 // signed-in users can download them (members-only content from the brief).
@@ -60,10 +61,10 @@ function Guide() {
         Download the full guide (PDF)
       </a>
     ) : (
-      <Link className={className} to="/login">
+      <SignInLink className={className}>
         <Icon name="lock" size={16} />
         Sign in to download the PDF
-      </Link>
+      </SignInLink>
     )
   )
 
@@ -112,10 +113,10 @@ function Guide() {
                 {guide.sections.length - FREE_SECTIONS === 1 ? 'section' : 'sections'} and download the PDF.
               </p>
               <div className="guide-actions">
-                <Link className="primary-button" to="/signup">
+                <SignInLink className="primary-button" to="/signup">
                   Create a free account <Icon name="arrowRight" size={15} />
-                </Link>
-                <Link className="secondary-button" to="/login">Sign in</Link>
+                </SignInLink>
+                <SignInLink className="secondary-button">Sign in</SignInLink>
               </div>
             </div>
           </section>

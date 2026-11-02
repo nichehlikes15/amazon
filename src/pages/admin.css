@@ -188,7 +188,7 @@
 .admin-pathway {
     display: inline-block;
     padding: 3px 10px;
-    border-radius: 999px;
+    border-radius: var(--radius-sm);
     background: var(--light);
     color: var(--navy);
     font-size: 0.8125rem;
@@ -227,7 +227,7 @@
 .admin-status-select {
     padding: 6px 30px 6px 12px;
     border: 1px solid transparent;
-    border-radius: 999px;
+    border-radius: var(--radius-sm);
     background: var(--light)
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16' fill='none' stroke='%23536174' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E")
         no-repeat right 10px center;
@@ -286,7 +286,7 @@
 .admin-edit {
     padding: 4px 12px;
     border: 1px solid var(--line);
-    border-radius: 999px;
+    border-radius: var(--radius-sm);
     background: var(--white);
     color: var(--navy);
     font: inherit;
@@ -496,7 +496,7 @@
     gap: 6px;
     padding: 8px 14px;
     border: 1px solid var(--line);
-    border-radius: 999px;
+    border-radius: var(--radius-sm);
     background: var(--white);
     color: var(--navy);
     font: inherit;
@@ -512,7 +512,7 @@
 .ak-yes, .ak-no, .ak-role, .ak-u18 {
     display: inline-block;
     padding: 3px 10px;
-    border-radius: 999px;
+    border-radius: var(--radius-sm);
     font-size: 0.8125rem;
     font-weight: 600;
     white-space: nowrap;

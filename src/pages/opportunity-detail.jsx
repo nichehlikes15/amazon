@@ -5,6 +5,7 @@ import { api } from '../modules/api'
 import { useAuth } from '../modules/auth'
 import { Icon, PathwayIcon, closingLabel, formatDate } from '../modules/icons'
 import { setPageTitle } from '../modules/page-title'
+import { SignInLink, signInPath } from '../modules/return-to'
 
 // The order of the main journey; 'Unsuccessful' sits outside it.
 const STATUSES = ['Not started', 'Preparing', 'Applied', 'Interview', 'Offer', 'Unsuccessful']
@@ -69,7 +70,7 @@ function OpportunityDetail() {
 
   const toggleSave = async () => {
     if (!user) {
-      navigate('/login')
+      navigate(signInPath())
       return
     }
     setSaving(true)
@@ -292,7 +293,7 @@ function OpportunityDetail() {
                           user ? (
                             <a className="od-res-link" href={api.guidePdfUrl(r.url.split('/').pop())} download>{inner}</a>
                           ) : (
-                            <Link className="od-res-link" to="/login">{inner}</Link>
+                            <SignInLink className="od-res-link">{inner}</SignInLink>
                           )
                         ) : r.url.startsWith('/') ? (
                           <Link className="od-res-link" to={r.url}>{inner}</Link>
@@ -314,7 +315,7 @@ function OpportunityDetail() {
               {!user ? (
                 <div className="od-signin">
                   <p>Sign in to track your progress, save notes and upload files for this opportunity.</p>
-                  <Link className="primary-button" to="/login">Sign in</Link>
+                  <SignInLink className="primary-button">Sign in</SignInLink>
                 </div>
               ) : (
                 <>

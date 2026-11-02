@@ -1,9 +1,17 @@
+import { scriptedLine, scriptedSummary } from './interview-script'
 // Small helper for calling the Launchpad backend API.
 // credentials: 'include' sends the session cookie so the server
 // knows who is logged in.
 
 // Set VITE_API_URL in .env for a live site; falls back to the local backend.
 const BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+
+// Which interviewer runs the practice call ('alex' or 'peccy'), so the
+// server's replies use his name. Set by the Interview practice page.
+let interviewerId = 'alex'
+export function setApiInterviewer(id) {
+  interviewerId = id === 'peccy' ? 'peccy' : 'alex'
+}
 
 async function request(path, options = {}) {
   const res = await fetch(`${BASE}${path}`, {
@@ -34,8 +42,11 @@ async function uploadRequest(path, formData) {
 }
 
 export const api = {
-  signup: (fullName, email, password, consent) =>
-    request('/signup', { method: 'POST', body: JSON.stringify({ fullName, email, password, consent }) }),
+  signup: (fullName, email, password, consent, role) =>
+    request('/signup', { method: 'POST', body: JSON.stringify({ fullName, email, password, consent, role }) }),
+  // Student / teacher / parent. keepExisting: don't replace a role the account already has.
+  setRole: (role, keepExisting = false) =>
+    request('/me/role', { method: 'PUT', body: JSON.stringify({ role, keepExisting }) }),
   forgotPassword: (email) =>
     request('/password/forgot', { method: 'POST', body: JSON.stringify({ email }) }),
   resetPassword: (token, newPassword) =>
@@ -52,18 +63,35 @@ export const api = {
   myCoffeeChats: () => request('/me/coffee-chats'),
   exportMe: () => request('/me/export'),
   interviewQuestions: (pathway, cv) =>
-    request(`/interview/questions?pathway=${encodeURIComponent(pathway || '')}${cv ? '&cv=1' : ''}`),
+    request(`/interview/questions?pathway=${encodeURIComponent(pathway || '')}${cv ? '&cv=1' : ''}&interviewer=${interviewerId}`),
   // Is Alex's AI (Ollama) running? Also starts loading the model.
   interviewAiStatus: () => request('/interview/ai-status'),
   // Something said to Alex that might not be an answer (a question, "repeat that"...)
   interviewTurn: (payload) =>
-    request('/interview/turn', { method: 'POST', body: JSON.stringify(payload) }),
-  interviewFollowUp: (payload) =>
-    request('/interview/follow-up', { method: 'POST', body: JSON.stringify(payload) }),
-  reviewAnswer: (payload) =>
-    request('/interview/review-answer', { method: 'POST', body: JSON.stringify(payload) }),
-  reviewInterview: (answers, pathway) =>
-    request('/interview/review', { method: 'POST', body: JSON.stringify({ answers, pathway }) }),
+    request('/interview/turn', { method: 'POST', body: JSON.stringify({ ...payload, interviewer: interviewerId }) }),
+  // Scripted replies (a hidden setting - see modules/interview-script.js) take
+  // the place of the AI's words. Scores still come from the server.
+  interviewFollowUp: async (payload) => {
+    const scripted = payload.id !== 'close' ? scriptedLine(payload.id, 'followUp') : ''
+    if (scripted) return { followUp: { text: scripted, why: '' }, say: null, source: 'ai' }
+    return request('/interview/follow-up', { method: 'POST', body: JSON.stringify({ ...payload, interviewer: interviewerId }) })
+  },
+  reviewAnswer: async (payload) => {
+    const scripted = scriptedLine(payload.id, 'feedback')
+    const r = await request('/interview/review-answer', {
+      method: 'POST',
+      body: JSON.stringify({ ...payload, interviewer: interviewerId, ...(scripted ? { noAi: true } : {}) }),
+    })
+    return scripted ? { ...r, say: scripted, source: 'ai' } : r
+  },
+  reviewInterview: async (answers, pathway) => {
+    const scripted = scriptedSummary()
+    const r = await request('/interview/review', {
+      method: 'POST',
+      body: JSON.stringify({ answers, pathway, interviewer: interviewerId, ...(scripted ? { noAi: true } : {}) }),
+    })
+    return scripted ? { ...r, coachSummary: scripted } : r
+  },
   myInterviewPractice: () => request('/me/interview-practice'),
   deleteInterviewPractice: (id) => request(`/me/interview-practice/${id}`, { method: 'DELETE' }),
   listCoffeeChats: () => request('/coffee-chats'),

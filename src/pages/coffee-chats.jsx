@@ -8,6 +8,7 @@ import { Icon } from '../modules/icons'
 import { MENTORS, CHAT_TOPICS } from '../modules/mentors'
 import { PersonPhoto } from '../modules/person-photo'
 import { CoffeeChatList } from '../modules/coffee-chat-list'
+import { SignInLink } from '../modules/return-to'
 
 const STEPS = [
   { title: 'Pick someone', text: 'Choose a student, alum or Amazon buddy who matches what you want to know.' },
@@ -330,7 +331,7 @@ function CoffeeChats() {
       {!user && (
         <section className="cc-signin">
           <p>
-            <Link to="/login">Sign in</Link> to see the chats you've requested in one place.
+            <SignInLink>Sign in</SignInLink> to see the chats you've requested in one place.
           </p>
         </section>
       )}

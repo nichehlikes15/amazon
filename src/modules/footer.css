@@ -98,3 +98,65 @@
 @media (max-width: 1000px) {
     .footer-columns { grid-template-columns: repeat(3, 1fr); }
 }
+
+/* Links this person doesn't usually need (set by "I am a..."): greyed and
+   crossed out, still clickable, with a note on hover or keyboard focus. */
+.footer-column a.footer-not-needed {
+    position: relative;
+    color: #7f8a96;
+    text-decoration: line-through;
+    text-decoration-color: rgb(255 255 255 / 40%);
+    text-decoration-thickness: 1px;
+}
+
+.footer-column a.footer-not-needed:hover,
+.footer-column a.footer-not-needed:focus-visible {
+    color: #aab3bd;
+    transform: none;
+}
+
+.footer-column a.footer-not-needed::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 0;
+    z-index: 5;
+    width: max-content;
+    max-width: 230px;
+    padding: 9px 12px;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgb(0 0 0 / 30%);
+    color: #232F3E;
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1.45;
+    text-decoration: none;
+    white-space: normal;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(4px);
+    transition: opacity var(--dur) ease, transform var(--dur) var(--ease-out);
+}
+
+.footer-column a.footer-not-needed::before {
+    content: "";
+    position: absolute;
+    bottom: calc(100% + 4px);
+    left: 14px;
+    z-index: 5;
+    border: 6px solid transparent;
+    border-top-color: #fff;
+    border-bottom: 0;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity var(--dur) ease, transform var(--dur) var(--ease-out);
+}
+
+.footer-column a.footer-not-needed:hover::after,
+.footer-column a.footer-not-needed:hover::before,
+.footer-column a.footer-not-needed:focus-visible::after,
+.footer-column a.footer-not-needed:focus-visible::before {
+    opacity: 1;
+    transform: none;
+}

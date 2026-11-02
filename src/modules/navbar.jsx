@@ -5,6 +5,8 @@ import { useAuth } from './auth'
 import { useAccessibility, resolvedTheme } from './accessibility'
 import { Icon } from './icons'
 import { readAloudSupported, startReadAloud } from './read-aloud'
+import { SignInLink } from './return-to'
+import { notNeeded, useRole } from './role'
 
 const Caret = ({ className }) => (
   <span className={className} aria-hidden="true">
@@ -49,6 +51,10 @@ function Navbar() {
   const { pathname } = useLocation()
   const [a11y, setA11y] = useAccessibility()
   const theme = resolvedTheme(a11y)
+  // Links this person doesn't need (e.g. the logbook for a parent) are left out.
+  // The pages still work; the footer shows them greyed out with a note.
+  const [role] = useRole()
+  const tlevelLinks = TLEVEL_LINKS.filter(([to]) => !notNeeded(to, role))
 
   // Only one dropdown open at a time: 'tlevel' | 'account' | 'a11y' | 'mobile' | null
   const [open, setOpen] = useState(null)
@@ -110,7 +116,7 @@ function Navbar() {
               <Caret className="nav-caret" />
             </button>
             <div className={open === 'tlevel' ? 'nav-menu show' : 'nav-menu'}>
-              {TLEVEL_LINKS.map(([to, label]) => <Link key={to} to={to}>{label}</Link>)}
+              {tlevelLinks.map(([to, label]) => <Link key={to} to={to}>{label}</Link>)}
             </div>
           </div>
 
@@ -190,13 +196,6 @@ function Navbar() {
                 onChange={(v) => setA11y({ highContrast: v })}
               />
               <Switch
-                icon="monitor"
-                label="Full-size page"
-                hint="Show the site at 100% instead of 75%"
-                checked={a11y.zoom === 'full'}
-                onChange={(v) => setA11y({ zoom: v ? 'full' : 'compact' })}
-              />
-              <Switch
                 icon="eye"
                 label="Colour-blind friendly"
                 hint="Stronger, easier to tell apart colours"
@@ -238,7 +237,7 @@ function Navbar() {
                   <span>{user.email}</span>
                 </p>
                 <Link to="/profile">My Profile</Link>
-                <Link to="/logbook">My logbook</Link>
+                {!notNeeded('/logbook', role) && <Link to="/logbook">My logbook</Link>}
                 <Link to="/settings">Settings</Link>
                 <Link to="/alumni">Career Journey</Link>
                 {user.isAdmin && <Link to="/admin">Admin</Link>}
@@ -249,8 +248,8 @@ function Navbar() {
             </div>
           ) : (
             <div className="nav-auth">
-              <Link className="nav-signin" to="/login">Sign in</Link>
-              <Link className="nav-signup" to="/signup">Create account</Link>
+              <SignInLink className="nav-signin">Sign in</SignInLink>
+              <SignInLink className="nav-signup" to="/signup">Create account</SignInLink>
             </div>
           )}
 
@@ -273,13 +272,13 @@ function Navbar() {
           <NavLink to="/" end>Home</NavLink>
           <NavLink to="/opportunities">Opportunities</NavLink>
           <p className="mobile-menu-label">T Levels</p>
-          {TLEVEL_LINKS.map(([to, label]) => <NavLink key={to} to={to} className="mobile-sub">{label}</NavLink>)}
+          {tlevelLinks.map(([to, label]) => <NavLink key={to} to={to} className="mobile-sub">{label}</NavLink>)}
           <NavLink to="/about-us">About us</NavLink>
-          <NavLink to="/alumni/coffee-chats">Coffee chats</NavLink>
+          {!notNeeded('/alumni/coffee-chats', role) && <NavLink to="/alumni/coffee-chats">Coffee chats</NavLink>}
           {!user && (
             <div className="mobile-menu-auth">
-              <Link className="secondary-button" to="/login">Sign in</Link>
-              <Link className="primary-button" to="/signup">Create account</Link>
+              <SignInLink className="secondary-button">Sign in</SignInLink>
+              <SignInLink className="primary-button" to="/signup">Create account</SignInLink>
             </div>
           )}
         </div>

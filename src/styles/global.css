@@ -63,8 +63,8 @@ html[data-theme="dark"] {
     --light: #172230;             /* soft panels */
     --white: #0d141d;             /* page background */
     --navy-solid: #1b2735;
-    --orange-solid: #f0801f;
-    --orange-solid-hover: #ff9233;
+    --orange-solid: #EC7211;      /* same as light mode, so buttons keep white text */
+    --orange-solid-hover: #F5841F;
     --hero-gradient: linear-gradient(180deg, #2a2142 0%, #211b36 22%, #171a2a 46%, var(--white) 82%);
     --glass: rgb(23 34 48 / 72%);
     --line-strong: #3d4b5c;
@@ -177,7 +177,7 @@ html[data-theme="dark"] .is-reading-aloud {
     max-width: calc(100% - 24px);
     padding: 8px 8px 8px 18px;
     border: 1px solid var(--line);
-    border-radius: 999px;
+    border-radius: var(--radius-sm);
     background: var(--white);
     box-shadow: var(--shadow-lift);
     color: var(--navy);
@@ -219,7 +219,7 @@ html[data-theme="dark"] .is-reading-aloud {
     gap: 6px;
     padding: 8px 14px;
     border: 1px solid var(--line);
-    border-radius: 999px;
+    border-radius: var(--radius-sm);
     background: var(--white);
     color: var(--navy);
     font: inherit;
@@ -241,8 +241,9 @@ html[data-theme="dark"] .is-reading-aloud {
     50% { height: 14px; }
 }
 
-/* The logo is never recoloured (Amazon brand rules). It shows on the page
-   background as it is, with no tile behind it, in light and dark mode. */
+/* The logo shows in its original dark blue in light mode, with no tile
+   behind it. In dark mode (navbar) and on the dark footer it shows in white
+   so it can be seen - a deliberate team choice, see navbar.css and footer.css. */
 
 /* Light pastel status pills / notices: deepen them in dark mode */
 html[data-theme="dark"] :is(.opp-closing.is-soon .opp-closing-pill, .od-tag-soon, .opp-save.saved, .od-save-opp.is-saved, .ccl-status, .cc-option.is-on, .admin-status-select.is-requested) {
@@ -259,12 +260,113 @@ html[data-theme="dark"] .od-drop:hover,
 html[data-theme="dark"] .od-drop.is-dragging { background: #2a1f12; }
 html[data-theme="dark"] ::selection { background: #5a3d17; color: #fff; }
 
-/* Fade colours when switching theme (class added briefly by accessibility.js) */
+/* ----- Dark mode fixes ----- */
+/* In dark mode --white turns near-black and --navy turns light, so anything
+   that used them as a fill or as text on a fill needs its own colours. */
+
+/* Orange buttons keep white text (it was turning near-black) */
+html[data-theme="dark"] .primary-button,
+html[data-theme="dark"] .primary-button:hover { color: #fff; }
+
+/* Dark bands and badges that used --navy as a fill (they went light grey
+   with white text on top) */
+html[data-theme="dark"] :is(.wtl-header, .wtl-cta, .wtl-grade, .wtl-compare-highlight, .wtl-part-number, .phase-weeks, .event-date) {
+    background: var(--navy-solid);
+}
+html[data-theme="dark"] .wtl-compare-highlight { border-color: var(--line); }
+html[data-theme="dark"] :is(.wtl-header h1, .wtl-cta h2, .wtl-grade-points, .wtl-compare-highlight h3, .wtl-part-number, .event-date, .wtl-secondary-on-dark) {
+    color: #fff;
+}
+html[data-theme="dark"] .wtl-header,
+html[data-theme="dark"] .wtl-cta { background: #141d29; }
+
+/* Light orange highlights (active tabs, hovers, chosen cards) */
+html[data-theme="dark"] :is(.info2-rail button.is-active, .qz-answer:hover, .qz-answer:focus-visible) {
+    border-color: #5a3d17;
+    background: #2a1f12;
+    color: var(--navy);
+}
+html[data-theme="dark"] .al-picker.is-active { border-color: #5a3d17; box-shadow: 0 8px 22px rgb(0 0 0 / 35%); }
+html[data-theme="dark"] .al-timeline::before { background: #5a3d17; }
+
+/* The sticky pathway strip on small screens was white */
+html[data-theme="dark"] .info2-rail { background: rgb(13 20 29 / 92%); border-color: var(--line); }
+
+/* Pastel boxes and placeholders */
+html[data-theme="dark"] .auth-done-icon { background: #15301f; color: #8fdca6; }
+html[data-theme="dark"] .advice-detail-placeholder { background: linear-gradient(160deg, #2a2142 0%, var(--light) 100%); }
+html[data-theme="dark"] .tl-media-placeholder { background: var(--light); color: var(--muted); }
+html[data-theme="dark"] .admin-table tr.is-editing td { background: var(--light); }
+html[data-theme="dark"] .od-file-remove:hover { background: #3a1717; }
+html[data-theme="dark"] .ak-csv.is-danger:hover { border-color: #5c2424; }
+html[data-theme="dark"] .event-online { background: #172a4a; color: #a9c5ff; }
+html[data-theme="dark"] .event-in-person { background: #3a2a14; color: #ffc27a; }
+
+/* Outline button on the dark bands: its border and hover used --white */
+html[data-theme="dark"] .wtl-secondary-on-dark { border-color: #fff; color: #fff; }
+html[data-theme="dark"] .wtl-secondary-on-dark:hover { background: #fff; color: #232F3E; }
+
+/* Red text (errors, delete and remove buttons) was too dark to read */
+html[data-theme="dark"] :is(.pfb-error, .ccl-error, .qb-error, .admin-delete, .od-unsuccessful.is-on, .ab-card-closing.is-closed, .pp-stat strong.is-low, .pp-stat strong.is-down) {
+    color: #ff8f85;
+}
+html[data-theme="dark"] :is(.ccl-cancel, .qb-report, .od-unsuccessful, .od-file-remove, .ak-csv.is-danger, .lb-icon-btn, .lb-text-btn.is-danger, .pr-remove, .pp-remove):hover {
+    color: #ff8f85;
+}
+
+/* ----- Switching light / dark (classes added briefly by accessibility.js) ----- */
+
+/* Soft fade: older browsers, reduced motion, and other display settings */
 html.theme-fade,
 html.theme-fade *,
 html.theme-fade *::before,
 html.theme-fade *::after {
-    transition: background-color 0.4s ease, border-color 0.4s ease, color 0.4s ease, fill 0.4s ease !important;
+    transition:
+        background-color var(--theme-fade-ms, 520ms) cubic-bezier(0.4, 0, 0.2, 1),
+        border-color var(--theme-fade-ms, 520ms) cubic-bezier(0.4, 0, 0.2, 1),
+        color var(--theme-fade-ms, 520ms) cubic-bezier(0.4, 0, 0.2, 1),
+        fill var(--theme-fade-ms, 520ms) cubic-bezier(0.4, 0, 0.2, 1),
+        stroke var(--theme-fade-ms, 520ms) cubic-bezier(0.4, 0, 0.2, 1),
+        box-shadow var(--theme-fade-ms, 520ms) cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Circle reveal: the new theme spreads out from where you clicked.
+   The page itself switches instantly underneath; only the reveal moves. */
+html.theme-vt *,
+html.theme-vt *::before,
+html.theme-vt *::after {
+    transition: none !important;
+}
+
+/* ...except the sun and moon, which still spin in the button */
+html.theme-vt .theme-icons svg,
+html.theme-vt .theme-icons svg * {
+    transition: transform 0.6s var(--ease-spring), opacity 0.35s ease !important;
+}
+
+html.theme-vt::view-transition-old(root),
+html.theme-vt::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+}
+
+html.theme-vt::view-transition-new(root) {
+    animation: theme-spread 0.75s cubic-bezier(0.65, 0, 0.35, 1) both;
+}
+
+/* Slight dim of the old theme as the new one covers it */
+html.theme-vt::view-transition-old(root) {
+    animation: theme-recede 0.75s ease both;
+}
+
+@keyframes theme-spread {
+    from { clip-path: circle(0% at var(--vt-x, 100%) var(--vt-y, 0%)); }
+    to { clip-path: circle(150% at var(--vt-x, 100%) var(--vt-y, 0%)); }
+}
+
+@keyframes theme-recede {
+    from { filter: brightness(1); }
+    to { filter: brightness(0.92); }
 }
 
 @font-face {
@@ -293,10 +395,9 @@ html {
 
 /* Site-wide zoom: on laptops and desktops the whole site renders at 75%,
    the same as zooming the browser out to 75%. Phones and tablets stay at
-   100% so text stays readable. Change 0.75 to adjust. People who need
-   bigger pages can switch this off in the accessibility menu (data-zoom="full"). */
+   100% so text stays readable. Change 0.75 to adjust. */
 @media (min-width: 1200px) {
-    html:not([data-zoom="full"]) {
+    html {
         zoom: 0.75;
     }
 }
@@ -673,11 +774,11 @@ html[data-reduced-motion="on"] *::after {
 /* At the 75% site zoom (screens 1200px+), nudge text up a little so it stays
    readable. Layout and spacing still render at 75%; only rem-based text grows. */
 @media (min-width: 1200px) {
-    html:not([data-zoom="full"]),
-    html:not([data-zoom="full"])[data-text-size="medium"] { font-size: 122%; }
-    html:not([data-zoom="full"])[data-text-size="small"] { font-size: 106.25%; }
-    html:not([data-zoom="full"])[data-text-size="large"] { font-size: 140%; }
-    html:not([data-zoom="full"]) { --nav-rem: 17px; }
+    html,
+    html[data-text-size="medium"] { font-size: 122%; }
+    html[data-text-size="small"] { font-size: 106.25%; }
+    html[data-text-size="large"] { font-size: 140%; }
+    html { --nav-rem: 17px; }
 }
 
 /* Respect the OS-level preference too, as a sensible default. */
@@ -724,4 +825,94 @@ html[data-reduced-motion="on"] *::after {
     height: 100%;
     object-fit: cover;
     border-radius: 50%;
+}
+
+/* ----- "I am a..." choice (homepage, sign up, settings) ----- */
+.role-choice {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.role-option {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 22px 16px 20px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--white);
+    text-align: center;
+    cursor: pointer;
+    transition: border-color var(--dur) ease, box-shadow var(--dur) ease, transform var(--dur) var(--ease-out), background var(--dur) ease;
+}
+
+.role-option input { position: absolute; opacity: 0; pointer-events: none; }
+
+.role-option:hover { border-color: var(--line-strong); box-shadow: var(--shadow-soft); transform: translateY(-2px); }
+
+.role-option.is-on {
+    border-color: var(--orange);
+    background: rgb(255 153 0 / 7%);
+    box-shadow: inset 0 0 0 1px var(--orange);
+}
+
+.role-option:has(input:focus-visible) { outline: 2px solid var(--orange); outline-offset: 2px; }
+
+.role-option-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border-radius: 12px;
+    background: var(--light);
+    color: var(--navy);
+    transition: transform var(--dur) var(--ease-spring), background var(--dur) ease, color var(--dur) ease;
+}
+
+.role-option:hover .role-option-icon { transform: rotate(-6deg) scale(1.06); }
+.role-option.is-on .role-option-icon { background: var(--orange-solid); color: #fff; }
+
+.role-option-text { display: flex; flex-direction: column; gap: 3px; }
+.role-option-text strong { color: var(--navy); font-size: 1.0625rem; }
+.role-option-hint { color: var(--muted); font-size: 0.8125rem; line-height: 1.45; }
+
+.role-option-tick {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--orange-solid);
+    color: #fff;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: opacity var(--dur) ease, transform var(--dur) var(--ease-spring);
+}
+
+.role-option.is-on .role-option-tick { opacity: 1; transform: none; }
+
+/* Smaller, side-by-side version for forms */
+.role-choice.is-compact { gap: 8px; }
+.role-choice.is-compact .role-option { flex-direction: row; gap: 10px; padding: 11px 12px; text-align: left; }
+.role-choice.is-compact .role-option-icon { width: 32px; height: 32px; border-radius: 9px; }
+.role-choice.is-compact .role-option-text strong { font-size: 0.9375rem; }
+.role-choice.is-compact .role-option-hint,
+.role-choice.is-compact .role-option-tick { display: none; }
+
+@media (max-width: 640px) {
+    .role-choice { grid-template-columns: 1fr; }
+    .role-option { flex-direction: row; text-align: left; }
 }

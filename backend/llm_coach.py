@@ -23,6 +23,7 @@ Settings (environment variables, all optional):
 Privacy: Ollama runs on the same computer as the backend, so answers are
 not sent to an outside AI company. Nothing in this file is saved.
 """
+import contextvars
 import json
 import os
 import re
@@ -40,6 +41,27 @@ except ValueError:
     TIMEOUT = 15.0
 # Keep the model loaded between answers so replies stay quick.
 KEEP_ALIVE = "30m"
+
+# Who is running the practice call: "Alex" or "Peccy". Set for each request
+# by app.py (the student picks on the set-up screen).
+_INTERVIEWER = contextvars.ContextVar("interviewer", default="Alex")
+
+
+def set_interviewer_name(name):
+    return _INTERVIEWER.set("Peccy" if name == "Peccy" else "Alex")
+
+
+def reset_interviewer_name(token):
+    _INTERVIEWER.reset(token)
+
+
+def _persona():
+    if _INTERVIEWER.get() == "Peccy":
+        return ("You are Peccy, Amazon's cheerful orange mascot, acting as a friendly interviewer running a PRACTICE "
+                "job interview on a video call. Be warm and a little playful, but keep the interview itself "
+                "professional and useful. ")
+    return "You are Alex, a friendly interviewer running a PRACTICE job interview on a video call. "
+
 
 PATHWAY_NAMES = {"digital", "business", "media", "finance", "engineering"}
 
@@ -294,21 +316,20 @@ def _pathway(qid, pathway=None):
 
 
 def _history(history):
-    """Earlier questions and answers in this call, so Alex can link back to them."""
+    """Earlier questions and answers in this call, as background only."""
     if not history:
         return ""
-    lines = ["Earlier in this call:"]
-    for h in history[-3:]:
-        lines.append(f"You asked: {h['q']}")
-        lines.append(f"<answer>{_quote(h['a'], 400)}</answer>")
-    return "\n".join(lines) + "\n"
+    lines = ["Background only - earlier in this call (don't talk about these unless the new answer links to them):"]
+    for h in history[-2:]:
+        lines.append(f'- You asked: {h["q"]} They said: "{_quote(h["a"], 250)}"')
+    return "\n".join(lines) + "\n\nNow the answer to give feedback on:\n"
 
 
 def _system(pathway, context=None):
     role = f"a {pathway} T Level placement at Amazon" if pathway else "a T Level placement at Amazon"
     about = f"About the role: {context} " if context else ""
     return (
-        "You are Alex, a friendly interviewer running a PRACTICE job interview on a video call. "
+        _persona() +
         f"The student is a UK T Level student, aged about 16 to 19, practising for {role}. "
         + about +
         "The student is speaking, and their words were turned into text by speech-to-text, so there may be "
@@ -355,7 +376,8 @@ def ai_follow_up(question, qid, answer, gap, pathway=None, history=None, context
         f"What the question is testing: {question['focus']}\n"
         f"Their answer:\n<answer>{_quote(answer)}</answer>\n\n"
         f"{aim}\n"
-        "Don't ask about something they have already told you. Ask only one question, and make it open "
+        "Only talk about things they actually said, or the question itself. Don't bring in parts of the role they "
+        "didn't mention. Don't ask about something they have already told you. Ask only one question, and make it open "
         "(not yes or no).\n\n"
         "Reply with JSON with three fields:\n"
         '"reflect": one or two short sentences, at most 30 words, that show you listened and understood. '
@@ -373,7 +395,7 @@ def ai_follow_up(question, qid, answer, gap, pathway=None, history=None, context
     if not out:
         return None
     text = _spoken(out.get("followUp"), 34)
-    if len(text.split()) < 4:
+    if len(text.split()) < 4 or _BAD_FOLLOW.search(text) or text.count("?") > 1:
         return None
     if "?" not in text:
         text = text.rstrip(".!") + "?"
@@ -390,6 +412,10 @@ def ai_feedback(question, qid, answer, review, follow_question=None, follow_answ
     change the score - it explains it in Alex's own words."""
     if not question or not review or review.get("words", 0) == 0:
         return None
+    # Something to avoid in a real interview (a question about pay, swearing...):
+    # the fixed reply says it plainly. The small model tended to praise it anyway.
+    if review.get("warning"):
+        return None
     parts = [
         _history(history).rstrip(),
         f"Interview question you asked: {question['text']}",
@@ -400,10 +426,21 @@ def ai_feedback(question, qid, answer, review, follow_question=None, follow_answ
         parts.append(f"Your follow-up question: {follow_question}")
         parts.append(f"<answer>{_quote(follow_answer, 900)}</answer>")
     parts.append(f"Score from the automatic check: {review['score']} out of 100 (don't say the number).")
+    if review["score"] < 40:
+        parts.append("This answer was weak. Be kind but honest and say clearly that it needs more work. Don't call "
+                     "the answer or the question great, good, nice or strong, and don't say it's great to hear.")
+    elif review["score"] < 70:
+        parts.append("This answer was okay but had clear gaps. Don't call it great or strong.")
     if review.get("strengths"):
         parts.append("What went well: " + " ".join(review["strengths"][:3]))
     if review.get("tips"):
         parts.append("Most useful tip: " + review["tips"][0])
+    if review.get("warning"):
+        parts.append(
+            "IMPORTANT: this answer has a serious problem, so the automatic check gave it a very low score: "
+            f"{review['warning']} Clearly and kindly tell the student this is something to avoid in a real "
+            "interview, and why. Don't praise the answer, and don't call it a good question."
+        )
     if qid == "close":
         parts.append(
             "\nThis was the last question, where the student asks YOU a question. Don't try to answer "
@@ -413,7 +450,8 @@ def ai_feedback(question, qid, answer, review, follow_question=None, follow_answ
         )
     else:
         parts.append(
-            "\nWrite what you say out loud straight after their answer. Three or four short sentences, "
+            "\nTalk TO the student, using 'you'. Never talk about them as 'he', 'she', 'they' or by their name.\n"
+            "Write what you say out loud straight after their answer. Three or four short sentences, "
             "at most 75 words. First show you understood: sum up the key point of their story in your own "
             "words. Then say one thing that went well and why it matters for this role, using what you know "
             "about the role. Then give the most useful tip in your own words, linked to their story, for "
@@ -426,7 +464,34 @@ def ai_feedback(question, qid, answer, review, follow_question=None, follow_answ
     if not out:
         return None
     say = _spoken(out.get("say"), 80)
-    return say if len(say.split()) >= 4 else None
+    if len(say.split()) < 4 or _praises_weak(say, review) or _THIRD_PERSON.search(say):
+        return None
+    # A weaker answer must come with something to try next time. If the AI
+    # left that out, the fixed reply (which always has one) is used.
+    if qid != "close" and review["score"] < 70 and review.get("tips") and not _HAS_TIP.search(say):
+        return None
+    return say
+
+
+# Follow-ups that quote the student back or ask what they meant.
+_BAD_FOLLOW = re.compile(r"(what (you|did you) (mean|meant)|'[^']+ [^']+'|\"[^\"]+\")", re.I)
+# "He learned..." - talking about the student instead of to them.
+_THIRD_PERSON = re.compile(r"\b(he|she) (learned|learnt|built|made|did|said|was|has|had|worked|used|wants|shows|"
+                           r"showed|told|gave|mentioned|talked|explained|is)\b", re.I)
+_HAS_TIP = re.compile(r"\b(next time|try|could|should|would help|add|make sure|aim|remember|instead|"
+                      r"you might|it helps|it would|work on)\b", re.I)
+_PRAISE_WORDS = re.compile(r"\b(great|good start|good answer|good question|well done|strong|excellent|fantastic|"
+                           r"brilliant|amazing|nice (job|work|answer|one)|really good|that'?s good|perfect|"
+                           r"good job|great job|good work)\b", re.I)
+
+
+def _praises_weak(say, review):
+    """True if the AI praised a weak answer. Then the fixed reply is used instead."""
+    if review["score"] >= 40:
+        return False
+    if _PRAISE_WORDS.search(say):
+        return True
+    return not review.get("strengths") and bool(re.search(r"\bwent well\b", say, re.I))
 
 
 def ai_summary(result, pathway=None, context=None):
@@ -440,10 +505,20 @@ def ai_summary(result, pathway=None, context=None):
         lines.append(f"<answer>{_quote(r.get('answer'), 500)}</answer>")
     if result.get("focusOn"):
         lines.append("Main things to work on: " + " ".join(result["focusOn"][:3]))
+    warnings = [r["warning"] for r in reviews if r.get("warning")]
+    if warnings:
+        lines.append("Things they said that they must avoid in a real interview: " + " ".join(warnings[:3]))
+    if result["overall"] < 40:
+        lines.append("Overall this interview was weak. Be kind but honest. Don't say they did a good job, and "
+                     "don't call any answer great or strong.")
+    elif result["overall"] < 70:
+        lines.append("Overall this interview was okay, with clear things to improve. Don't call it great.")
     lines.append(
         "\nWrite a short summary for the student to read at the end of the practice interview. "
-        "Two or three sentences, at most 60 words, speaking to them as 'you'. Mention one specific "
-        "moment from their answers that went well, and the one thing that would help most next time. "
+        "Two or three sentences, at most 60 words, speaking to them as 'you'. "
+        + ("Start with the most serious thing to avoid, kindly but clearly. " if warnings else "")
+        + "Mention one specific moment from their answers that went well (only if one really did), and the one "
+        "thing that would help most next time. "
         'Reply with JSON: {"summary": "..."}'
     )
     schema = {"type": "object", "properties": {"summary": {"type": "string"}}, "required": ["summary"]}
@@ -451,7 +526,11 @@ def ai_summary(result, pathway=None, context=None):
     if not out:
         return None
     text = _spoken(out.get("summary"), 65)
-    return text if len(text.split()) >= 6 else None
+    if len(text.split()) < 6 or _THIRD_PERSON.search(text):
+        return None
+    if result["overall"] < 40 and _PRAISE_WORDS.search(text):
+        return None
+    return text
 
 
 TURN_TYPES = ["answer", "question", "clarify", "repeat", "stuck", "skip", "other"]
@@ -547,6 +626,7 @@ def ai_turn(asked, question, qid, utterance, context, facts, pathway=None, tip=N
         "practice call and that it's a good thing to ask a real interviewer. Never make anything up.",
         ("Then bring them back to your interview question in a few words." if context == "answering"
          else "Then tell them to say next when they're ready to move on."),
+        "Never repeat their words back to them as a question, and never ask them what they mean.",
         'If the type is "answer", leave "say" empty.',
         'Reply with JSON: {"type": "...", "say": "..."}',
     ]

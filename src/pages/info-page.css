@@ -68,7 +68,7 @@
     display: inline-flex;
     padding: 8px 16px;
     border: 1px solid var(--line);
-    border-radius: 999px;
+    border-radius: var(--radius-sm);
     background: var(--glass);
     color: var(--navy);
     font-size: 0.875rem;
@@ -256,6 +256,21 @@
     background: var(--light);
     color: var(--navy);
 }
+
+/* The list text rules (".ip-help span", ".ip-features span") also matched this
+   box and turned it into a plain block, so the icon sat in the top-left corner.
+   These keep the icon centred in its tile. */
+.ip-help .ip-feature-icon,
+.ip-features .ip-feature-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--navy);
+    font-size: 0;
+    line-height: 0;
+}
+
+.ip-feature-icon svg { display: block; flex-shrink: 0; }
 
 .ip-features strong {
     display: block;

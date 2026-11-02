@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import './footer.css'
 import { Icon } from './icons'
 import { AMAZON_LINKS } from './amazon-links'
+import { notNeeded, useRole } from './role'
 
 // <Link> instead of <a> so footer links use the smooth page transition
 // rather than reloading the whole site.
@@ -48,7 +49,21 @@ const COLUMNS = [
   },
 ]
 
+// A link this person doesn't usually need stays clickable, but is greyed and
+// crossed out, with a note on hover (and read out by screen readers).
+function FooterLink({ to, label, role }) {
+  const note = notNeeded(to, role)
+  if (!note) return <Link to={to}>{label}</Link>
+  return (
+    <Link to={to} className="footer-not-needed" data-tip={note}>
+      {label}
+      <span className="visually-hidden"> ({note})</span>
+    </Link>
+  )
+}
+
 function Footer() {
+  const [role] = useRole()
   return (
     <footer className="site-footer">
       <div className="footer-main">
@@ -57,7 +72,7 @@ function Footer() {
             <div className="footer-column" key={col.title}>
               <h3>{col.title}</h3>
               {col.links.map(([to, label]) => (
-                <Link key={to} to={to}>{label}</Link>
+                <FooterLink key={to} to={to} label={label} role={role} />
               ))}
             </div>
           ))}

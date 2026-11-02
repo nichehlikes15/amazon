@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { Link, Navigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import './logbook.css'
 import { api } from '../modules/api'
 import { useAuth } from '../modules/auth'
 import { Icon } from '../modules/icons'
+import { SignInRedirect } from '../modules/return-to'
 
 /*
   My logbook: every T Level student keeps a placement logbook and works
@@ -91,7 +92,7 @@ function Logbook() {
   }, [loading, user])
 
   if (loading) return null
-  if (!user) return <Navigate to="/login" replace />
+  if (!user) return <SignInRedirect />
 
   const run = async (fn, okMessage) => {
     setError('')

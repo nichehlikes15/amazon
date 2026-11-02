@@ -9,6 +9,7 @@ Security notes (prototype level):
 """
 
 import hashlib
+import functools
 import json
 import re
 import secrets
@@ -31,7 +32,7 @@ from interview_coach import (
 )
 # Alex's words come from a local AI model (Ollama) when it's running; the
 # scores always come from the rules above. See llm_coach.py and AI_SETUP.md.
-from llm_coach import ai_assistant, ai_cv_question, pick_facts, ai_feedback, ai_follow_up, ai_status, ai_summary, ai_turn
+from llm_coach import ai_assistant, ai_cv_question, pick_facts, reset_interviewer_name, set_interviewer_name, ai_feedback, ai_follow_up, ai_status, ai_summary, ai_turn
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "launchpad.db")
@@ -120,6 +121,8 @@ def init_db():
         db.execute("ALTER TABLE users ADD COLUMN school TEXT")
     if "email_updates" not in cols:
         db.execute("ALTER TABLE users ADD COLUMN email_updates INTEGER NOT NULL DEFAULT 1")
+    if "role" not in cols:
+        db.execute("ALTER TABLE users ADD COLUMN role TEXT")
     # Point the prep-guide resources at the downloadable PDFs.
     # Matched by title so older databases with any old link get fixed too.
     for title, new_url in (
@@ -196,7 +199,14 @@ def user_to_dict(row):
         "school": row["school"] if "school" in keys else None,
         "emailUpdates": bool(row["email_updates"]) if "email_updates" in keys else True,
         "quizPathway": row["quiz_pathway"] if "quiz_pathway" in keys else None,
+        "role": row["role"] if "role" in keys else None,
     }
+
+
+# Who the account is for. The site uses it to hide links a person doesn't need
+# (e.g. a parent doesn't need the placement logbook). Older accounts may have none.
+USER_ROLES = {"student", "teacher", "parent"}
+ROLE_ERROR = "Please choose student, teacher or parent."
 
 
 def current_user():
@@ -230,6 +240,9 @@ def signup():
         return jsonify({"error": "Password must be at least 8 characters."}), 400
     if data.get("consent") is not True:
         return jsonify({"error": "Please agree to the privacy notice and terms of use."}), 400
+    role = data.get("role") or None
+    if role is not None and role not in USER_ROLES:
+        return jsonify({"error": ROLE_ERROR}), 400
 
     db = get_db()
     existing = db.execute("SELECT id FROM users WHERE email = ?", (email,)).fetchone()
@@ -241,13 +254,14 @@ def signup():
     # PBKDF2 is always available and is a solid choice for a prototype.
     password_hash = generate_password_hash(password, method="pbkdf2:sha256")
     cur = db.execute(
-        "INSERT INTO users (full_name, email, password_hash, consented_at) VALUES (?, ?, ?, datetime('now'))",
-        (full_name, email, password_hash),
+        "INSERT INTO users (full_name, email, password_hash, role, consented_at) VALUES (?, ?, ?, ?, datetime('now'))",
+        (full_name, email, password_hash, role),
     )
     db.commit()
 
     session["user_id"] = cur.lastrowid
-    return jsonify({"user": {"id": cur.lastrowid, "fullName": full_name, "email": email, "isAdmin": False}}), 201
+    return jsonify({"user": {"id": cur.lastrowid, "fullName": full_name, "email": email, "isAdmin": False,
+                             "role": role}}), 201
 
 
 @app.post("/api/login")
@@ -587,7 +601,49 @@ def interview_pathway(data):
     return p if p in PATHWAYS else None
 
 
+# ---------- Alex or Peccy ----------
+# The student picks who runs the practice call. The questions, scores and
+# feedback are the same; the AI is told who it is, and the name in every
+# reply is swapped (the rule-based replies are written with "Alex").
+INTERVIEWER_NAMES = {"alex": "Alex", "peccy": "Peccy"}
+
+
+def _with_name(obj, name):
+    if isinstance(obj, str):
+        return re.sub(r"\bAlex\b", name, obj)
+    if isinstance(obj, list):
+        return [_with_name(x, name) for x in obj]
+    if isinstance(obj, dict):
+        return {k: _with_name(v, name) for k, v in obj.items()}
+    return obj
+
+
+def as_interviewer(view):
+    """Run an interview route as the chosen interviewer (?interviewer= or "interviewer" in the body)."""
+    @functools.wraps(view)
+    def wrapper(*args, **kwargs):
+        data = request.get_json(silent=True)
+        raw = data.get("interviewer") if isinstance(data, dict) else None
+        raw = raw or request.args.get("interviewer")
+        name = INTERVIEWER_NAMES.get(str(raw or "").strip().lower(), "Alex")
+        token = set_interviewer_name(name)
+        try:
+            out = view(*args, **kwargs)
+        finally:
+            reset_interviewer_name(token)
+        if name == "Alex":
+            return out
+        resp, rest = (out[0], out[1:]) if isinstance(out, tuple) else (out, ())
+        payload = resp.get_json(silent=True) if hasattr(resp, "get_json") else getattr(resp, "data", None)
+        if not isinstance(payload, (dict, list)):
+            return out
+        renamed = jsonify(_with_name(payload, name))
+        return (renamed, *rest) if rest else renamed
+    return wrapper
+
+
 @app.get("/api/interview/questions")
+@as_interviewer
 def interview_questions():
     """Five practice questions for a pathway (?pathway=Digital)."""
     pathway = (request.args.get("pathway") or "").strip()
@@ -631,7 +687,16 @@ def _asked_info(qid, data):
     return info
 
 
+def _interruptions(value):
+    """How many times the student talked over the interviewer (0 to 10)."""
+    try:
+        return max(0, min(10, int(value or 0)))
+    except (TypeError, ValueError):
+        return 0
+
+
 @app.post("/api/interview/review-answer")
+@as_interviewer
 def interview_review_answer():
     """Quick feedback on one answer, straight after it's given. Not stored."""
     if rate_limited("interview-answer", 200, 3600):
@@ -650,10 +715,12 @@ def interview_review_answer():
 
     # The follow-up answer counts towards the score for this question.
     combined = f"{main} {follow_answer}".strip()
-    review = review_answer(qid, combined, seconds)
+    interruptions = _interruptions(data.get("interruptions"))
+    asked_text = (_asked_info(qid, data) or {}).get("text")
+    review = review_answer(qid, combined, seconds, interruptions, asked_text)
     if review is None:
         return jsonify({"error": "That question wasn't recognised."}), 400
-    first = review_answer(qid, main, None) if follow_answer.strip() else None
+    first = review_answer(qid, main, None, interruptions, asked_text) if follow_answer.strip() else None
     review["scoreBefore"] = first["score"] if first else None
     # Alex already repeated back the first answer before his follow-up.
     reflect_on = follow_answer if follow_answer.strip() else ("" if follow_asked else None)
@@ -663,7 +730,8 @@ def interview_review_answer():
     review["question"] = info["text"]
     # Alex's reply in his own words, if the AI is running. The score above doesn't change.
     pathway = interview_pathway(data)
-    ai_say = ai_feedback(
+    # noAi: the page has its own scripted line for this, so don't wait for the AI.
+    ai_say = None if data.get("noAi") else ai_feedback(
         info, qid, main, review,
         follow_question=str(fu.get("question") or "")[:300] or None,
         follow_answer=follow_answer,
@@ -676,6 +744,7 @@ def interview_review_answer():
 
 
 @app.post("/api/interview/follow-up")
+@as_interviewer
 def interview_follow_up():
     """After a first answer: a follow-up question if something is missing. Not stored."""
     if rate_limited("interview-answer", 200, 3600):
@@ -683,22 +752,28 @@ def interview_follow_up():
     data = request.get_json(silent=True) or {}
     qid = str(data.get("id") or "")[:40]
     answer = str(data.get("answer") or "")[:4000]
+    # Something to avoid in a real interview (swearing, blaming others, only
+    # wanting the money...): no follow-up, go straight to the feedback that says so.
+    first_look = review_answer(qid, answer, asked=(_asked_info(qid, data) or {}).get("text"))
+    if first_look and first_look.get("warning"):
+        return jsonify({"followUp": None, "say": None, "source": "rules"})
     # The rules decide WHETHER to ask a follow-up (and what's missing)...
     question = follow_up(qid, answer)
     say = reflect_answer(qid, answer) if question else None
     source = "rules"
     pathway = interview_pathway(data)
-    history = interview_history(data)
+    # Earlier answers aren't sent: the small model kept asking about them
+    # instead of the answer it was given.
+    history = None
     context = role_context(pathway)
     if question:
-        # ...and the AI, if it's running, writes it in Alex's own words.
-        ai = ai_follow_up(_asked_info(qid, data), qid, answer, question["why"], pathway, history, context)
-        if ai:
-            question = {**question, "text": ai["text"]}
-            say = ai["say"] or say
-            source = "ai"
+        # Something is missing (no example, no result, only "we"...): Alex asks the
+        # rules' follow-up, which always asks for exactly that. In testing, the AI
+        # often asked about something else ("What made you drop your phone?") or
+        # quoted the student back ("what did you mean by 'some of the slides'?").
+        pass
     elif qid != "close" and len(answer.split()) >= 12:
-        # Nothing missing - with the AI on, Alex still digs deeper, like a real interviewer.
+        # Nothing missing - with the AI on, Alex digs deeper, like a real interviewer.
         ai = ai_follow_up(_asked_info(qid, data), qid, answer, None, pathway, history, context)
         if ai:
             question = {"text": ai["text"], "why": ai["why"] or "To hear a bit more about your example."}
@@ -708,6 +783,7 @@ def interview_follow_up():
 
 
 @app.post("/api/interview/turn")
+@as_interviewer
 def interview_turn():
     """Something the student said that might not be an answer, e.g. a question
     for Alex ("What is the apprenticeship?") or "Can you repeat that?".
@@ -737,19 +813,20 @@ def interview_turn():
     # short replies that might be aimed at Alex ("what do you mean?").
     if context == "answering" and rules["type"] == "answer" and not maybe_to_alex(utterance):
         return jsonify(result)
+    # "I'm stuck", "what do you mean?" and "skip" have clear, tested replies.
+    # The AI kept turning these into "Can you tell me what you mean by...?".
+    if rules["type"] in ("stuck", "clarify", "skip"):
+        return jsonify(result)
     ai = ai_turn(asked, info, qid, utterance, context, faq_facts(), pathway, tip, role_context(pathway))
     if ai:
         if ai["type"] == "repeat" and context == "answering":
             return jsonify({"type": "repeat", "say": f"Sure. {asked}", "source": "ai"})
-        if ai["type"] == "answer":
-            if rules["type"] in ("answer", "other"):
-                return jsonify({**rules, "source": "ai"})
-        elif ai["type"] == "other":
-            # The AI isn't sure either: only use its words if the rules had nothing better.
-            if rules["type"] == "other" and ai["say"]:
-                return jsonify({"type": "other", "say": ai["say"], "source": "ai"})
-        elif ai["type"] != "repeat":
-            return jsonify({"type": ai["type"], "say": ai["say"], "source": "ai"})
+        # The AI can answer a question the student asked Alex in its own words...
+        if ai["type"] == "question" and ai["say"]:
+            return jsonify({"type": "question", "say": ai["say"], "source": "ai"})
+        # ...or reply to something after the feedback. Otherwise the rules decide.
+        if context == "feedback" and rules["type"] == "other" and ai["type"] == "other" and ai["say"]:
+            return jsonify({"type": "other", "say": ai["say"], "source": "ai"})
     return jsonify(result)
 
 
@@ -761,6 +838,7 @@ def interview_ai_status():
 
 
 @app.post("/api/interview/review")
+@as_interviewer
 def interview_review():
     """Feedback on a practice interview. Answers are checked locally and not stored;
     for signed-in users the scores are saved to their profile."""
@@ -782,6 +860,7 @@ def interview_review():
         clean.append({"id": str(a.get("id") or "")[:40],
                       "answer": str(a.get("answer") or "")[:4000],
                       "seconds": seconds,
+                      "interruptions": _interruptions(a.get("interruptions")),
                       "asked": " ".join(str(a.get("asked") or "").split())[:300]})
     result = review_interview(clean)
     if result is None:
@@ -791,9 +870,11 @@ def interview_review():
         for r in result["reviews"]:
             if r["id"] == "cv":
                 r["question"] = cv_asked
+        best = max(result["reviews"], key=lambda r: r["score"])
+        result["bestQuestion"] = best["question"] if best["score"] >= 60 else None
     # A short summary in Alex's words, if the AI is running (not saved).
     pathway = interview_pathway(data)
-    result["coachSummary"] = ai_summary(result, pathway, role_context(pathway))
+    result["coachSummary"] = None if data.get("noAi") else ai_summary(result, pathway, role_context(pathway))
 
     # Signed in: keep the scores (not the answers) so progress shows on the profile.
     result["saved"] = False
@@ -1514,6 +1595,10 @@ def update_me():
     email = (data.get("email") or "").strip().lower()
     school = (data.get("school") or "").strip() or None
     email_updates = 1 if data.get("emailUpdates", True) else 0
+    current_role = user["role"] if "role" in user.keys() else None
+    role = data.get("role", current_role) or None
+    if role is not None and role not in USER_ROLES:
+        return jsonify({"error": ROLE_ERROR}), 400
 
     if not full_name or not email:
         return jsonify({"error": "Name and email are required."}), 400
@@ -1528,8 +1613,8 @@ def update_me():
         return jsonify({"error": "That email is already used by another account."}), 409
 
     db.execute(
-        "UPDATE users SET full_name = ?, email = ?, school = ?, email_updates = ? WHERE id = ?",
-        (full_name, email, school, email_updates, user["id"]),
+        "UPDATE users SET full_name = ?, email = ?, school = ?, email_updates = ?, role = ? WHERE id = ?",
+        (full_name, email, school, email_updates, role, user["id"]),
     )
     db.commit()
     row = db.execute("SELECT * FROM users WHERE id = ?", (user["id"],)).fetchone()
@@ -1597,6 +1682,26 @@ def delete_me():
     db.commit()
     session.clear()
     return jsonify({"ok": True})
+
+
+@app.put("/api/me/role")
+def set_my_role():
+    """Set who the account is for. With keepExisting (used when someone signs in
+    after picking a role on the homepage), an account's own role is never overwritten."""
+    user = current_user()
+    if user is None:
+        return jsonify({"error": "You must be signed in."}), 401
+    data = request.get_json(silent=True) or {}
+    role = data.get("role")
+    if role not in USER_ROLES:
+        return jsonify({"error": ROLE_ERROR}), 400
+    current_role = user["role"] if "role" in user.keys() else None
+    db = get_db()
+    if not (data.get("keepExisting") and current_role):
+        db.execute("UPDATE users SET role = ? WHERE id = ?", (role, user["id"]))
+        db.commit()
+    row = db.execute("SELECT * FROM users WHERE id = ?", (user["id"],)).fetchone()
+    return jsonify({"user": user_to_dict(row)})
 
 
 @app.get("/api/me/export")
