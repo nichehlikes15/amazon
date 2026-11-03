@@ -425,10 +425,9 @@ html[data-reduced-motion="on"] .h-role-tile { animation: none; }
     margin-bottom: 14px;
     font-size: 1.5rem;
     font-weight: 700;
-    background: linear-gradient(120deg, var(--grad-mid), var(--grad-end));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    padding-bottom: 4px;
+    border-bottom: 3px solid var(--orange);
+    color: var(--navy);
 }
 
 .h-step h3 { margin: 0 0 8px; color: var(--navy); font-size: 1.25rem; font-weight: 600; }
@@ -456,7 +455,7 @@ html[data-reduced-motion="on"] .h-role-tile { animation: none; }
 .h-cta-inner h2 { margin: 0 0 16px; color: var(--navy); font-size: var(--h2); font-weight: 600; }
 .h-cta-inner p { margin: 0 0 36px; font-size: var(--lead); line-height: 1.6; color: var(--muted); }
 
-.h-cta .h-btn-light { background: var(--orange-solid); color: #fff; }
+.h-cta .h-btn-light { background: var(--orange-solid); color: var(--on-orange); }
 .h-cta .h-btn-light:hover { background: var(--orange-solid-hover); box-shadow: 0 10px 24px rgb(236 114 17 / 25%); }
 
 /* ---------- Responsive ---------- */

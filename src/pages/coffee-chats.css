@@ -263,7 +263,7 @@
     border: 0;
     border-radius: 12px;
     background: var(--orange-solid);
-    color: #fff;
+    color: var(--on-orange);
     font: inherit;
     font-size: 0.9375rem;
     font-weight: 600;
@@ -627,7 +627,7 @@
 .cc-check input:checked + .cc-check-box {
     border-color: var(--orange-solid);
     background: var(--orange-solid);
-    color: #fff;
+    color: var(--on-orange);
 }
 
 .cc-check input:focus-visible + .cc-check-box {

@@ -730,6 +730,7 @@
 
 .timeline-step:last-child .timeline-number {
     background: var(--orange-solid);
+    color: var(--on-orange);
 }
 
 .timeline-step h3 {

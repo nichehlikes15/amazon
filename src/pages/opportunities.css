@@ -623,7 +623,7 @@
 .opp-apply {
     border: 1px solid var(--orange-solid);
     background: var(--orange-solid);
-    color: #fff;
+    color: var(--on-orange);
 }
 
 .opp-apply:hover {

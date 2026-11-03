@@ -323,7 +323,7 @@
     transition: background var(--dur) ease, color var(--dur) ease;
 }
 
-.pr-tab.is-active .pr-tab-count { background: var(--orange-solid); color: #fff; }
+.pr-tab.is-active .pr-tab-count { background: var(--orange-solid); color: var(--on-orange); }
 
 /* ---------- Panel ---------- */
 .pr-body {
@@ -506,13 +506,13 @@
 .pr-step-go:hover {
     border-color: var(--orange-solid);
     background: var(--orange-solid);
-    color: #fff;
+    color: var(--on-orange);
 }
 
 .pr-step-list li.is-next .pr-step-go {
     border-color: var(--orange-solid);
     background: var(--orange-solid);
-    color: #fff;
+    color: var(--on-orange);
 }
 
 /* Coming up */
@@ -554,7 +554,7 @@
     border-radius: 10px;
 }
 
-.pr-up-icon.is-chat { background: #e8f0fe; color: #1d4ed8; }
+.pr-up-icon.is-chat { background: #DEE0E2; color: #232F3E; }
 .pr-up-icon.is-closing { background: #fff4e6; color: #b25e00; }
 
 /* Mini score */
@@ -774,7 +774,7 @@
 }
 
 /* ---------- Dark mode ---------- */
-html[data-theme="dark"] .pr-up-icon.is-chat { background: #172a4a; color: #a9c5ff; }
+html[data-theme="dark"] .pr-up-icon.is-chat { background: #2b3746; color: #e9eef5; }
 html[data-theme="dark"] .pr-up-icon.is-closing { background: #3a2a14; color: #ffc27a; }
 html[data-theme="dark"] .pf-error { background: #3a1717; color: #ffb4ab; }
 html[data-theme="dark"] .pr-avatar { border-color: var(--light); }
@@ -962,7 +962,7 @@ html[data-theme="dark"] .pr-avatar { border-color: var(--light); }
 .pf-card-apply {
     border: 1px solid var(--orange-solid);
     background: var(--orange-solid);
-    color: #fff;
+    color: var(--on-orange);
 }
 
 .pf-card-apply:hover {

@@ -63,7 +63,7 @@
 .pfb-send {
     border-color: var(--orange-solid);
     background: var(--orange-solid);
-    color: #fff;
+    color: var(--on-orange);
 }
 
 .pfb-send:hover { background: var(--orange-solid-hover); }

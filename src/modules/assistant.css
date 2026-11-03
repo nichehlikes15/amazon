@@ -19,7 +19,7 @@
     border-radius: var(--radius-sm);
     background: var(--orange-solid);
     box-shadow: var(--shadow-lift);
-    color: #fff;
+    color: var(--on-orange);
     font: inherit;
     font-size: 0.9375rem;
     font-weight: 600;
@@ -273,8 +273,8 @@
 .ask-lp-ai {
     padding: 1px 7px;
     border-radius: var(--radius-sm);
-    background: #f3ecfb;
-    color: #5b2a9e;
+    background: #FFF3E0;
+    color: #232F3E;
     font-size: 0.6875rem;
     font-weight: 700;
 }
@@ -321,7 +321,7 @@
     border: 0;
     border-radius: 50%;
     background: var(--orange-solid);
-    color: #fff;
+    color: var(--on-orange);
     cursor: pointer;
 }
 
@@ -335,7 +335,7 @@
     line-height: 1.45;
 }
 
-html[data-theme="dark"] .ask-lp-ai { background: #2a2142; color: #d6c3f5; }
+html[data-theme="dark"] .ask-lp-ai { background: #3a2a14; color: #ffc27a; }
 
 @keyframes ask-lp-in {
     from { opacity: 0; transform: translateY(10px) scale(0.97); }

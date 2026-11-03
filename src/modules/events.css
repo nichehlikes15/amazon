@@ -59,7 +59,7 @@
 
 .event-online {
     background: #e7f0fd;
-    color: #1d4ed8;
+    color: var(--navy);
 }
 
 .event-in-person {

@@ -64,7 +64,7 @@ export const api = {
   exportMe: () => request('/me/export'),
   interviewQuestions: (pathway, cv) =>
     request(`/interview/questions?pathway=${encodeURIComponent(pathway || '')}${cv ? '&cv=1' : ''}&interviewer=${interviewerId}`),
-  // Is Alex's AI (Ollama) running? Also starts loading the model.
+  // Is Alex's AI (Amazon Bedrock or Ollama) working? Also starts loading the model.
   interviewAiStatus: () => request('/interview/ai-status'),
   // Something said to Alex that might not be an answer (a question, "repeat that"...)
   interviewTurn: (payload) =>

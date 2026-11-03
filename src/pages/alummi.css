@@ -130,7 +130,7 @@
 
 .al-step:hover .al-step-n {
     background: var(--orange-solid);
-    color: #fff;
+    color: var(--on-orange);
     transform: scale(1.08);
 }
 

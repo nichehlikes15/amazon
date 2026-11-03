@@ -220,8 +220,8 @@ function StarBadge({ letter }) {
     <svg className="star-badge" viewBox="0 0 100 100" aria-hidden="true">
       <defs>
         <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#ffb340" />
-          <stop offset="1" stopColor="#ec7211" />
+          <stop offset="0" stopColor="#FF9900" />
+          <stop offset="1" stopColor="#FF9900" />
         </linearGradient>
       </defs>
       <polygon

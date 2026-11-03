@@ -314,7 +314,7 @@
 .ei-consent input:checked + .ei-check {
     border-color: var(--orange-solid);
     background: var(--orange-solid);
-    color: #fff;
+    color: var(--on-orange);
 }
 
 .ei-consent input:focus-visible + .ei-check {

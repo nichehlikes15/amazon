@@ -4,7 +4,6 @@ import './quiz.css'
 import { api } from '../modules/api'
 import { useAuth } from '../modules/auth'
 import { Icon, PathwayIcon, closingLabel } from '../modules/icons'
-import { MENTORS } from '../modules/mentors'
 
 const PATHWAYS = ['Digital', 'Business', 'Media', 'Finance', 'Engineering']
 
@@ -30,6 +29,13 @@ const ANSWERS = [
   { label: 'Probably not', factor: -0.5 },
   { label: 'No', factor: -1 },
 ]
+
+// Click the "Question 1" label to show how each answer is scored (and the
+// totals at the end). Remembered on this device.
+const SCORING_KEY = 'launchpad-quiz-scoring'
+
+// +1, +0.5, 0, −0.5, −1
+const points = (n) => (n > 0 ? `+${n}` : n < 0 ? `\u2212${Math.abs(n)}` : '0')
 
 const MAX_QUESTIONS = 8
 const CONFIDENCE_TO_STOP = 3
@@ -67,87 +73,103 @@ function pickNext(order, alreadyAsked, currentScores) {
   return best[0]
 }
 
-// What to do next, made for the pathway you matched: read about it, practise
-// an interview for it, talk to someone, see matching opportunities, register.
-function NextSteps({ pathway }) {
+// Open opportunities for the pathway you matched (soonest closing first),
+// with a link to all of them on the Opportunities page.
+const OPPS_SHOWN = 3
+
+const shorten = (text, max = 130) => {
+  const s = (text || '').trim()
+  if (s.length <= max) return s
+  return `${s.slice(0, max).replace(/\s+\S*$/, '')}…`
+}
+
+function MatchedOpportunities({ pathway }) {
   const [opps, setOpps] = useState(null)
   useEffect(() => {
     let live = true
     api.listOpportunities()
-      .then((d) => { if (live) setOpps((d.items || []).filter((o) => o.pathway === pathway).slice(0, 3)) })
+      .then((d) => {
+        if (!live) return
+        const open = (d.items || [])
+          .filter((o) => o.pathway === pathway && closingLabel(o.closingDate)?.tone !== 'closed')
+          .sort((x, y) => (x.closingDate || '9999').localeCompare(y.closingDate || '9999'))
+        setOpps(open)
+      })
       .catch(() => { if (live) setOpps([]) })
     return () => { live = false }
   }, [pathway])
 
-  const anchor = pathway.toLowerCase()
-  const person = MENTORS.find((m) => m.pathway === pathway)
-  const steps = [
-    {
-      title: `Read about ${pathway}`,
-      text: `What you study on the ${pathway} pathway, and the jobs it can lead to.`,
-      links: [{ to: `/information#${anchor}`, label: `Explore ${pathway}` }],
-    },
-    {
-      title: 'Practise an interview',
-      text: `A practice call with Alex or Peccy, with a question about ${pathway} and four general ones.`,
-      links: [
-        { to: `/interview?pathway=${pathway}`, label: 'Start a practice call' },
-        { to: '/guides/interview-prep', label: 'Interview tips' },
-      ],
-    },
-    {
-      title: 'Talk to someone',
-      text: person
-        ? `${person.firstName} is on the ${pathway} pathway and happy to have a short chat.`
-        : 'A relaxed chat with a T Level student, a placement alum or an Amazon buddy.',
-      links: [{ to: '/alumni/coffee-chats', label: 'Book a coffee chat' }],
-    },
-    {
-      title: 'Register your interest',
-      text: 'Tell the Amazon Emerging Talent team you are interested in this pathway.',
-      links: [{ to: `/register-interest?pathway=${pathway}`, label: 'Register interest' }],
-    },
-  ]
+  const shown = opps ? opps.slice(0, OPPS_SHOWN) : []
 
   return (
-    <section className="qz-next" aria-labelledby="qz-next-title">
-      <h3 id="qz-next-title">Your next steps</h3>
-      <ol className="qz-next-steps">
-        {steps.map((s, n) => (
-          <li key={s.title} style={{ '--n': n }}>
-            <span className="qz-next-n" aria-hidden="true">{String(n + 1).padStart(2, '0')}</span>
-            <h4>{s.title}</h4>
-            <p>{s.text}</p>
-            <div className="qz-next-links">
-              {s.links.map((l) => (
-                <Link key={l.to} to={l.to}>{l.label} <Icon name="arrowRight" size={14} /></Link>
-              ))}
-            </div>
-          </li>
-        ))}
-      </ol>
+    <section className="qz-opps" aria-labelledby="qz-opps-title">
+      <h3 id="qz-opps-title">{pathway} opportunities</h3>
+      {opps && opps.length > 0 && (
+        <p className="qz-opps-lead">
+          {opps.length === 1 ? 'One role is' : `${opps.length} roles are`} open on the {pathway} pathway right now.
+        </p>
+      )}
 
-      <div className="qz-next-opps">
-        <h4>{pathway} opportunities</h4>
-        {opps === null ? (
-          <p className="qz-next-quiet">Loading…</p>
-        ) : opps.length === 0 ? (
-          <p className="qz-next-quiet">There are no {pathway} opportunities listed right now.</p>
-        ) : (
-          <ul>
-            {opps.map((o) => {
-              const closing = closingLabel(o.closingDate)
-              return (
-                <li key={o.id}>
+      {opps === null && (
+        <ol className="qz-opps-list" aria-hidden="true">
+          {[0, 1, 2].map((n) => (
+            <li key={n} className="qz-opp is-loading">
+              <span className="qz-sk qz-sk-n" />
+              <span className="qz-sk qz-sk-title" />
+              <span className="qz-sk qz-sk-line" />
+              <span className="qz-sk qz-sk-line is-short" />
+            </li>
+          ))}
+        </ol>
+      )}
+
+      {opps && opps.length === 0 && (
+        <div className="qz-opps-empty">
+          <span className="qz-opps-empty-icon" aria-hidden="true"><Icon name="search" size={22} /></span>
+          <p>There are no {pathway} opportunities open right now. New roles are added through the year.</p>
+        </div>
+      )}
+
+      {shown.length > 0 && (
+        <ol className="qz-opps-list">
+          {shown.map((o, n) => {
+            const closing = closingLabel(o.closingDate)
+            return (
+              <li key={o.id} className="qz-opp" style={{ '--n': n }}>
+                <span className="qz-opp-n" aria-hidden="true">{String(n + 1).padStart(2, '0')}</span>
+                <div className="qz-opp-tags">
+                  {closing && (
+                    <span className={`qz-opp-closing is-${closing.tone}`}>
+                      <Icon name="clock" size={13} /> {closing.text}
+                    </span>
+                  )}
+                  {o.type && <span className="qz-opp-type">{o.type}</span>}
+                </div>
+                <h4 className="qz-opp-title">
                   <Link to={`/opportunities/${o.id}`}>{o.title}</Link>
-                  <span>{o.location}{closing ? ` · ${closing.text}` : ''}</span>
-                </li>
-              )
-            })}
-          </ul>
-        )}
-        <Link className="qz-next-all" to="/opportunities">See all opportunities <Icon name="arrowRight" size={14} /></Link>
-      </div>
+                </h4>
+                <p className="qz-opp-meta">{[o.employer, o.location].filter(Boolean).join(' · ')}</p>
+                {o.summary && <p className="qz-opp-summary">{shorten(o.summary)}</p>}
+                <div className="qz-opp-actions">
+                  <Link className="qz-opp-btn is-light" to={`/opportunities/${o.id}`}>View details</Link>
+                  {o.applyUrl && (
+                    <a className="qz-opp-btn is-apply" href={o.applyUrl} target="_blank" rel="noopener noreferrer">
+                      Apply <Icon name="external" size={14} />
+                      <span className="visually-hidden"> (opens in a new tab)</span>
+                    </a>
+                  )}
+                </div>
+              </li>
+            )
+          })}
+        </ol>
+      )}
+
+      {/* Opens the full list with no filter, so it's never empty */}
+      <Link className="qz-opps-all" to="/opportunities">
+        See all opportunities
+        <Icon name="arrowRight" size={15} />
+      </Link>
     </section>
   )
 }
@@ -162,6 +184,14 @@ function Quiz() {
   const [finished, setFinished] = useState(false)
   const [explanation, setExplanation] = useState('')
   const [explaining, setExplaining] = useState(false)
+  const [showScoring, setShowScoringState] = useState(() => {
+    try { return localStorage.getItem(SCORING_KEY) === 'on' } catch { return false }
+  })
+  const toggleScoring = () => {
+    const on = !showScoring
+    setShowScoringState(on)
+    try { localStorage.setItem(SCORING_KEY, on ? 'on' : 'off') } catch { /* private mode */ }
+  }
 
   const currentQuestion = useMemo(
     () => QUESTIONS.find((q) => q.id === currentId) || null,
@@ -235,7 +265,15 @@ function Quiz() {
         {!finished ? (
           <section className="qz-step" aria-live="polite">
             <div className="qz-progress-row">
-              <span className="qz-qnum">Question {asked.length + 1}</span>
+              <button
+                type="button"
+                className={showScoring ? 'qz-qnum is-on' : 'qz-qnum'}
+                onClick={toggleScoring}
+                aria-pressed={showScoring}
+                title={showScoring ? 'Hide how the answers are scored' : 'Show how the answers are scored'}
+              >
+                Question {asked.length + 1}
+              </button>
               <span className="qz-qmax">up to {MAX_QUESTIONS}</span>
             </div>
             <div className="qz-progress" aria-hidden="true">
@@ -246,7 +284,12 @@ function Quiz() {
               // Keyed by question so each new one slides in instead of swapping instantly.
               <div className="qz-swap" key={currentQuestion.id}>
                 <h2 className="qz-question">{currentQuestion.text}</h2>
-                <div className="qz-answers">
+                {showScoring && (
+                  <p className="qz-scoring-note">
+                    This question counts towards <strong>{currentQuestion.pathway}</strong>.
+                  </p>
+                )}
+                <div className={showScoring ? 'qz-answers is-scoring' : 'qz-answers'}>
                   {ANSWERS.map((a) => (
                     <button
                       key={a.label}
@@ -255,7 +298,12 @@ function Quiz() {
                       onClick={() => answer(a.factor)}
                     >
                       <span>{a.label}</span>
-                      <Icon name="arrowRight" size={16} />
+                      <span className="qz-answer-end">
+                        <span className="qz-points" aria-hidden={!showScoring}>
+                          {points(a.factor)} {currentQuestion.pathway}
+                        </span>
+                        <Icon name="arrowRight" size={16} />
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -286,12 +334,13 @@ function Quiz() {
                   <div className={p === topPathway ? 'qz-bar-row is-top' : 'qz-bar-row'} key={p}>
                     <span className="qz-bar-label">{p}</span>
                     <div className="qz-bar"><div className="qz-bar-fill" style={{ width: `${pct}%` }} /></div>
+                    {showScoring && <span className="qz-bar-score">{points(scores[p])}</span>}
                   </div>
                 )
               })}
             </div>
 
-            <NextSteps pathway={topPathway} />
+            <MatchedOpportunities pathway={topPathway} />
             <button type="button" className="qz-restart" onClick={restart}>Start again</button>
           </section>
         )}

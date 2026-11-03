@@ -550,18 +550,18 @@
 .st-mini-bar { height: 16%; margin: 0 -14px 6px; }
 .st-mini-line { height: 8%; width: 80%; border-radius: 4px; }
 .st-mini-short { width: 55%; }
-.st-mini-btn { width: 34%; height: 13%; margin-top: auto; border-radius: 5px; background: #ec7211; }
+.st-mini-btn { width: 34%; height: 13%; margin-top: auto; border-radius: 5px; background: #FF9900; }
 
-.st-mini-light .st-mini-page { background: linear-gradient(180deg, #ecdff8, #ffffff 60%); }
+.st-mini-light .st-mini-page { background: linear-gradient(180deg, #FFF3E0, #ffffff 60%); }
 .st-mini-light .st-mini-bar { background: #ffffff; border-bottom: 1px solid #dce3eb; }
 .st-mini-light .st-mini-line { background: #c9d2dd; }
 
-.st-mini-dark .st-mini-page { background: linear-gradient(180deg, #2a2142, #0d141d 60%); }
+.st-mini-dark .st-mini-page { background: linear-gradient(180deg, #232F3E, #0d141d 60%); }
 .st-mini-dark .st-mini-bar { background: #0d141d; border-bottom: 1px solid #2b3746; }
 .st-mini-dark .st-mini-line { background: #3d4b5c; }
 
 /* Match my device: half light, half dark */
-.st-mini-auto .st-mini-page { background: linear-gradient(180deg, #ecdff8, #ffffff 60%); }
+.st-mini-auto .st-mini-page { background: linear-gradient(180deg, #FFF3E0, #ffffff 60%); }
 .st-mini-auto .st-mini-bar { background: #ffffff; border-bottom: 1px solid #dce3eb; }
 .st-mini-auto .st-mini-line { background: #c9d2dd; }
 
@@ -571,7 +571,7 @@
     inset: 0;
     background:
         linear-gradient(#0d141d, #0d141d) 0 0 / 100% 16% no-repeat,
-        linear-gradient(180deg, #2a2142, #0d141d 60%);
+        linear-gradient(180deg, #232F3E, #0d141d 60%);
     clip-path: polygon(100% 0, 100% 100%, 0 100%);
 }
 

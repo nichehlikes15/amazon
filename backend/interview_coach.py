@@ -240,6 +240,51 @@ _CV_STOP = {"about", "would", "could", "there", "their", "which", "something", "
             "what", "when", "your", "that", "with", "this", "have", "after", "before", "turned", "describe"}
 
 
+# ---------- Nonsense answers ("29813y42hjwad", "sdkfj skdjf") ----------
+# Typed key-mashing or random numbers isn't an answer, so it scores 0 with a
+# warning (no follow-up, no AI reply, and nothing is praised).
+NONSENSE_WARNING = ("That didn't look like a real answer. In an interview, always answer the question, even if "
+                    "it's short. If you're stuck, it's fine to say 'Can I have a moment to think?'")
+_VOWELS = set("aeiouy")
+
+
+def _real_word(tok):
+    """Does this look like a real word? Letters only, has a vowel, no long run of
+    consonants and no letter repeated 3 times in a row."""
+    t = tok.lower().strip("'")
+    if not t.isalpha():
+        return False  # numbers, or letters mixed with numbers ("42hjwad")
+    if len(t) == 1:
+        return t in ("i", "a")
+    if not _VOWELS & set(t):
+        return False
+    if re.search(r"(.)\1\1", t):
+        return False
+    # 5 consonants in a row is very rare in English ("strengths", "lengths", "matchstick")
+    runs = re.findall(r"[^aeiouy]{5,}", t)
+    if any(r not in ("ngths", "tchst", "rthst") for r in runs):
+        return False
+    return True
+
+
+def is_nonsense(text):
+    """True if most of the "words" aren't real words."""
+    toks = re.findall(r"[A-Za-z0-9']+", text or "")
+    if not toks:
+        return False
+    real = sum(1 for t in toks if _real_word(t))
+    return real == 0 or (len(toks) >= 3 and real / len(toks) < 0.5)
+
+
+def _nonsense_review(q, qid, text, n):
+    return {
+        "id": qid, "question": q["text"], "focus": q["focus"], "answer": text, "words": n,
+        "score": 0, "strengths": [],
+        "tips": [NONSENSE_WARNING, f"Answer the question that was asked. This one was about: {q['focus'].lower()}."],
+        "pace": None, "warning": NONSENSE_WARNING,
+    }
+
+
 def _review_core(qid, answer, seconds=None, asked=None):
     """Score one answer out of 100 with fixed rules (the same answer always gets
     the same score). The AI never changes the score.
@@ -267,6 +312,9 @@ def _review_core(qid, answer, seconds=None, asked=None):
                      "it's fine to say 'Can I take a moment to think?'"],
             "pace": None, "warning": None,
         }
+
+    if is_nonsense(text):
+        return _nonsense_review(q, qid, text, n)
 
     if qid == "close":
         return _review_close(q, qid, text, low, n, seconds)
@@ -816,6 +864,8 @@ _spoken_feedback_base = spoken_feedback
 def _warning_feedback(review):
     """Something you shouldn't say in an interview: Alex says so plainly."""
     w = review["warning"]
+    if w == NONSENSE_WARNING:
+        return f"Hmm, I didn't understand that one. {w}"
     if review["id"] == "close":
         better = "" if "'" in w else " A better question would be, what would a typical day look like for me?"
         return f"Hmm, I'd steer clear of that one in a real interview. {w}{better}"
@@ -868,7 +918,7 @@ def follow_up(qid, answer):
     text = " ".join((answer or "").split())
     low = text.lower()
     n = len(re.findall(r"[a-zA-Z0-9']+", text))
-    if n == 0:
+    if n == 0 or is_nonsense(text):
         return None
 
     if q["star"]:

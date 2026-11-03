@@ -1093,6 +1093,18 @@ def admin_kpis():
                GROUP BY o.id ORDER BY n DESC, o.title LIMIT 5"""
         ).fetchall()
     ]
+    # Daily counts for the last 14 days (oldest first), for the activity chart
+    # and the small trend lines. Dates are UTC, like created_at.
+    days = [(datetime.utcnow().date() - timedelta(days=n)).isoformat() for n in range(13, -1, -1)]
+
+    def daily(table):
+        rows = db.execute(f"SELECT date(created_at) AS d, COUNT(*) AS n FROM {table} "
+                          "WHERE date(created_at) >= ? GROUP BY d", (days[0],)).fetchall()
+        got = {r["d"]: r["n"] for r in rows}
+        return [got.get(d, 0) for d in days]
+
+    bands = db.execute("""SELECT SUM(overall < 40), SUM(overall >= 40 AND overall < 70), SUM(overall >= 70)
+                          FROM interview_practice""").fetchone()
     worst_pages = [
         {"page": r["page"], "yes": r["yes"], "total": r["total"]}
         for r in db.execute(
@@ -1127,6 +1139,8 @@ def admin_kpis():
             "calls": one("SELECT COUNT(*) FROM interview_practice"),
             "people": one("SELECT COUNT(DISTINCT user_id) FROM interview_practice"),
             "averageScore": round(one("SELECT AVG(overall) FROM interview_practice") or 0),
+            # How many calls scored under 40, 40 to 69, and 70 or more
+            "bands": {"low": bands[0] or 0, "mid": bands[1] or 0, "high": bands[2] or 0},
         },
         "cvs": {
             "uploaded": one("SELECT COUNT(*) FROM user_cvs"),
@@ -1140,6 +1154,14 @@ def admin_kpis():
             "total": feedback_total,
             "helpfulPercent": round(100 * feedback_yes / feedback_total) if feedback_total else None,
             "lowestPages": worst_pages,
+        },
+        "trend": {
+            "days": days,
+            "users": daily("users"),
+            "interest": daily("expressions_of_interest"),
+            "coffeeChats": daily("coffee_chat_requests"),
+            "practice": daily("interview_practice"),
+            "feedback": daily("page_feedback"),
         },
     })
 

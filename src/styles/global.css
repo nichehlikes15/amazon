@@ -1,17 +1,18 @@
 :root {
-    /* Squid Ink - Amazon's darkest brand colour. Use it wherever you'd use black. */
-    --navy: #333E48;
+    /* Amazon brand colours: Amazon Dark Blue (Squid Ink) #232F3E and Amazon Orange #FF9900.
+       Use the dark blue wherever you'd use black. */
+    --navy: #232F3E;
     --orange: #FF9900;
-    --ink: #333E48;
+    --ink: #232F3E;
     --muted: #536174;
     --line: #dce3eb;
     --light: #f3f7fb;
     --white: #ffffff;
-    --orange-solid: #EC7211;
-    --orange-solid-hover: #EB5F07;
-    --grad-start: #0FB8C9;
-    --grad-mid: #2563EB;
-    --grad-end: #7C3AED;
+    /* Orange buttons and fills are Amazon Orange with dark blue text on top
+       (white text on #FF9900 is too hard to read; dark blue is about 6.6:1). */
+    --orange-solid: #FF9900;
+    --orange-solid-hover: #F08F00;
+    --on-orange: #232F3E;
 
     /* ----- Design system: spacing ----- */
     /* Side space roughly halved: wider content, smaller gutters */
@@ -45,8 +46,8 @@
     --dur-slow: 0.8s;
 
     /* ----- Theme helpers (dark mode swaps these) ----- */
-    --hero-gradient: linear-gradient(180deg, #e3d4f6 0%, #ecdff8 22%, #f3ecfb 46%, var(--white) 82%);
-    --navy-solid: #333E48;        /* Squid Ink: dark backgrounds that stay dark in both themes */
+    --hero-gradient: linear-gradient(180deg, #FFF3E0 0%, #FFF7EB 30%, var(--white) 82%);   /* soft Amazon Orange tint */
+    --navy-solid: #232F3E;        /* Amazon Dark Blue: dark backgrounds that stay dark in both themes */
     --glass: rgb(255 255 255 / 72%);
     --line-strong: #c9d2dd;
     --sk-a: #eef2f6;
@@ -62,10 +63,11 @@ html[data-theme="dark"] {
     --line: #2b3746;
     --light: #172230;             /* soft panels */
     --white: #0d141d;             /* page background */
-    --navy-solid: #1b2735;
-    --orange-solid: #EC7211;      /* same as light mode, so buttons keep white text */
-    --orange-solid-hover: #F5841F;
-    --hero-gradient: linear-gradient(180deg, #2a2142 0%, #211b36 22%, #171a2a 46%, var(--white) 82%);
+    --navy-solid: #232F3E;
+    --orange-solid: #FF9900;      /* same Amazon Orange as light mode, with dark blue text */
+    --orange-solid-hover: #FFA826;
+    --on-orange: #232F3E;
+    --hero-gradient: linear-gradient(180deg, #232F3E 0%, #18212C 40%, var(--white) 82%);
     --glass: rgb(23 34 48 / 72%);
     --line-strong: #3d4b5c;
     --sk-a: #17212d;
@@ -87,13 +89,14 @@ html[data-theme="dark"][data-colour-blind="on"] {
 /* Darker text and lines, plain backgrounds, darker orange that passes
    contrast checks with white text (#B84E00 on white is about 5:1). */
 html[data-contrast="high"] {
-    --muted: #333E48;
+    --muted: #232F3E;
     --line: #6b7682;
-    --line-strong: #333E48;
+    --line-strong: #232F3E;
     --light: #eef1f4;
     --orange: #b84e00;
     --orange-solid: #b84e00;
     --orange-solid-hover: #8f3c00;
+    --on-orange: #ffffff;         /* the darker high-contrast orange keeps white text */
     --hero-gradient: var(--white);
     --glass: #ffffff;
     --shadow-soft: none;
@@ -251,7 +254,7 @@ html[data-theme="dark"] :is(.opp-closing.is-soon .opp-closing-pill, .od-tag-soon
     border-color: #5a3d17;
     color: #ffc27a;
 }
-html[data-theme="dark"] :is(.ccl-status.is-confirmed, .admin-status-select.is-confirmed, .ccl-meeting) { background-color: #172a4a; color: #a9c5ff; }
+html[data-theme="dark"] :is(.ccl-status.is-confirmed, .admin-status-select.is-confirmed, .ccl-meeting) { background-color: #2b3746; color: #e9eef5; }
 html[data-theme="dark"] :is(.ccl-status.is-completed, .admin-status-select.is-completed, .cc-sent-icon) { background-color: #15301f; color: #8fdca6; }
 html[data-theme="dark"] :is(.ccl-status.is-cancelled, .admin-status-select.is-cancelled, .opp-closing.is-closed .opp-closing-pill, .od-tag-closed) { background-color: #222b36; color: #9aa8b9; }
 html[data-theme="dark"] :is(.auth-error, .od-error, .cc-error, .pf-error, .ccl-yes, [class$="-error"][role="alert"]) { background-color: #3a1717; border-color: #5c2424; color: #ffb4ab; }
@@ -264,9 +267,9 @@ html[data-theme="dark"] ::selection { background: #5a3d17; color: #fff; }
 /* In dark mode --white turns near-black and --navy turns light, so anything
    that used them as a fill or as text on a fill needs its own colours. */
 
-/* Orange buttons keep white text (it was turning near-black) */
+/* Orange buttons keep dark blue text in dark mode too */
 html[data-theme="dark"] .primary-button,
-html[data-theme="dark"] .primary-button:hover { color: #fff; }
+html[data-theme="dark"] .primary-button:hover { color: var(--on-orange); }
 
 /* Dark bands and badges that used --navy as a fill (they went light grey
    with white text on top) */
@@ -294,12 +297,12 @@ html[data-theme="dark"] .info2-rail { background: rgb(13 20 29 / 92%); border-co
 
 /* Pastel boxes and placeholders */
 html[data-theme="dark"] .auth-done-icon { background: #15301f; color: #8fdca6; }
-html[data-theme="dark"] .advice-detail-placeholder { background: linear-gradient(160deg, #2a2142 0%, var(--light) 100%); }
+html[data-theme="dark"] .advice-detail-placeholder { background: linear-gradient(160deg, #232F3E 0%, var(--light) 100%); }
 html[data-theme="dark"] .tl-media-placeholder { background: var(--light); color: var(--muted); }
 html[data-theme="dark"] .admin-table tr.is-editing td { background: var(--light); }
 html[data-theme="dark"] .od-file-remove:hover { background: #3a1717; }
 html[data-theme="dark"] .ak-csv.is-danger:hover { border-color: #5c2424; }
-html[data-theme="dark"] .event-online { background: #172a4a; color: #a9c5ff; }
+html[data-theme="dark"] .event-online { background: #2b3746; color: #e9eef5; }
 html[data-theme="dark"] .event-in-person { background: #3a2a14; color: #ffc27a; }
 
 /* Outline button on the dark bands: its border and hover used --white */
@@ -489,7 +492,7 @@ p {
 .primary-button {
     border: 1px solid var(--orange-solid);
     background: var(--orange-solid);
-    color: var(--white);
+    color: var(--on-orange);
 }
 
 .primary-button:hover {
@@ -879,7 +882,7 @@ html[data-reduced-motion="on"] *::after {
 }
 
 .role-option:hover .role-option-icon { transform: rotate(-6deg) scale(1.06); }
-.role-option.is-on .role-option-icon { background: var(--orange-solid); color: #fff; }
+.role-option.is-on .role-option-icon { background: var(--orange-solid); color: var(--on-orange); }
 
 .role-option-text { display: flex; flex-direction: column; gap: 3px; }
 .role-option-text strong { color: var(--navy); font-size: 1.0625rem; }
@@ -896,7 +899,7 @@ html[data-reduced-motion="on"] *::after {
     height: 20px;
     border-radius: 50%;
     background: var(--orange-solid);
-    color: #fff;
+    color: var(--on-orange);
     opacity: 0;
     transform: scale(0.5);
     transition: opacity var(--dur) ease, transform var(--dur) var(--ease-spring);

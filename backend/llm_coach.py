@@ -1,6 +1,7 @@
 """
-AI replies for interview practice (Alex), using a language model (LLM)
-that runs on this computer through Ollama.
+AI replies for interview practice (Alex), using a language model (LLM):
+either Amazon Nova through Amazon Bedrock (the live site) or a model that
+runs on this computer through Ollama (testing on our own computer).
 
 How it fits together
   - interview_coach.py still works out the SCORE, strengths and tips with
@@ -12,16 +13,22 @@ How it fits together
     instead. The practice call never breaks because of the AI.
 
 Setup (see AI_SETUP.md): install Ollama, run `ollama pull llama3.2`, keep
-the Ollama app open, then start the backend as normal.
+the Ollama app open, then start the backend as normal. For Amazon Bedrock,
+set LAUNCHPAD_AI=bedrock and AWS_BEARER_TOKEN_BEDROCK (a Bedrock API key).
 
 Settings (environment variables, all optional):
-  LAUNCHPAD_AI     "ollama" (default) or "off" to always use the rules
+  LAUNCHPAD_AI     "ollama" (default), "bedrock", or "off" to always use the rules
   OLLAMA_URL       default http://localhost:11434
   OLLAMA_MODEL     default llama3.2
   OLLAMA_TIMEOUT   seconds to wait for a reply, default 15
+  AWS_BEARER_TOKEN_BEDROCK  Amazon Bedrock API key (only for "bedrock")
+  BEDROCK_REGION   default eu-north-1 (Stockholm)
+  BEDROCK_MODEL    default eu.amazon.nova-2-lite-v1:0 (Amazon Nova 2 Lite, kept in the EU)
+  BEDROCK_TIMEOUT  seconds to wait for a reply, default 15
 
-Privacy: Ollama runs on the same computer as the backend, so answers are
-not sent to an outside AI company. Nothing in this file is saved.
+Privacy: Ollama runs on the same computer as the backend. Amazon Bedrock
+runs inside our own AWS account, doesn't store prompts or replies, and
+doesn't use them to train models. Nothing in this file is saved.
 """
 import contextvars
 import json
@@ -30,13 +37,20 @@ import re
 import threading
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 
 AI_MODE = os.environ.get("LAUNCHPAD_AI", "ollama").strip().lower()
 OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://localhost:11434").rstrip("/")
 MODEL = os.environ.get("OLLAMA_MODEL", "llama3.2").strip() or "llama3.2"
+# Amazon Bedrock (used by the live site): LAUNCHPAD_AI=bedrock
+USE_BEDROCK = AI_MODE == "bedrock"
+BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "eu-north-1").strip() or "eu-north-1"
+BEDROCK_KEY = os.environ.get("AWS_BEARER_TOKEN_BEDROCK", "").strip()
+if USE_BEDROCK:
+    MODEL = os.environ.get("BEDROCK_MODEL", "eu.amazon.nova-2-lite-v1:0").strip() or "eu.amazon.nova-2-lite-v1:0"
 try:
-    TIMEOUT = float(os.environ.get("OLLAMA_TIMEOUT", "15"))
+    TIMEOUT = float(os.environ.get("BEDROCK_TIMEOUT" if USE_BEDROCK else "OLLAMA_TIMEOUT", "15"))
 except ValueError:
     TIMEOUT = 15.0
 # Keep the model loaded between answers so replies stay quick.
@@ -104,6 +118,54 @@ def _get(path, timeout):
         return json.loads(res.read().decode("utf-8"))
 
 
+def _converse(payload, timeout):
+    """Send one request to Amazon Bedrock's Converse API."""
+    url = (f"https://bedrock-runtime.{BEDROCK_REGION}.amazonaws.com/model/"
+           f"{urllib.parse.quote(MODEL, safe='')}/converse")
+    req = urllib.request.Request(
+        url,
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"Content-Type": "application/json", "Authorization": f"Bearer {BEDROCK_KEY}"},
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=timeout) as res:
+        return json.loads(res.read().decode("utf-8"))
+
+
+def _bedrock_parts(data):
+    return (((data or {}).get("output") or {}).get("message") or {}).get("content") or []
+
+
+def _bedrock_json(system, prompt, schema, max_tokens, temperature):
+    """Ask Bedrock for a reply in the given JSON shape. The model has to "use" a
+    reply tool whose input follows the schema, so the reply is always JSON."""
+    payload = {
+        "system": [{"text": system}],
+        "messages": [{"role": "user", "content": [{"text": prompt}]}],
+        "inferenceConfig": {"maxTokens": max(300, max_tokens * 2), "temperature": temperature},
+        "toolConfig": {
+            "tools": [{"toolSpec": {"name": "reply", "description": "Send your reply.",
+                                    "inputSchema": {"json": schema}}}],
+            "toolChoice": {"tool": {"name": "reply"}},
+        },
+    }
+    parts = _bedrock_parts(_converse(payload, TIMEOUT))
+    for part in parts:
+        use = part.get("toolUse") or {}
+        if isinstance(use.get("input"), dict):
+            return use["input"]
+    for part in parts:  # fall back to JSON written as plain text
+        text = re.sub(r"^```(?:json)?\s*|\s*```$", "", (part.get("text") or "").strip())
+        if text:
+            try:
+                out = json.loads(text)
+            except ValueError:
+                continue
+            if isinstance(out, dict):
+                return out
+    return None
+
+
 def _refused(err):
     reason = getattr(err, "reason", err)
     return isinstance(reason, ConnectionRefusedError) or "refused" in str(reason).lower()
@@ -111,6 +173,10 @@ def _refused(err):
 
 def _model_status(refresh=False):
     """Is Ollama running, with the model downloaded? Checked at most every 20 seconds."""
+    if USE_BEDROCK:
+        have = bool(BEDROCK_KEY)
+        return {"enabled": True, "available": have, "model": MODEL, "provider": "bedrock",
+                "reason": "" if have else "Amazon Bedrock isn't set up on the server yet (no API key)."}
     now = time.time()
     cached = _state["status"]
     if cached and not refresh and now - _state["status_at"] < 20:
@@ -126,13 +192,14 @@ def _model_status(refresh=False):
             "enabled": True,
             "available": have,
             "model": MODEL,
+            "provider": "ollama",
             "reason": "" if have else f"Ollama is running, but the {MODEL} model isn't downloaded. "
                                       f"In Terminal, run: ollama pull {MODEL}",
         }
         if have:
             _state["down_until"] = 0.0
     except Exception:
-        status = {"enabled": True, "available": False, "model": MODEL,
+        status = {"enabled": True, "available": False, "model": MODEL, "provider": "ollama",
                   "reason": "Ollama isn't running on this computer. Open the Ollama app, then try again."}
     with _lock:
         _state["status"] = status
@@ -147,6 +214,7 @@ def ai_status(refresh=False):
     failed since. checking: a test reply is running (e.g. the model is loading)."""
     if not enabled():
         return {"enabled": False, "available": False, "checking": False, "model": MODEL,
+                "provider": "bedrock" if USE_BEDROCK else "ollama",
                 "reason": "AI replies are turned off (LAUNCHPAD_AI=off)."}
     base = _model_status(refresh)
     if not base.get("available"):
@@ -154,15 +222,18 @@ def ai_status(refresh=False):
     now = time.time()
     ok_at, failed_at = _state["ok_at"], _state["failed_at"]
     if failed_at > ok_at and now - failed_at < FAILED_FOR:
-        return {**base, "available": False, "checking": _state["probing"],
-                "reason": f"Ollama is running, but the {MODEL} model isn't replying properly (it may be too "
-                          "slow or still loading). Alex is using standard replies for now."}
+        reason = ("Amazon Bedrock isn't replying properly right now. Alex is using standard replies for now."
+                  if USE_BEDROCK else
+                  f"Ollama is running, but the {MODEL} model isn't replying properly (it may be too "
+                  "slow or still loading). Alex is using standard replies for now.")
+        return {**base, "available": False, "checking": _state["probing"], "reason": reason}
     if ok_at > failed_at and now - ok_at < WORKING_FOR:
         return {**base, "available": True, "checking": False, "reason": ""}
     # Not tested yet (or not for a while): ask the model for a tiny reply in the background.
     _start_probe()
     return {**base, "available": False, "checking": True,
-            "reason": f"Checking the {MODEL} model replies. The first time, loading it can take up to a minute."}
+            "reason": "Checking Amazon Bedrock replies." if USE_BEDROCK else
+                      f"Checking the {MODEL} model replies. The first time, loading it can take up to a minute."}
 
 
 def _start_probe():
@@ -174,6 +245,16 @@ def _start_probe():
         _state["probing"] = True
 
     def run():
+        if USE_BEDROCK:
+            try:
+                data = _converse({"messages": [{"role": "user", "content": [{"text": "Reply with the word OK."}]}],
+                                  "inferenceConfig": {"maxTokens": 10}}, PROBE_TIMEOUT)
+                _mark(any((p.get("text") or "").strip() for p in _bedrock_parts(data)))
+            except Exception:
+                _mark(False)
+            finally:
+                _state["probing"] = False
+            return
         payload = {
             "model": MODEL,
             "stream": False,
@@ -222,6 +303,18 @@ def _chat(system, prompt, schema, max_tokens=180, temperature=0.5):
     """Ask the model for a JSON reply. Returns a dict, or None if anything goes wrong."""
     if not enabled() or time.time() < _state["down_until"]:
         return None
+    if USE_BEDROCK:
+        if not BEDROCK_KEY:
+            return None
+        try:
+            out = _bedrock_json(system, prompt, schema, max_tokens, temperature)
+        except Exception:  # no internet, key expired, throttled, timed out...
+            out = None
+        if not isinstance(out, dict):
+            _mark(False)
+            return None
+        _mark(True)
+        return out
     payload = {
         "model": MODEL,
         "stream": False,

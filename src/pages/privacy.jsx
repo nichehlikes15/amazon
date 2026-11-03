@@ -102,9 +102,11 @@ function Privacy() {
               Questions typed into Ask Launchpad (the help chat) are answered and then thrown away. They are not saved.
             </li>
             <li>
-              Alex's replies, follow-up questions and end summary can be written by an AI model. The AI runs on the
-              Launchpad server itself (using a tool called Ollama), so your answers are not sent to an outside AI
-              company, and the AI doesn't keep them. Your scores always come from fixed checks, not the AI.
+              Alex's replies, follow-up questions and end summary can be written by an AI model. On the live site
+              this is Amazon Nova, run through Amazon Bedrock in the EU inside our own AWS account. Amazon Bedrock
+              doesn't store your answers or use them to train AI models. When we test the site on our own computer,
+              the AI runs on that computer instead (using a tool called Ollama). Your scores always come from fixed
+              checks, not the AI.
             </li>
             <li>If you're signed in, your scores for each call (not your answers) are saved to My profile. You can remove any result there.</li>
             <li>If you turn on your camera, the video only shows on your own screen. It is not recorded or sent anywhere.</li>

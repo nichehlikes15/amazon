@@ -40,6 +40,16 @@ export function titleFor(pathname) {
   return `Page not found | ${SITE}`
 }
 
+// Plain page name for a path, e.g. '/tlevel' -> 'T Levels' ('/' is 'Home').
+export function pageName(pathname) {
+  if (pathname === '/') return 'Home'
+  const exact = TITLES.find(([path]) => path === pathname)
+  if (exact) return exact[1]
+  if (pathname.startsWith('/opportunities/')) return 'An opportunity'
+  if (pathname.startsWith('/guides/')) return 'A guide'
+  return pathname
+}
+
 export function setPageTitle(text) {
   document.title = text ? `${text} | ${SITE}` : SITE
 }

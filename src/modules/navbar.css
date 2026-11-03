@@ -465,7 +465,7 @@ html[data-theme="dark"] .brand img {
     padding: 10px 18px;
     border-radius: 10px;
     background: var(--orange-solid);
-    color: #fff;
+    color: var(--on-orange);
     font-size: calc(0.9375 * var(--nav-rem) * var(--ts));
     font-weight: 600;
     text-decoration: none;

@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
 import { api } from '../modules/api'
 import { Icon } from '../modules/icons'
+import { pageName } from '../modules/page-title'
+import { C, ActivityChart, Donut, PairBars, RankBars, Ring, Sparkline, StackBar } from './admin-charts'
 
 /*
-  Admin: the project's KPIs at a glance, and the "Was this page helpful?"
-  answers. Both can be downloaded as CSV files for the Task 3 analysis.
+  Admin: the project's KPIs at a glance (with small charts from
+  admin-charts.jsx), and the "Was this page helpful?" answers. Both can be downloaded as CSV files for the Task 3 analysis.
 */
-
-const ROLE_LABELS = { student: 'Students', parent: 'Parents and carers', school: 'Schools and colleges' }
 
 // Turn rows into a CSV file and download it.
 export function downloadCsv(filename, headers, rows) {
@@ -27,56 +27,96 @@ export function downloadCsv(filename, headers, rows) {
   setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
-function Tile({ icon, label, value, sub }) {
+// Who registered interest, coffee chat statuses and pathways, with their chart colours.
+const ROLES = [
+  { key: 'student', label: 'Students', color: C.orange },
+  { key: 'parent', label: 'Parents and carers', color: C.ink },
+  { key: 'school', label: 'Schools and colleges', color: C.grey },
+]
+const STATUSES = [
+  { key: 'Requested', label: 'Requested (waiting)', color: C.orange },
+  { key: 'Confirmed', label: 'Confirmed', color: C.ink },
+  { key: 'Completed', label: 'Completed', color: C.grey },
+  { key: 'Cancelled', label: 'Cancelled', color: C.light },
+]
+const PATHWAY_ORDER = ['Digital', 'Business', 'Media', 'Finance', 'Engineering']
+
+// Known items first (in order, even if 0), then anything else in the data.
+function withExtras(known, data, extraColor) {
+  const list = known.map((x) => ({ ...x, value: data?.[x.key] || 0 }))
+  Object.entries(data || {}).forEach(([key, value]) => {
+    if (!known.some((x) => x.key === key)) list.push({ key, label: key, value, color: extraColor })
+  })
+  return list
+}
+
+// One headline number, with a small chart next to it.
+function Stat({ icon, label, value, sub, n, children }) {
   return (
-    <div className="ak-tile">
-      <span className="ak-tile-icon"><Icon name={icon} size={18} /></span>
-      <span className="ak-tile-label">{label}</span>
-      <strong className="ak-tile-value">{value}</strong>
-      {sub && <span className="ak-tile-sub">{sub}</span>}
+    <div className="ak-stat" style={{ '--n': n }}>
+      <span className="ak-stat-label"><Icon name={icon} size={15} /> {label}</span>
+      <span className="ak-stat-row">
+        <strong className="ak-stat-value">{value}</strong>
+        {children}
+      </span>
+      {sub && <span className="ak-stat-sub">{sub}</span>}
     </div>
   )
 }
 
-// Small horizontal bar list, e.g. interest by pathway.
-function Bars({ title, data, labels = {} }) {
-  const entries = Object.entries(data || {}).sort((a, b) => b[1] - a[1])
-  const max = Math.max(1, ...entries.map(([, n]) => n))
+function Panel({ title, note, wide, children }) {
   return (
-    <div className="ak-bars">
-      <h4>{title}</h4>
-      {entries.length === 0 ? (
-        <p className="ak-none">Nothing yet</p>
-      ) : (
-        <ul>
-          {entries.map(([k, n]) => (
-            <li key={k}>
-              <span className="ak-bar-label">{labels[k] || k}</span>
-              <span className="ak-bar-track" aria-hidden="true">
-                <span style={{ width: `${(n / max) * 100}%` }} />
-              </span>
-              <span className="ak-bar-num">{n}</span>
-            </li>
-          ))}
-        </ul>
-      )}
+    <div className={wide ? 'ak-panel is-wide' : 'ak-panel'}>
+      <div className="ak-panel-head">
+        <h3>{title}</h3>
+        {note && <p>{note}</p>}
+      </div>
+      {children}
     </div>
   )
 }
+
+const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`
+const timeNow = (d) => d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
 
 export function AdminKpis() {
   const [k, setK] = useState(null)
   const [error, setError] = useState('')
+  const [loadedAt, setLoadedAt] = useState(null)
+  const [busy, setBusy] = useState(false)
 
-  useEffect(() => {
-    api.adminKpis().then(setK).catch((err) => setError(err.message))
-  }, [])
+  const fetchKpis = () => api.adminKpis()
+    .then((d) => { setK(d); setLoadedAt(new Date()); setError('') })
+    .catch((err) => setError(err.message))
+
+  useEffect(() => { fetchKpis() }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const refresh = () => {
+    setBusy(true)
+    fetchKpis().finally(() => setBusy(false))
+  }
+
+  const t = k?.trend || { days: [], users: [], interest: [], coffeeChats: [], practice: [] }
+  const quizTop = k ? Object.entries(k.quiz.byPathway).sort((x, y) => y[1] - x[1])[0] : null
+  const pathwayRows = k ? [
+    ...PATHWAY_ORDER,
+    ...Object.keys(k.interest.byPathway).filter((p) => !PATHWAY_ORDER.includes(p)),
+  ].map((p) => ({ label: p, a: k.interest.byPathway[p] || 0, b: k.quiz.byPathway[p] || 0 })) : []
+  const bands = k?.practice.bands || { low: 0, mid: 0, high: 0 }
 
   return (
     <section className="content-section ak">
       <div className="ak-head">
-        <h2 className="admin-section-title">Key numbers (KPIs)</h2>
-        <p>Live counts from the database. Use them to check the project's KPIs.</p>
+        <div>
+          <h2 className="admin-section-title">Key numbers (KPIs)</h2>
+          <p>Live counts from the database. Use them to check the project's KPIs.</p>
+        </div>
+        <div className="ak-refresh">
+          {loadedAt && <span>Updated at {timeNow(loadedAt)}</span>}
+          <button type="button" className="ak-csv" onClick={refresh} disabled={busy}>
+            <Icon name="motion" size={14} /> {busy ? 'Refreshing…' : 'Refresh'}
+          </button>
+        </div>
       </div>
 
       {error && <div className="auth-error" role="alert">{error}</div>}
@@ -84,36 +124,103 @@ export function AdminKpis() {
 
       {k && (
         <>
-          <div className="ak-tiles">
-            <Tile icon="user" label="Accounts" value={k.users.total} sub={`${k.users.last7} new this week · ${k.users.last30} in 30 days`} />
-            <Tile icon="mail" label="Expressions of interest" value={k.interest.total} sub={`${k.interest.last30} in the last 30 days`} />
-            <Tile icon="check" label="Career quizzes finished" value={k.quiz.completed} />
-            <Tile icon="calendar" label="Coffee chat requests" value={k.coffeeChats.total} sub={`${k.coffeeChats.under18} from under-18s`} />
-            <Tile icon="video" label="Practice interviews" value={k.practice.calls}
-              sub={k.practice.calls ? `${k.practice.people} people · average score ${k.practice.averageScore}` : 'None yet'} />
-            <Tile icon="file" label="CVs checked" value={k.cvs.uploaded}
-              sub={k.cvs.uploaded ? `Average score ${k.cvs.averageScore}` : 'None yet'} />
-            <Tile icon="bookmark" label="Opportunities saved" value={k.saved.total} />
-            <Tile icon="heart" label="Pages rated helpful"
+          <div className="ak-stats">
+            <Stat n={0} icon="user" label="Accounts" value={k.users.total}
+              sub={`${k.users.last7} new this week · ${k.users.last30} in 30 days`}>
+              <Sparkline values={t.users} color={C.ink} label={`New accounts in the last 14 days: ${k.users.last7} this week`} />
+            </Stat>
+            <Stat n={1} icon="mail" label="Expressions of interest" value={k.interest.total}
+              sub={`${k.interest.last30} in the last 30 days`}>
+              <Sparkline values={t.interest} />
+            </Stat>
+            <Stat n={2} icon="check" label="Career quizzes finished" value={k.quiz.completed}
+              sub={quizTop ? `Most common result: ${quizTop[0]}` : 'None yet'} />
+            <Stat n={3} icon="calendar" label="Coffee chat requests" value={k.coffeeChats.total}
+              sub={`${k.coffeeChats.under18} from under-18s`}>
+              <Sparkline values={t.coffeeChats} color={C.grey} />
+            </Stat>
+            <Stat n={4} icon="video" label="Practice interviews" value={k.practice.calls}
+              sub={k.practice.calls ? `${plural(k.practice.people, 'person', 'people')} · average score ${k.practice.averageScore}` : 'None yet'}>
+              <Sparkline values={t.practice} color={C.deep} />
+            </Stat>
+            <Stat n={5} icon="file" label="CVs checked" value={k.cvs.uploaded}
+              sub={k.cvs.uploaded ? `Average score ${k.cvs.averageScore} out of 100` : 'None yet'}>
+              {k.cvs.uploaded > 0 && (
+                <Ring percent={k.cvs.averageScore} size={44} stroke={5} label={`Average CV score ${k.cvs.averageScore} out of 100`} />
+              )}
+            </Stat>
+            <Stat n={6} icon="bookmark" label="Opportunities saved" value={k.saved.total}
+              sub={k.saved.mostSaved.length ? plural(k.saved.mostSaved.length, 'opportunity saved so far', 'different opportunities saved') : 'None yet'} />
+            <Stat n={7} icon="heart" label="Pages rated helpful"
               value={k.feedback.helpfulPercent === null ? '-' : `${k.feedback.helpfulPercent}%`}
-              sub={`${k.feedback.total} ${k.feedback.total === 1 ? 'answer' : 'answers'}`} />
+              sub={plural(k.feedback.total, 'answer', 'answers')}>
+              {k.feedback.helpfulPercent !== null && (
+                <Ring percent={k.feedback.helpfulPercent} size={44} stroke={5} label={`${k.feedback.helpfulPercent}% said yes`} />
+              )}
+            </Stat>
           </div>
 
-          <div className="ak-breakdowns">
-            <Bars title="Interest by who's asking" data={k.interest.byRole} labels={ROLE_LABELS} />
-            <Bars title="Interest by pathway" data={k.interest.byPathway} />
-            <Bars title="Quiz results by pathway" data={k.quiz.byPathway} />
-            <Bars title="Coffee chats by status" data={k.coffeeChats.byStatus} />
-          </div>
+          <div className="ak-panels">
+            <Panel wide title="Activity in the last 14 days" note="Hover over the chart to see each day. Click a name to hide or show its line.">
+              <ActivityChart days={t.days} series={[
+                { key: 'users', label: 'New accounts', color: C.ink, values: t.users },
+                { key: 'interest', label: 'Expressions of interest', color: C.orange, values: t.interest },
+                { key: 'chats', label: 'Coffee chat requests', color: C.grey, values: t.coffeeChats },
+                { key: 'practice', label: 'Practice interviews', color: C.deep, values: t.practice },
+              ]} />
+            </Panel>
 
-          {k.saved.mostSaved.length > 0 && (
-            <div className="ak-list">
-              <h4>Most saved opportunities</h4>
-              <ol>
-                {k.saved.mostSaved.map((o) => <li key={o.title}><span>{o.title}</span><strong>{o.count}</strong></li>)}
-              </ol>
-            </div>
-          )}
+            <Panel title="Who is registering interest" note={plural(k.interest.total, 'form sent', 'forms sent')}>
+              <Donut items={withExtras(ROLES, k.interest.byRole, C.light)} centreLabel="forms" />
+            </Panel>
+
+            <Panel title="Pathways" note="Interest forms compared with career quiz results">
+              <PairBars rows={pathwayRows}
+                a={{ label: 'Expressions of interest', color: C.orange }}
+                b={{ label: 'Quiz results', color: C.ink }} />
+            </Panel>
+
+            <Panel title="Coffee chats" note={`${k.coffeeChats.under18} of ${k.coffeeChats.total} from under-18s`}>
+              <Donut items={withExtras(STATUSES, k.coffeeChats.byStatus, C.peach)} centreLabel="requests" />
+            </Panel>
+
+            <Panel title="Practice interview scores" note={k.practice.calls ? `Average score ${k.practice.averageScore} out of 100` : ''}>
+              <StackBar parts={[
+                { key: 'low', label: 'Under 40', value: bands.low, color: C.light },
+                { key: 'mid', label: '40 to 69', value: bands.mid, color: C.peach },
+                { key: 'high', label: '70 and over', value: bands.high, color: C.orange },
+              ]} />
+              {k.practice.calls > 0 && (
+                <div className="ak-facts">
+                  <div><strong>{k.practice.calls}</strong><span>{k.practice.calls === 1 ? 'call' : 'calls'}</span></div>
+                  <div><strong>{k.practice.people}</strong><span>{k.practice.people === 1 ? 'person' : 'people'}</span></div>
+                  <div><strong>{k.practice.averageScore}</strong><span>average score</span></div>
+                </div>
+              )}
+            </Panel>
+
+            <Panel title="Page feedback" note={'Answers to "Was this page helpful?"'}>
+              {k.feedback.total === 0 ? <p className="ak-none">Nothing yet</p> : (
+                <div className="ak-feedback">
+                  <Ring percent={k.feedback.helpfulPercent} size={112} stroke={11} label={`${k.feedback.helpfulPercent}% said yes`}>
+                    <strong>{k.feedback.helpfulPercent}%</strong>
+                    <span>said yes</span>
+                  </Ring>
+                  <div>
+                    <h4 className="ak-sub-title">Pages with the lowest ratings</h4>
+                    <RankBars items={k.feedback.lowestPages.map((pg) => {
+                      const pct = Math.round((100 * pg.yes) / pg.total)
+                      return { label: pageName(pg.page), value: pct, display: `${pct}% of ${pg.total}` }
+                    })} />
+                  </div>
+                </div>
+              )}
+            </Panel>
+
+            <Panel title="Most saved opportunities" note={plural(k.saved.total, 'save', 'saves') + ' in total'}>
+              <RankBars items={k.saved.mostSaved.map((o) => ({ label: o.title, value: o.count }))} color={C.ink} />
+            </Panel>
+          </div>
         </>
       )}
     </section>

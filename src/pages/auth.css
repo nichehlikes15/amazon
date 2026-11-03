@@ -214,7 +214,7 @@
 .auth-consent input:checked + .auth-check {
     border-color: var(--orange-solid);
     background: var(--orange-solid);
-    color: #fff;
+    color: var(--on-orange);
 }
 
 .auth-consent input:focus-visible + .auth-check {

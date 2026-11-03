@@ -314,7 +314,7 @@
     border: 0;
     border-radius: var(--radius-sm);
     background: var(--orange-solid);
-    color: #fff;
+    color: var(--on-orange);
     font-size: 0.875rem;
     font-weight: 600;
     cursor: pointer;

@@ -156,8 +156,8 @@ export function OfficeBackdrop() {
       {/* shelf with books */}
       <rect x="455" y="92" width="150" height="8" rx="2" fill="#a88b6c" />
       <rect x="468" y="52" width="16" height="40" rx="2" fill="#ff9900" />
-      <rect x="488" y="58" width="14" height="34" rx="2" fill="#2f6f73" />
-      <rect x="506" y="48" width="18" height="44" rx="2" fill="#7c3aed" opacity="0.7" />
+      <rect x="488" y="58" width="14" height="34" rx="2" fill="#232F3E" />
+      <rect x="506" y="48" width="18" height="44" rx="2" fill="#FF9900" opacity="0.7" />
       <rect x="528" y="62" width="14" height="30" rx="2" fill="#232f3e" />
       {/* plant */}
       <rect x="560" y="210" width="40" height="46" rx="6" fill="#e9e1d6" />

@@ -151,8 +151,10 @@ function AiStatus({ status }) {
       <p className="iv-ai is-on" role="status">
         <span className="iv-ai-dot" aria-hidden="true" />
         <span>
-          <strong>{INTERVIEWER}'s AI is on.</strong> He'll reply to what you actually say. The AI runs on the
-          Launchpad server itself, not with an outside AI company.
+          <strong>{INTERVIEWER}'s AI is on.</strong> He'll reply to what you actually say.{' '}
+          {status.provider === 'bedrock'
+            ? "The AI is Amazon Nova, run through Amazon Bedrock in the EU. Your words aren't stored or used to train it."
+            : 'The AI runs on the Launchpad server itself, not with an outside AI company.'}
         </span>
       </p>
     )

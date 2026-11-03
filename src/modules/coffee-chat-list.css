@@ -77,7 +77,7 @@
     transition: background var(--dur) ease, color var(--dur) ease;
 }
 
-.ccl-status.is-confirmed { background: #e8f0fe; color: #1d4ed8; }
+.ccl-status.is-confirmed { background: #DEE0E2; color: #232F3E; }
 .ccl-status.is-completed { background: #e8f6ec; color: #1e7e34; }
 .ccl-status.is-cancelled { background: #f1f2f4; color: #6b7480; }
 
@@ -102,7 +102,7 @@
     font-weight: 600;
 }
 
-.ccl-when svg { color: #1d4ed8; }
+.ccl-when svg { color: var(--navy); }
 
 .ccl-meeting-actions {
     display: inline-flex;
@@ -140,7 +140,7 @@
     padding: 8px 16px;
     border-radius: var(--radius-sm);
     background: var(--orange-solid);
-    color: #fff;
+    color: var(--on-orange);
     font-size: 0.875rem;
     font-weight: 600;
     text-decoration: none;

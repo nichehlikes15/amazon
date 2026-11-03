@@ -160,7 +160,7 @@ a.od-tag:hover {
 .od-apply {
     border: 1px solid var(--orange-solid);
     background: var(--orange-solid);
-    color: #fff;
+    color: var(--on-orange);
 }
 
 .od-apply:hover {
@@ -544,7 +544,7 @@ a.od-tag:hover {
     border: 0;
     border-radius: var(--radius-sm);
     background: var(--orange-solid);
-    color: #fff;
+    color: var(--on-orange);
     font: inherit;
     font-weight: 600;
     cursor: pointer;

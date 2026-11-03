@@ -229,7 +229,7 @@
     transition: background var(--dur) ease, color var(--dur) ease;
 }
 
-.iv-mode.is-on .iv-mode-icon { background: var(--orange-solid); color: #fff; }
+.iv-mode.is-on .iv-mode-icon { background: var(--orange-solid); color: var(--on-orange); }
 
 /* Tick boxes */
 .iv-checks {
@@ -270,7 +270,7 @@
 .iv-check input:checked + .iv-check-box {
     border-color: var(--orange-solid);
     background: var(--orange-solid);
-    color: #fff;
+    color: var(--on-orange);
 }
 
 .iv-check input:focus-visible + .iv-check-box { outline: 2px solid var(--orange); outline-offset: 2px; }
@@ -553,7 +553,7 @@
 .iv-dock-btn.is-live .iv-dock-icon {
     border-color: var(--orange-solid);
     background: var(--orange-solid);
-    color: #fff;
+    color: var(--on-orange);
     animation: iv-pulse 1.4s ease-in-out infinite;
 }
 
@@ -1362,7 +1362,7 @@
 .iv-status.is-speak .iv-status-dot { background: var(--orange); }
 .iv-status.is-listen .iv-status-dot { background: #4ade80; animation: iv-blink 1.6s ease-in-out infinite; }
 .iv-status.is-hear .iv-status-dot { background: #4ade80; animation: iv-pulse-green 1s ease-in-out infinite; }
-.iv-status.is-think .iv-status-dot { background: #a9c5ff; animation: iv-blink 1s ease-in-out infinite; }
+.iv-status.is-think .iv-status-dot { background: #91979F; animation: iv-blink 1s ease-in-out infinite; }
 
 /* Your microphone level, next to your name */
 .iv-meter {
@@ -1629,8 +1629,8 @@
     margin-left: 8px;
     padding: 1px 8px;
     border-radius: var(--radius-sm);
-    background: #f3ecfb;
-    color: #5b2a9e;
+    background: #FFF3E0;
+    color: #232F3E;
     font-size: 0.6875rem;
     font-weight: 700;
     letter-spacing: 0.06em;
@@ -1664,7 +1664,7 @@
     text-transform: uppercase;
 }
 
-html[data-theme="dark"] .iv-ai-tag { background: #2a2142; color: #d6c3f5; }
+html[data-theme="dark"] .iv-ai-tag { background: #3a2a14; color: #ffc27a; }
 
 @media (prefers-reduced-motion: reduce) {
     .iv-ai, .iv-live-fb-say, .iv-coach { animation: none; }
@@ -1898,7 +1898,7 @@ html[data-theme="dark"] .iv-dock-icon { box-shadow: none; }
     height: 24px;
     border-radius: 50%;
     background: var(--orange-solid);
-    color: #fff;
+    color: var(--on-orange);
     opacity: 0;
     transform: scale(0.5);
     transition: opacity var(--dur) ease, transform var(--dur) var(--ease-spring);
@@ -2044,7 +2044,7 @@ html[data-theme="dark"] .iv-fb-penalty { color: #ff8f85; }
 }
 .ivs-clear { background: transparent; color: var(--muted); }
 .ivs-clear:hover { background: var(--light); color: var(--navy); }
-.ivs-done { background: var(--orange-solid); color: #fff; }
+.ivs-done { background: var(--orange-solid); color: var(--on-orange); }
 .ivs-done:hover { background: var(--orange-solid-hover); }
 
 @keyframes ivs-fade { from { opacity: 0; } to { opacity: 1; } }
