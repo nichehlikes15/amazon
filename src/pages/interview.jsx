@@ -2128,6 +2128,14 @@ function Interview() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
+  // Ask Launchpad and "Was this page helpful?" show on the set-up and results
+  // screens, but hide during the call so they don't cover the call buttons.
+  useEffect(() => {
+    const inCall = stage === 'call' || stage === 'reviewing'
+    document.documentElement.classList.toggle('iv-in-call', inCall)
+    return () => document.documentElement.classList.remove('iv-in-call')
+  }, [stage])
+
   // Hidden "scripted replies" panel: type "script" on the page, or click the
   // "Interview practice" label 5 times. See modules/interview-script.js.
   const script = useScript()

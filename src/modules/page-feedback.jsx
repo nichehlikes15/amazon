@@ -10,7 +10,7 @@ import { Icon } from './icons'
   can be downloaded for the Task 3 feedback analysis.
 */
 
-const HIDDEN_ON = ['/admin', '/login', '/signup', '/forgot-password', '/reset-password', '/interview']
+const HIDDEN_ON = ['/admin', '/login', '/signup', '/forgot-password', '/reset-password']
 
 function FeedbackBox({ page }) {
   const [state, setState] = useState('ask') // ask | comment | sending | done

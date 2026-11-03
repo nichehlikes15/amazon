@@ -133,3 +133,6 @@
 @media (prefers-reduced-motion: reduce) {
     .pfb-form, .pfb-thanks { animation: none; }
 }
+
+/* Hidden while an interview practice call is running */
+html.iv-in-call .pfb { display: none !important; }

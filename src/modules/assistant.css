@@ -29,7 +29,9 @@
 
 .ask-lp-btn:hover { background: var(--orange-solid-hover); transform: translateY(-2px); }
 .ask-lp-btn:focus-visible { outline: 3px solid var(--navy); outline-offset: 3px; }
-.ask-lp-btn.is-open { background: var(--navy-solid); }
+/* Stays Amazon Orange when the chat is open (it used to turn dark blue, which
+   looked black and hid the dark blue icon). */
+.ask-lp-btn.is-open { background: var(--orange-solid-hover); color: var(--on-orange); }
 
 .ask-lp-panel {
     display: flex;
@@ -367,3 +369,6 @@ html[data-theme="dark"] .ask-lp-ai { background: #3a2a14; color: #ffc27a; }
 }
 
 @media print { .ask-lp { display: none !important; } }
+
+/* Hidden while an interview practice call is running */
+html.iv-in-call .ask-lp { display: none !important; }

@@ -17,7 +17,9 @@ import { canSpeak, findVoice, savedVoiceURI, speakNatural } from './voice'
   new one.
 */
 
-const HIDDEN_ON = ['/interview', '/admin']
+// On /interview it shows on the set-up and results screens, and is hidden
+// only while the practice call is running (see interview.jsx and assistant.css).
+const HIDDEN_ON = ['/admin']
 
 const SUGGESTIONS = [
   'How long is a placement?',
