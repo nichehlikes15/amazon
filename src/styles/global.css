@@ -46,7 +46,7 @@
     --dur-slow: 0.8s;
 
     /* ----- Theme helpers (dark mode swaps these) ----- */
-    --hero-gradient: linear-gradient(180deg, #FFF3E0 0%, #FFF7EB 30%, var(--white) 82%);   /* soft Amazon Orange tint */
+    --hero-gradient: linear-gradient(180deg, #e3d4f6 0%, #ecdff8 22%, #f3ecfb 46%, var(--white) 82%);   /* soft purple fade (team choice) */
     --navy-solid: #232F3E;        /* Amazon Dark Blue: dark backgrounds that stay dark in both themes */
     --glass: rgb(255 255 255 / 72%);
     --line-strong: #c9d2dd;
@@ -67,7 +67,7 @@ html[data-theme="dark"] {
     --orange-solid: #FF9900;      /* same Amazon Orange as light mode, with dark blue text */
     --orange-solid-hover: #FFA826;
     --on-orange: #232F3E;
-    --hero-gradient: linear-gradient(180deg, #232F3E 0%, #18212C 40%, var(--white) 82%);
+    --hero-gradient: linear-gradient(180deg, #2a2142 0%, #211b36 22%, #171a2a 46%, var(--white) 82%);
     --glass: rgb(23 34 48 / 72%);
     --line-strong: #3d4b5c;
     --sk-a: #17212d;
@@ -297,7 +297,7 @@ html[data-theme="dark"] .info2-rail { background: rgb(13 20 29 / 92%); border-co
 
 /* Pastel boxes and placeholders */
 html[data-theme="dark"] .auth-done-icon { background: #15301f; color: #8fdca6; }
-html[data-theme="dark"] .advice-detail-placeholder { background: linear-gradient(160deg, #232F3E 0%, var(--light) 100%); }
+html[data-theme="dark"] .advice-detail-placeholder { background: linear-gradient(160deg, #2a2142 0%, var(--light) 100%); }
 html[data-theme="dark"] .tl-media-placeholder { background: var(--light); color: var(--muted); }
 html[data-theme="dark"] .admin-table tr.is-editing td { background: var(--light); }
 html[data-theme="dark"] .od-file-remove:hover { background: #3a1717; }
