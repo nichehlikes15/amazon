@@ -9,6 +9,7 @@ Security notes (prototype level):
 """
 
 import hashlib
+import io
 import functools
 import json
 import re
@@ -19,7 +20,7 @@ import os
 import sqlite3
 import uuid
 
-from flask import Flask, g, jsonify, request, session, send_from_directory
+from flask import Flask, g, jsonify, request, session, send_file, send_from_directory
 from flask_cors import CORS
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
@@ -1190,6 +1191,51 @@ def require_admin():
     if not user["is_admin"]:
         return None, (jsonify({"error": "You do not have permission to view this."}), 403)
     return user, None
+
+
+def _database_copy():
+    """A safe copy of the whole database, as bytes, for an admin to download.
+
+    Made with SQLite's VACUUM INTO, so it's a complete, consistent copy even
+    while the site is in use. Passwords (stored scrambled) and password reset
+    codes are removed from the COPY only, then VACUUM rewrites the file so the
+    removed values aren't left behind in empty space. The live database is
+    not changed."""
+    tmp = os.path.join(os.path.dirname(DB_PATH), f".export-{secrets.token_hex(8)}.db")
+    try:
+        src = sqlite3.connect(DB_PATH)
+        try:
+            src.execute("VACUUM INTO ?", (tmp,))
+        finally:
+            src.close()
+        dst = sqlite3.connect(tmp)
+        try:
+            dst.execute("UPDATE users SET password_hash = ''")
+            dst.execute("DELETE FROM password_resets")
+            dst.commit()
+            dst.execute("VACUUM")
+        finally:
+            dst.close()
+        with open(tmp, "rb") as f:
+            return f.read()
+    finally:
+        if os.path.exists(tmp):
+            os.remove(tmp)
+
+
+@app.get("/api/admin/database")
+def download_database():
+    """Admin only - download a copy of the database (passwords removed)."""
+    _, err = require_admin()
+    if err:
+        return err
+    if rate_limited("db-export", 10, 3600):
+        return too_many()
+    data = _database_copy()
+    name = f"launchpad-database-{datetime.utcnow().strftime('%Y-%m-%d')}.db"
+    resp = send_file(io.BytesIO(data), mimetype="application/vnd.sqlite3", as_attachment=True, download_name=name)
+    resp.headers["Cache-Control"] = "no-store"
+    return resp
 
 
 @app.get("/api/admin/feedback")

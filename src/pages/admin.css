@@ -880,3 +880,12 @@ html[data-reduced-motion="on"] :is(.ak-ring-value, .ak-seg) { animation: none; s
     font-size: 0.9375rem;
 }
 .admin-host-form input:focus-visible { border-color: var(--orange-solid); outline: 2px solid var(--orange-solid); outline-offset: 1px; }
+
+/* Download the database (bottom of the Admin page) */
+.admin-db { border-top: 1px solid var(--line); padding-top: var(--row-y); }
+.admin-db-text { max-width: 720px; margin: -12px 0 18px; color: var(--muted); font-size: 0.9375rem; line-height: 1.6; }
+.admin-db-warn { display: flex; align-items: flex-start; gap: 10px; margin-top: 0; color: var(--ink); }
+.admin-db-warn svg { flex-shrink: 0; margin-top: 3px; color: var(--navy); }
+.admin-db-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin: 8px 0 16px; }
+.admin-db-actions .primary-button { padding: 12px 22px; font: inherit; font-weight: 600; cursor: pointer; }
+.admin-db-actions .primary-button:disabled { opacity: 0.7; cursor: progress; }

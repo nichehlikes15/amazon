@@ -106,6 +106,67 @@ export function AdminChatHosts() {
   )
 }
 
+// Admin: download a copy of the whole database (launchpad.db) to open in
+// DB Browser for SQLite. The server removes passwords and reset codes from
+// the copy; the live database isn't changed.
+export function AdminDatabase() {
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const [done, setDone] = useState(false)
+
+  const download = async () => {
+    setError('')
+    setDone(false)
+    setBusy(true)
+    try {
+      const res = await fetch(api.databaseUrl(), { credentials: 'include' })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || "Sorry, the database couldn't be downloaded.")
+      }
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `launchpad-database-${new Date().toISOString().slice(0, 10)}.db`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      setTimeout(() => URL.revokeObjectURL(url), 1000)
+      setDone(true)
+      setTimeout(() => setDone(false), 4000)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <section className="content-section admin-eoi-section admin-db">
+      <h2 className="admin-section-title">Download the database</h2>
+      <p className="admin-db-text">
+        A copy of every table in one file (launchpad.db). Open it with the free app DB Browser for SQLite.
+        Passwords and password reset codes are taken out of the copy, and the live database isn&apos;t changed.
+      </p>
+      <p className="admin-db-text admin-db-warn">
+        <Icon name="shield" size={16} />
+        <span>
+          It still has people&apos;s names and emails, some from under-18s. Keep it private, don&apos;t share it or put it
+          on a shared drive, and delete it when you&apos;ve finished.
+        </span>
+      </p>
+      <div className="admin-db-actions">
+        <button type="button" className="primary-button" onClick={download} disabled={busy}>
+          <Icon name="download" size={16} /> {busy ? 'Preparing…' : 'Download database'}
+        </button>
+        {done && <span className="admin-saved" role="status">Downloaded</span>}
+      </div>
+      {error && <div className="auth-error" role="alert">{error}</div>}
+    </section>
+  )
+}
+
 // Turn rows into a CSV file and download it.
 export function downloadCsv(filename, headers, rows) {
   const cell = (v) => {

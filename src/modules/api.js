@@ -108,6 +108,8 @@ export const api = {
     request(`/host/coffee-chats/${id}/details`, { method: 'PUT', body: JSON.stringify(payload) }),
   // Admin: which account manages each coffee chat person
   adminChatHosts: () => request('/admin/chat-hosts'),
+  // Admin: a copy of the whole database as a file (passwords removed by the server)
+  databaseUrl: () => `${BASE}/admin/database`,
   setChatHost: (mentor, email) =>
     request('/admin/chat-hosts', { method: 'PUT', body: JSON.stringify({ mentor, email }) }),
   listOpportunities: () => request('/opportunities'),
