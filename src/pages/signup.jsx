@@ -6,6 +6,7 @@ import { Icon } from '../modules/icons'
 import { SignInLink, nextPageName, useNextPath } from '../modules/return-to'
 import { RoleChoice } from '../modules/role'
 import { getLocalRole } from '../modules/role-store'
+import { EMAIL_ERROR, isValidEmail } from '../modules/email-check'
 
 function Signup() {
   const { signup } = useAuth()
@@ -25,6 +26,10 @@ function Signup() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+    if (!isValidEmail(email)) {
+      setError(EMAIL_ERROR)
+      return
+    }
     if (password.length < 8) {
       setError('Password must be at least 8 characters.')
       return

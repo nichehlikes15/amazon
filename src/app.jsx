@@ -13,6 +13,7 @@ import TLevel from "./pages/t-level"
 import Profile from "./pages/profile";
 import Alummi from "./pages/alummi";
 import CoffeeChats from "./pages/coffee-chats";
+import HostChats from "./pages/host-chats";
 import Settings from "./pages/settings";
 import Quiz from "./pages/quiz";
 import TLevelAdvice from "./pages/t-level-advice";
@@ -62,6 +63,7 @@ function App() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/alumni" element={<Alummi />} />
         <Route path="/alumni/coffee-chats" element={<CoffeeChats />} />
+        <Route path="/alumni/coffee-chats/manage" element={<HostChats />} />
         {/* Old misspelt addresses still work */}
         <Route path="/alummi" element={<Navigate to="/alumni" replace />} />
         <Route path="/alummi/coffee-chats" element={<Navigate to="/alumni/coffee-chats" replace />} />

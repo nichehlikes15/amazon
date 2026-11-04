@@ -240,6 +240,7 @@ function Navbar() {
                 {!notNeeded('/logbook', role) && <Link to="/logbook">My logbook</Link>}
                 <Link to="/settings">Settings</Link>
                 <Link to="/alumni">Career Journey</Link>
+                {user.chatHost && <Link to="/alumni/coffee-chats/manage">My coffee chat requests</Link>}
                 {user.isAdmin && <Link to="/admin">Admin</Link>}
                 <button type="button" className="dropdown-signout" onClick={handleLogout}>
                   Sign out

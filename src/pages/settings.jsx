@@ -7,6 +7,7 @@ import { useAccessibility } from '../modules/accessibility'
 import { Icon } from '../modules/icons'
 import { SignInRedirect } from '../modules/return-to'
 import { RoleChoice } from '../modules/role'
+import { EMAIL_ERROR, isValidEmail } from '../modules/email-check'
 
 /*
   Settings - one section at a time, picked from the side menu.
@@ -189,6 +190,10 @@ function Settings() {
     setProfileError('')
     if (!form.fullName.trim() || !form.email.trim()) {
       setProfileError('Please add your name and email.')
+      return
+    }
+    if (!isValidEmail(form.email)) {
+      setProfileError(EMAIL_ERROR)
       return
     }
     setSavingProfile(true)

@@ -659,3 +659,17 @@
     border-radius: 50%;
 }
 .cc-person:hover .cc-avatar-lg.has-photo { transform: scale(1.05); }
+
+/* Link for coffee chat hosts, under the hero facts */
+.cc-host-link { margin: 28px 0 0; }
+.cc-host-link a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--navy);
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: var(--orange);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
+}

@@ -11,6 +11,7 @@ const TITLES = [
   ['/information', 'Pathways'],
   ['/quiz', 'Career quiz'],
   ['/about-us', 'About us'],
+  ['/alumni/coffee-chats/manage', 'Manage my coffee chats'],
   ['/alumni/coffee-chats', 'Coffee chats'],
   ['/alumni', 'Alumni'],
   ['/profile', 'My profile'],

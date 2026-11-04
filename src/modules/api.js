@@ -100,6 +100,16 @@ export const api = {
   updateCoffeeChatDetails: (id, payload) =>
     request(`/coffee-chats/${id}/details`, { method: 'PUT', body: JSON.stringify(payload) }),
   cancelMyCoffeeChat: (id) => request(`/me/coffee-chats/${id}/cancel`, { method: 'POST' }),
+  // Coffee chat hosts: their own requests only (Manage my coffee chats page)
+  hostCoffeeChats: () => request('/host/coffee-chats'),
+  hostUpdateChatStatus: (id, status) =>
+    request(`/host/coffee-chats/${id}/status`, { method: 'PUT', body: JSON.stringify({ status }) }),
+  hostUpdateChatDetails: (id, payload) =>
+    request(`/host/coffee-chats/${id}/details`, { method: 'PUT', body: JSON.stringify(payload) }),
+  // Admin: which account manages each coffee chat person
+  adminChatHosts: () => request('/admin/chat-hosts'),
+  setChatHost: (mentor, email) =>
+    request('/admin/chat-hosts', { method: 'PUT', body: JSON.stringify({ mentor, email }) }),
   listOpportunities: () => request('/opportunities'),
   listSavedOpportunities: () => request('/saved-opportunities'),
   saveOpportunity: (id) =>

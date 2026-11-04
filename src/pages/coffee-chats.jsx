@@ -253,6 +253,13 @@ function CoffeeChats() {
             <li><Icon name="check" size={15} /> Free and informal</li>
             <li><Icon name="building" size={15} /> Students, alumni and Amazon buddies</li>
           </ul>
+          {user?.chatHost && (
+            <p className="cc-host-link">
+              <Link to="/alumni/coffee-chats/manage">
+                You host coffee chats. Manage your requests <Icon name="arrowRight" size={14} />
+              </Link>
+            </p>
+          )}
         </div>
       </header>
 

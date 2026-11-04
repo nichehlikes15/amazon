@@ -5,7 +5,7 @@ import { api } from '../modules/api'
 import { useAuth } from '../modules/auth'
 import { Icon } from '../modules/icons'
 import { CHAT_STATUSES, formatChatTime } from '../modules/mentors'
-import { AdminBoard, AdminFeedback, AdminKpis, downloadCsv } from './admin-insights'
+import { AdminBoard, AdminChatHosts, AdminFeedback, AdminKpis, downloadCsv } from './admin-insights'
 import { SignInRedirect } from '../modules/return-to'
 
 const ROLE_NAMES = { student: 'Student', parent: 'Parent or carer', school: 'School or college' }
@@ -322,6 +322,9 @@ function Admin() {
             </div>
           )}
         </section>
+
+        {/* Who manages each person's coffee chats */}
+        <AdminChatHosts />
 
         {/* Coffee chat requests */}
         <section className="content-section admin-eoi-section">

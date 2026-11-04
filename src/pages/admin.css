@@ -864,3 +864,19 @@ html[data-reduced-motion="on"] :is(.ak-ring-value, .ak-seg) { animation: none; s
     .ak-feedback { grid-template-columns: minmax(0, 1fr); justify-items: center; }
     .ak-pairs li { grid-template-columns: 90px minmax(0, 1fr); }
 }
+
+/* Coffee chat hosts: link a person to an account */
+.admin-hosts-intro { max-width: 760px; margin: -12px 0 24px; font-size: 0.9375rem; line-height: 1.6; }
+.admin-host-form { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.admin-host-form input {
+    flex: 1 1 220px;
+    min-width: 0;
+    padding: 9px 12px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--white);
+    color: var(--ink);
+    font: inherit;
+    font-size: 0.9375rem;
+}
+.admin-host-form input:focus-visible { border-color: var(--orange-solid); outline: 2px solid var(--orange-solid); outline-offset: 1px; }

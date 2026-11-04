@@ -9,6 +9,103 @@ import { C, ActivityChart, Donut, PairBars, RankBars, Ring, Sparkline, StackBar 
   admin-charts.jsx), and the "Was this page helpful?" answers. Both can be downloaded as CSV files for the Task 3 analysis.
 */
 
+// Admin: link each coffee chat person to their Launchpad account, so they can
+// manage their own requests on /alumni/coffee-chats/manage (not this page).
+export function AdminChatHosts() {
+  const [items, setItems] = useState([])
+  const [drafts, setDrafts] = useState({})
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState(null)
+  const [saved, setSaved] = useState(null)
+
+  const show = (list) => {
+    setItems(list)
+    setDrafts(Object.fromEntries(list.map((i) => [i.mentor, i.email || ''])))
+  }
+
+  useEffect(() => {
+    let live = true
+    api.adminChatHosts()
+      .then((d) => { if (live) show(d.items || []) })
+      .catch((err) => { if (live) setError(err.message) })
+      .finally(() => { if (live) setLoading(false) })
+    return () => { live = false }
+  }, [])
+
+  const save = async (e, mentor, email) => {
+    e?.preventDefault()
+    setError('')
+    setBusy(mentor)
+    try {
+      const d = await api.setChatHost(mentor, email)
+      show(d.items || [])
+      setSaved(mentor)
+      setTimeout(() => setSaved((cur) => (cur === mentor ? null : cur)), 1800)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  return (
+    <section className="content-section admin-eoi-section">
+      <h2 className="admin-section-title">Coffee chat hosts</h2>
+      <p className="admin-chat-hint admin-hosts-intro">
+        Link each person on the Coffee chats page to their Launchpad account. They can then confirm and update
+        their own requests on the Manage my coffee chats page. They won&apos;t see this admin page or anyone
+        else&apos;s requests. They need to create an account first.
+      </p>
+      {loading && <p className="admin-status">Loading…</p>}
+      {error && <div className="auth-error" role="alert">{error}</div>}
+      {!loading && items.length > 0 && (
+        <div className="admin-table-wrap">
+          <table className="admin-table">
+            <thead>
+              <tr><th>Person</th><th>Linked account</th><th>Account email</th></tr>
+            </thead>
+            <tbody>
+              {items.map((h) => (
+                <tr key={h.mentor}>
+                  <td><span className="admin-pathway">{h.mentor}</span></td>
+                  <td>
+                    {h.email ? (
+                      <span>{h.accountName ? `${h.accountName} · ` : ''}{h.email}</span>
+                    ) : (
+                      <span className="admin-muted">Not linked</span>
+                    )}
+                  </td>
+                  <td>
+                    <form className="admin-host-form" onSubmit={(e) => save(e, h.mentor, drafts[h.mentor] || '')}>
+                      <input
+                        type="email"
+                        aria-label={`Account email for ${h.mentor}`}
+                        placeholder="name@example.com"
+                        value={drafts[h.mentor] || ''}
+                        onChange={(e) => setDrafts({ ...drafts, [h.mentor]: e.target.value })}
+                      />
+                      <button type="submit" className="admin-edit" disabled={busy === h.mentor}>
+                        {busy === h.mentor ? 'Saving…' : 'Save'}
+                      </button>
+                      {h.email && (
+                        <button type="button" className="admin-edit" disabled={busy === h.mentor} onClick={() => save(null, h.mentor, '')}>
+                          Remove
+                        </button>
+                      )}
+                      {saved === h.mentor && <span className="admin-saved" role="status">Saved</span>}
+                    </form>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
+  )
+}
+
 // Turn rows into a CSV file and download it.
 export function downloadCsv(filename, headers, rows) {
   const cell = (v) => {

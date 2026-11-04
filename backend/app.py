@@ -51,6 +51,20 @@ ALLOWED_UPLOAD_EXTENSIONS = {
 
 # Allowed pathways - kept in one place so validation is consistent.
 PATHWAYS = {"Digital", "Business", "Media", "Finance", "Engineering"}
+
+# Email check used on every form that takes an email (sign up, settings,
+# register interest, coffee chats). It needs: something before the @, exactly
+# one @, and a real-looking domain after it with a dot and an ending of at
+# least 2 letters, e.g. name@school.ac.uk. It rejects "letter@", "@site.com",
+# "a@b.", "a@@b.com", "a@b..com" and addresses with spaces.
+EMAIL_RE = re.compile(
+    r"^[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*"
+    r"@(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,24}$"
+)
+
+
+def valid_email(email):
+    return bool(email) and len(email) <= 254 and len(email.split("@")[0]) <= 64 and EMAIL_RE.match(email) is not None
 # Expression of interest: who's asking, and the extra pathway choices.
 INTEREST_ROLES = {"student", "parent", "school"}
 EXTRA_PATHWAY_CHOICES = {"Not sure yet", "Several pathways"}
@@ -123,6 +137,10 @@ def init_db():
         db.execute("ALTER TABLE users ADD COLUMN email_updates INTEGER NOT NULL DEFAULT 1")
     if "role" not in cols:
         db.execute("ALTER TABLE users ADD COLUMN role TEXT")
+    if "chat_host" not in cols:
+        # Which coffee chat person this account belongs to (a name from MENTORS).
+        # Set by an admin. Lets that person manage their own requests.
+        db.execute("ALTER TABLE users ADD COLUMN chat_host TEXT")
     # Point the prep-guide resources at the downloadable PDFs.
     # Matched by title so older databases with any old link get fixed too.
     for title, new_url in (
@@ -200,6 +218,7 @@ def user_to_dict(row):
         "emailUpdates": bool(row["email_updates"]) if "email_updates" in keys else True,
         "quizPathway": row["quiz_pathway"] if "quiz_pathway" in keys else None,
         "role": row["role"] if "role" in keys else None,
+        "chatHost": row["chat_host"] if "chat_host" in keys else None,
     }
 
 
@@ -232,7 +251,7 @@ def signup():
 
     if not full_name or not email or not password:
         return jsonify({"error": "All fields are required."}), 400
-    if "@" not in email or "." not in email.split("@")[-1] or " " in email:
+    if not valid_email(email):
         return jsonify({"error": "Please enter a valid email address."}), 400
     if len(full_name) > 120 or len(email) > 254:
         return jsonify({"error": "Your name or email is too long."}), 400
@@ -320,7 +339,7 @@ def create_interest():
         return jsonify({"error": "Please tell us who you are."}), 400
     if not full_name or not email or not pathway:
         return jsonify({"error": "Name, email and pathway are required."}), 400
-    if "@" not in email or "." not in email.split("@")[-1]:
+    if not valid_email(email):
         return jsonify({"error": "Please enter a valid email address."}), 400
     if pathway not in PATHWAYS and pathway not in EXTRA_PATHWAY_CHOICES:
         return jsonify({"error": "Please choose a valid pathway."}), 400
@@ -430,7 +449,7 @@ def create_coffee_chat():
         return jsonify({"error": "Please choose someone to chat with."}), 400
     if not full_name or not email or not preferred_time:
         return jsonify({"error": "Name, email and a preferred time are required."}), 400
-    if "@" not in email or "." not in email.split("@")[-1]:
+    if not valid_email(email):
         return jsonify({"error": "Please enter a valid email address."}), 400
     if preferred_time not in MENTORS[mentor]:
         return jsonify({"error": "Please choose one of the available times."}), 400
@@ -497,30 +516,37 @@ def update_coffee_chat_status(chat_id):
         return jsonify({"error": "You must be signed in."}), 401
     if not user["is_admin"]:
         return jsonify({"error": "You do not have permission to do this."}), 403
+    return _apply_chat_status(chat_id)
+
+
+def _find_chat(db, chat_id, mentor=None):
+    """A coffee chat request by id. With `mentor`, only if it is that person's."""
+    if mentor is None:
+        return db.execute("SELECT * FROM coffee_chat_requests WHERE id = ?", (chat_id,)).fetchone()
+    return db.execute(
+        "SELECT * FROM coffee_chat_requests WHERE id = ? AND mentor = ?", (chat_id, mentor)
+    ).fetchone()
+
+
+def _apply_chat_status(chat_id, mentor=None, to_dict=None):
+    """Change a request's status. Used by admins (any request) and hosts (their own)."""
+    to_dict = to_dict or coffee_chat_to_dict
     data = request.get_json(silent=True) or {}
     status = (data.get("status") or "").strip()
     if status not in CHAT_STATUSES:
         return jsonify({"error": "Please choose a valid status."}), 400
     db = get_db()
-    row = db.execute("SELECT id FROM coffee_chat_requests WHERE id = ?", (chat_id,)).fetchone()
-    if row is None:
+    if _find_chat(db, chat_id, mentor) is None:
         return jsonify({"error": "Request not found."}), 404
     db.execute("UPDATE coffee_chat_requests SET status = ? WHERE id = ?", (status, chat_id))
     db.commit()
-    row = db.execute("SELECT * FROM coffee_chat_requests WHERE id = ?", (chat_id,)).fetchone()
-    return jsonify({"ok": True, "request": coffee_chat_to_dict(row)})
+    return jsonify({"ok": True, "request": to_dict(_find_chat(db, chat_id))})
 
 
-@app.put("/api/coffee-chats/<int:chat_id>/details")
-def update_coffee_chat_details(chat_id):
-    """Admin only - set the confirmed date/time and meeting link.
-    Send empty strings to clear them. Saving a time on a request that is
-    still 'Requested' moves it to 'Confirmed'."""
-    user = current_user()
-    if user is None:
-        return jsonify({"error": "You must be signed in."}), 401
-    if not user["is_admin"]:
-        return jsonify({"error": "You do not have permission to do this."}), 403
+def _apply_chat_details(chat_id, mentor=None, to_dict=None):
+    """Set the confirmed date/time and meeting link. Empty strings clear them.
+    Saving a time on a request that is still 'Requested' moves it to 'Confirmed'."""
+    to_dict = to_dict or coffee_chat_to_dict
     data = request.get_json(silent=True) or {}
     confirmed_time = (data.get("confirmedTime") or "").strip()
     meeting_link = (data.get("meetingLink") or "").strip()
@@ -535,7 +561,7 @@ def update_coffee_chat_details(chat_id):
         return jsonify({"error": "The meeting link must be a full https:// address."}), 400
 
     db = get_db()
-    row = db.execute("SELECT * FROM coffee_chat_requests WHERE id = ?", (chat_id,)).fetchone()
+    row = _find_chat(db, chat_id, mentor)
     if row is None:
         return jsonify({"error": "Request not found."}), 404
     status = row["status"]
@@ -546,8 +572,20 @@ def update_coffee_chat_details(chat_id):
         (confirmed_time or None, meeting_link or None, status, chat_id),
     )
     db.commit()
-    row = db.execute("SELECT * FROM coffee_chat_requests WHERE id = ?", (chat_id,)).fetchone()
-    return jsonify({"ok": True, "request": coffee_chat_to_dict(row)})
+    return jsonify({"ok": True, "request": to_dict(_find_chat(db, chat_id))})
+
+
+@app.put("/api/coffee-chats/<int:chat_id>/details")
+def update_coffee_chat_details(chat_id):
+    """Admin only - set the confirmed date/time and meeting link.
+    Send empty strings to clear them. Saving a time on a request that is
+    still 'Requested' moves it to 'Confirmed'."""
+    user = current_user()
+    if user is None:
+        return jsonify({"error": "You must be signed in."}), 401
+    if not user["is_admin"]:
+        return jsonify({"error": "You do not have permission to do this."}), 403
+    return _apply_chat_details(chat_id)
 
 
 @app.post("/api/me/coffee-chats/<int:chat_id>/cancel")
@@ -569,6 +607,107 @@ def cancel_my_coffee_chat(chat_id):
     db.commit()
     row = db.execute("SELECT * FROM coffee_chat_requests WHERE id = ?", (chat_id,)).fetchone()
     return jsonify({"ok": True, "request": coffee_chat_to_dict(row)})
+
+
+# ---------- Coffee chat hosts ----------
+# The people students book coffee chats with (MENTORS). An admin links each
+# person to their Launchpad account (users.chat_host). That person can then
+# manage their OWN requests on /alumni/coffee-chats/manage. They are not
+# admins: they can't see anyone else's requests or any admin page.
+
+def require_host():
+    """Return (user, host name, None) for a signed-in host, or (None, None, error)."""
+    user = current_user()
+    if user is None:
+        return None, None, (jsonify({"error": "You must be signed in."}), 401)
+    host = user["chat_host"] if "chat_host" in user.keys() else None
+    if not host or host not in MENTORS:
+        return None, None, (jsonify({"error": "This page is only for coffee chat hosts."}), 403)
+    return user, host, None
+
+
+def host_chat_to_dict(r):
+    """What a host sees. Students who were signed in see the time and link in
+    their own account, so the host doesn't get their email. For requests sent
+    while signed out, the email is kept so the host can reply."""
+    d = coffee_chat_to_dict(r)
+    linked = r["user_id"] is not None
+    d["linkedAccount"] = linked
+    if linked:
+        d["email"] = None
+    return d
+
+
+@app.get("/api/host/coffee-chats")
+def host_coffee_chats():
+    _, host, err = require_host()
+    if err:
+        return err
+    rows = get_db().execute(
+        "SELECT * FROM coffee_chat_requests WHERE mentor = ? ORDER BY created_at DESC, id DESC", (host,)
+    ).fetchall()
+    items = [host_chat_to_dict(r) for r in rows]
+    return jsonify({"host": host, "items": items, "count": len(items)})
+
+
+@app.put("/api/host/coffee-chats/<int:chat_id>/status")
+def host_update_chat_status(chat_id):
+    _, host, err = require_host()
+    if err:
+        return err
+    return _apply_chat_status(chat_id, mentor=host, to_dict=host_chat_to_dict)
+
+
+@app.put("/api/host/coffee-chats/<int:chat_id>/details")
+def host_update_chat_details(chat_id):
+    _, host, err = require_host()
+    if err:
+        return err
+    return _apply_chat_details(chat_id, mentor=host, to_dict=host_chat_to_dict)
+
+
+def _chat_hosts(db):
+    rows = db.execute("SELECT full_name, email, chat_host FROM users WHERE chat_host IS NOT NULL").fetchall()
+    by_host = {r["chat_host"]: r for r in rows}
+    return [{
+        "mentor": name,
+        "email": by_host[name]["email"] if name in by_host else None,
+        "accountName": by_host[name]["full_name"] if name in by_host else None,
+    } for name in MENTORS]
+
+
+@app.get("/api/admin/chat-hosts")
+def admin_chat_hosts():
+    """Admin only - which account manages each person's coffee chats."""
+    _, err = require_admin()
+    if err:
+        return err
+    return jsonify({"items": _chat_hosts(get_db())})
+
+
+@app.put("/api/admin/chat-hosts")
+def admin_set_chat_host():
+    """Admin only - link a coffee chat person to an account by its email.
+    An empty email removes the link. Each person has at most one account."""
+    _, err = require_admin()
+    if err:
+        return err
+    data = request.get_json(silent=True) or {}
+    mentor = (data.get("mentor") or "").strip()
+    email = (data.get("email") or "").strip().lower()
+    if mentor not in MENTORS:
+        return jsonify({"error": "Please choose someone from the coffee chats list."}), 400
+    db = get_db()
+    account = None
+    if email:
+        account = db.execute("SELECT id FROM users WHERE lower(email) = ?", (email,)).fetchone()
+        if account is None:
+            return jsonify({"error": "No account uses that email. Ask them to create an account first."}), 404
+    db.execute("UPDATE users SET chat_host = NULL WHERE chat_host = ?", (mentor,))
+    if account is not None:
+        db.execute("UPDATE users SET chat_host = ? WHERE id = ?", (mentor, account["id"]))
+    db.commit()
+    return jsonify({"ok": True, "items": _chat_hosts(db)})
 
 
 # ---------- Interview practice ----------
@@ -1624,7 +1763,7 @@ def update_me():
 
     if not full_name or not email:
         return jsonify({"error": "Name and email are required."}), 400
-    if "@" not in email:
+    if not valid_email(email):
         return jsonify({"error": "Please enter a valid email address."}), 400
 
     db = get_db()
