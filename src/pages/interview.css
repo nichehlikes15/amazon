@@ -693,8 +693,8 @@
     margin: 14px 0 0;
     padding: 12px 14px;
     border-radius: var(--radius-sm);
-    background: #fff4e6;
-    color: #8a4b00;
+    background: #FFF4E6;
+    color: #8A4600;
     font-size: 0.9rem;
     line-height: 1.5;
 }
@@ -825,7 +825,7 @@
 }
 
 .iv-review-score.is-good { color: #1e7e34; }
-.iv-review-score.is-ok { color: #b25e00; }
+.iv-review-score.is-ok { color: #B25E00; }
 .iv-review-score.is-low { color: #b42318; }
 
 /* What went well / try this, under coloured top rules */
@@ -1629,7 +1629,7 @@
     margin-left: 8px;
     padding: 1px 8px;
     border-radius: var(--radius-sm);
-    background: #FFF3E0;
+    background: #FFF4E6;
     color: #232F3E;
     font-size: 0.6875rem;
     font-weight: 700;
@@ -1664,7 +1664,7 @@
     text-transform: uppercase;
 }
 
-html[data-theme="dark"] .iv-ai-tag { background: #3a2a14; color: #ffc27a; }
+html[data-theme="dark"] .iv-ai-tag { background: #3A2A14; color: #FFC27A; }
 
 @media (prefers-reduced-motion: reduce) {
     .iv-ai, .iv-live-fb-say, .iv-coach { animation: none; }
@@ -1741,9 +1741,9 @@ html[data-theme="dark"] .iv-safety { border-color: #5a2a2a; background: #3a1717;
 
 /* ---------- Dark mode ---------- */
 html[data-theme="dark"] .iv-review-score.is-good { color: #8fdca6; }
-html[data-theme="dark"] .iv-review-score.is-ok { color: #ffc27a; }
+html[data-theme="dark"] .iv-review-score.is-ok { color: #FFC27A; }
 html[data-theme="dark"] .iv-review-score.is-low { color: #ffb4ab; }
-html[data-theme="dark"] .iv-warn { background: #3a2a14; color: #ffc27a; }
+html[data-theme="dark"] .iv-warn { background: #3A2A14; color: #FFC27A; }
 html[data-theme="dark"] .iv-fb-boost,
 html[data-theme="dark"] .iv-saved:not(.is-off) { background: #15301f; color: #8fdca6; }
 html[data-theme="dark"] .iv-error,

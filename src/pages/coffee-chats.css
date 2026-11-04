@@ -482,9 +482,9 @@
 .cc-option:active { transform: scale(0.97); }
 
 .cc-option.is-on {
-    border-color: #ffd9a8;
-    background: #fff4e6;
-    color: #8a4600;
+    border-color: #FFD9A8;
+    background: #FFF4E6;
+    color: #8A4600;
 }
 
 .cc-option:focus-within {

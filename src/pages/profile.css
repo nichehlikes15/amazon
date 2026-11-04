@@ -555,7 +555,7 @@
 }
 
 .pr-up-icon.is-chat { background: #DEE0E2; color: #232F3E; }
-.pr-up-icon.is-closing { background: #fff4e6; color: #b25e00; }
+.pr-up-icon.is-closing { background: #FFF4E6; color: #B25E00; }
 
 /* Mini score */
 .pr-mini {
@@ -775,7 +775,7 @@
 
 /* ---------- Dark mode ---------- */
 html[data-theme="dark"] .pr-up-icon.is-chat { background: #2b3746; color: #e9eef5; }
-html[data-theme="dark"] .pr-up-icon.is-closing { background: #3a2a14; color: #ffc27a; }
+html[data-theme="dark"] .pr-up-icon.is-closing { background: #3A2A14; color: #FFC27A; }
 html[data-theme="dark"] .pf-error { background: #3a1717; color: #ffb4ab; }
 html[data-theme="dark"] .pr-avatar { border-color: var(--light); }
 
@@ -860,9 +860,9 @@ html[data-theme="dark"] .pr-avatar { border-color: var(--light); }
     width: 34px;
     height: 34px;
     padding: 0;
-    border: 1px solid #ffd9a8;
+    border: 1px solid #FFD9A8;
     border-radius: 50%;
-    background: #fff4e6;
+    background: #FFF4E6;
     color: var(--orange-solid);
     cursor: pointer;
     transition: background var(--dur) ease, border-color var(--dur) ease, color var(--dur) ease, transform var(--dur) var(--ease-out);
@@ -923,7 +923,7 @@ html[data-theme="dark"] .pr-avatar { border-color: var(--light); }
     font-weight: 600;
 }
 
-.pf-card-closing.is-soon { background: #fff4e6; color: #b25e00; }
+.pf-card-closing.is-soon { background: #FFF4E6; color: #B25E00; }
 .pf-card-closing.is-closed { background: #f1f2f4; color: #6b7480; }
 
 .pf-card-actions {
@@ -979,9 +979,9 @@ html[data-theme="dark"] .pr-avatar { border-color: var(--light); }
     gap: 14px;
     margin-bottom: 24px;
     padding: 16px 18px;
-    border: 1px solid #ffd9a8;
+    border: 1px solid #FFD9A8;
     border-radius: var(--radius);
-    background: #fff8ef;
+    background: #FFF8EF;
     animation: pf-card-in 0.5s var(--ease-out) backwards;
 }
 
@@ -994,7 +994,7 @@ html[data-theme="dark"] .pr-avatar { border-color: var(--light); }
     flex-shrink: 0;
     border-radius: 50%;
     background: #fff;
-    color: #b25e00;
+    color: #B25E00;
 }
 
 .pf-alert div {
@@ -1004,15 +1004,15 @@ html[data-theme="dark"] .pr-avatar { border-color: var(--light); }
     font-size: 0.9375rem;
 }
 
-.pf-alert strong { color: #8a4600; }
+.pf-alert strong { color: #8A4600; }
 .pf-alert > div > span { color: var(--ink); line-height: 1.55; }
-.pf-alert a { color: #8a4600; font-weight: 600; }
+.pf-alert a { color: #8A4600; font-weight: 600; }
 
-html[data-theme="dark"] .pf-alert { border-color: #5a3d17; background: #2a1f12; }
-html[data-theme="dark"] .pf-alert-icon { background: #3a2a14; color: #ffc27a; }
-html[data-theme="dark"] :is(.pf-alert strong, .pf-alert a) { color: #ffc27a; }
-html[data-theme="dark"] .pf-card-remove { border-color: #5a3d17; background: #3a2a14; color: #ffc27a; }
-html[data-theme="dark"] .pf-card-closing.is-soon { background: #3a2a14; color: #ffc27a; }
+html[data-theme="dark"] .pf-alert { border-color: #5A3D17; background: #2A1F12; }
+html[data-theme="dark"] .pf-alert-icon { background: #3A2A14; color: #FFC27A; }
+html[data-theme="dark"] :is(.pf-alert strong, .pf-alert a) { color: #FFC27A; }
+html[data-theme="dark"] .pf-card-remove { border-color: #5A3D17; background: #3A2A14; color: #FFC27A; }
+html[data-theme="dark"] .pf-card-closing.is-soon { background: #3A2A14; color: #FFC27A; }
 html[data-theme="dark"] .pf-card-closing.is-closed { background: #222b36; color: #9aa8b9; }
 
 @keyframes pf-card-in {
@@ -1098,7 +1098,7 @@ html[data-theme="dark"] .pf-card-closing.is-closed { background: #222b36; color:
 }
 
 .pp-stat strong.is-good, .pp-stat strong.is-up { color: #1e7e34; }
-.pp-stat strong.is-ok { color: #b25e00; }
+.pp-stat strong.is-ok { color: #B25E00; }
 .pp-stat strong.is-low, .pp-stat strong.is-down { color: #b42318; }
 
 /* Chart */
@@ -1250,7 +1250,7 @@ html[data-theme="dark"] .pf-card-closing.is-closed { background: #222b36; color:
 }
 
 .pp-score.is-good, .pp-q-score.is-good { background: #e8f6ec; color: #1e7e34; }
-.pp-score.is-ok, .pp-q-score.is-ok { background: #fff4e6; color: #b25e00; }
+.pp-score.is-ok, .pp-q-score.is-ok { background: #FFF4E6; color: #B25E00; }
 .pp-score.is-low, .pp-q-score.is-low { background: #fdeaea; color: #b42318; }
 
 .pp-caret {
@@ -1318,7 +1318,7 @@ html[data-theme="dark"] .pf-card-closing.is-closed { background: #222b36; color:
 
 .pp-focus h4 {
     margin: 0 0 6px;
-    color: #b25e00;
+    color: #B25E00;
     font-size: 0.875rem;
 }
 
@@ -1379,10 +1379,10 @@ html[data-theme="dark"] .pf-card-closing.is-closed { background: #222b36; color:
 }
 
 html[data-theme="dark"] :is(.pp-score.is-good, .pp-q-score.is-good) { background: #15301f; color: #8fdca6; }
-html[data-theme="dark"] :is(.pp-score.is-ok, .pp-q-score.is-ok) { background: #3a2a14; color: #ffc27a; }
+html[data-theme="dark"] :is(.pp-score.is-ok, .pp-q-score.is-ok) { background: #3A2A14; color: #FFC27A; }
 html[data-theme="dark"] :is(.pp-score.is-low, .pp-q-score.is-low, .pp-yes) { background: #3a1717; color: #ffb4ab; border-color: #5c2424; }
 html[data-theme="dark"] .pp-stat strong:is(.is-good, .is-up) { color: #8fdca6; }
-html[data-theme="dark"] .pp-stat strong.is-ok, html[data-theme="dark"] .pp-focus h4 { color: #ffc27a; }
+html[data-theme="dark"] .pp-stat strong.is-ok, html[data-theme="dark"] .pp-focus h4 { color: #FFC27A; }
 html[data-theme="dark"] .pp-stat strong:is(.is-low, .is-down) { color: #ffb4ab; }
 
 @keyframes pp-grow {
@@ -1498,7 +1498,7 @@ html[data-theme="dark"] .pp-stat strong:is(.is-low, .is-down) { color: #ffb4ab; 
 .ab-card-title:hover { color: var(--orange-solid); }
 .ab-card-meta { color: var(--muted); font-size: 0.8125rem; }
 .ab-card-closing { font-size: 0.75rem; font-weight: 600; color: var(--muted); }
-.ab-card-closing.is-soon { color: #b25e00; }
+.ab-card-closing.is-soon { color: #B25E00; }
 .ab-card-closing.is-closed { color: #b42318; }
 
 .ab-result {
@@ -1536,7 +1536,7 @@ html[data-theme="dark"] .pp-stat strong:is(.is-low, .is-down) { color: #ffb4ab; 
 
 html[data-theme="dark"] .ab-result { background: #3a1717; color: #ffb4ab; }
 html[data-theme="dark"] .ab-result.is-offer { background: #15301f; color: #8fdca6; }
-html[data-theme="dark"] .ab-card-closing.is-soon { color: #ffc27a; }
+html[data-theme="dark"] .ab-card-closing.is-soon { color: #FFC27A; }
 
 @media (prefers-reduced-motion: reduce) { .ab-card { animation: none; } }
 @media (max-width: 1000px) { .ab-board { grid-template-columns: repeat(5, 220px); } }

@@ -475,8 +475,8 @@
 }
 
 .opp-save.saved {
-    border-color: #ffd9a8;
-    background: #fff4e6;
+    border-color: #FFD9A8;
+    background: #FFF4E6;
     color: var(--orange-solid);
 }
 
@@ -576,8 +576,8 @@
 }
 
 .opp-closing.is-soon .opp-closing-pill {
-    background: #fff4e6;
-    color: #b25e00;
+    background: #FFF4E6;
+    color: #B25E00;
 }
 
 .opp-closing.is-closed .opp-closing-pill {

@@ -49,10 +49,13 @@ function RequestPanel({ mentor, user, onClose, onSent }) {
     document.addEventListener('keydown', onKey)
     const prevOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
+    // Hide the Ask Launchpad button while the panel is open (see assistant.css)
+    document.documentElement.classList.add('side-panel-open')
     const t = setTimeout(() => firstField.current?.focus(), 120)
     return () => {
       document.removeEventListener('keydown', onKey)
       document.body.style.overflow = prevOverflow
+      document.documentElement.classList.remove('side-panel-open')
       clearTimeout(t)
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps

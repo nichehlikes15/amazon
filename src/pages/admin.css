@@ -244,7 +244,7 @@
 .admin-status-select:hover { border-color: var(--line-strong); }
 .admin-status-select:disabled { opacity: 0.6; cursor: progress; }
 
-.admin-status-select.is-requested { background-color: #fff4e6; color: #b25e00; }
+.admin-status-select.is-requested { background-color: #FFF4E6; color: #B25E00; }
 .admin-status-select.is-confirmed { background-color: #DEE0E2; color: #232F3E; }
 .admin-status-select.is-completed { background-color: #e8f6ec; color: #1e7e34; }
 .admin-status-select.is-cancelled { background-color: #f1f2f4; color: #6b7480; }
@@ -440,7 +440,7 @@
 .ak-role { background: var(--light); color: var(--navy); }
 .ak-role.is-parent { background: #DEE0E2; color: #232F3E; }
 .ak-role.is-school { background: #232F3E; color: #ffffff; }
-.ak-u18 { background: #fff4e6; color: #b25e00; white-space: normal; }
+.ak-u18 { background: #FFF4E6; color: #B25E00; white-space: normal; }
 
 .ak-sub {
     display: block;
@@ -452,7 +452,7 @@ html[data-theme="dark"] .ak-yes { background: #15301f; color: #8fdca6; }
 html[data-theme="dark"] .ak-no { background: #3a1717; color: #ffb4ab; }
 html[data-theme="dark"] .ak-role.is-parent { background: #2b3746; color: #e9eef5; }
 html[data-theme="dark"] .ak-role.is-school { background: #e9eef5; color: #232F3E; }
-html[data-theme="dark"] .ak-u18 { background: #3a2a14; color: #ffc27a; }
+html[data-theme="dark"] .ak-u18 { background: #3A2A14; color: #FFC27A; }
 
 @keyframes ak-in {
     from { opacity: 0; transform: translateY(8px); }
@@ -483,7 +483,7 @@ html[data-theme="dark"] .ak-u18 { background: #3a2a14; color: #ffc27a; }
 .ak-csv.is-danger:hover { border-color: #f0c2c2; color: #b42318; }
 
 /* ---------- KPI dashboard: numbers and charts (admin-charts.jsx) ---------- */
-/* Amazon colours only: Amazon Orange, Squid Ink, and greys / light orange mixed from them */
+/* Amazon colours only: Amazon Orange, Squid Ink, Off-white, and greys / light orange mixed from them */
 .ak {
     --ak-orange: #FF9900;
     --ak-ink: #232F3E;
@@ -491,7 +491,7 @@ html[data-theme="dark"] .ak-u18 { background: #3a2a14; color: #ffc27a; }
     --ak-light: #CFD1D5;
     --ak-peach: #FFC266;
     --ak-deep: #8C5400;   /* Amazon Orange, darkened */
-    --ak-track: #F2F3F3;
+    --ak-track: #F5F3EF;
 }
 
 html[data-theme="dark"] .ak {

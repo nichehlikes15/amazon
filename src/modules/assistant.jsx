@@ -21,7 +21,18 @@ import { canSpeak, findVoice, savedVoiceURI, speakNatural } from './voice'
 // only while the practice call is running (see interview.jsx and assistant.css).
 const HIDDEN_ON = ['/admin']
 
+// A suggestion can be plain text (sent to the server like a typed question) or
+// { q, answer, links } with a fixed answer that always links to the right page.
 const SUGGESTIONS = [
+  {
+    q: 'How do I use my placement logbook?',
+    answer:
+      'Your placement logbook is where you record your T Level industry placement. Each week, add how many hours ' +
+      'you worked, what you did, what you learned and any feedback you were given. You can also set technical and ' +
+      'employability goals and tick them off as you go. It adds up your hours towards the 315-hour target, and you ' +
+      'can print it or save it as a PDF for review meetings. You need to be signed in to use it.',
+    links: [{ to: '/logbook', label: 'Open my logbook' }],
+  },
   'How long is a placement?',
   'Which pathway suits me?',
   'How do I book a coffee chat?',
@@ -93,7 +104,7 @@ export function AskLaunchpad() {
     setView('home')
   }
 
-  const send = async (question) => {
+  const send = async (question, preset = null) => {
     const q = question.trim()
     if (!q || busy) return
     const history = messages.slice(-6).map((m) => ({ role: m.role, text: m.text }))
@@ -101,6 +112,13 @@ export function AskLaunchpad() {
     setMessages((list) => [...list, { role: 'user', text: q }])
     setText('')
     setBusy(true)
+    if (preset) {
+      // Fixed answer: a short pause so it doesn't appear instantly, then show it.
+      await new Promise((r) => setTimeout(r, 450))
+      setMessages((list) => [...list, { role: 'assistant', text: preset.answer, links: preset.links || [], ai: false }])
+      setBusy(false)
+      return
+    }
     try {
       const r = await api.askAssistant({ message: q, history })
       setMessages((list) => [...list, { role: 'assistant', text: r.answer, links: r.links || [], ai: r.source === 'ai', safety: r.safety }])
@@ -170,9 +188,12 @@ export function AskLaunchpad() {
 
               <h3>Try asking</h3>
               <div className="ask-lp-chips">
-                {SUGGESTIONS.map((s) => (
-                  <button key={s} type="button" onClick={() => send(s)}>{s}</button>
-                ))}
+                {SUGGESTIONS.map((s) => {
+                  const label = typeof s === 'string' ? s : s.q
+                  return (
+                    <button key={label} type="button" onClick={() => send(label, typeof s === 'string' ? null : s)}>{label}</button>
+                  )
+                })}
               </div>
 
               <h3>Popular pages</h3>

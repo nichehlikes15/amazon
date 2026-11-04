@@ -275,7 +275,7 @@
 .ask-lp-ai {
     padding: 1px 7px;
     border-radius: var(--radius-sm);
-    background: #FFF3E0;
+    background: #FFF4E6;
     color: #232F3E;
     font-size: 0.6875rem;
     font-weight: 700;
@@ -337,7 +337,7 @@
     line-height: 1.45;
 }
 
-html[data-theme="dark"] .ask-lp-ai { background: #3a2a14; color: #ffc27a; }
+html[data-theme="dark"] .ask-lp-ai { background: #3A2A14; color: #FFC27A; }
 
 @keyframes ask-lp-in {
     from { opacity: 0; transform: translateY(10px) scale(0.97); }
@@ -372,3 +372,12 @@ html[data-theme="dark"] .ask-lp-ai { background: #3a2a14; color: #ffc27a; }
 
 /* Hidden while an interview practice call is running */
 html.iv-in-call .ask-lp { display: none !important; }
+
+/* Fades out while a side panel is open (e.g. the coffee chat request form) */
+.ask-lp { transition: opacity var(--dur) ease, visibility 0s linear 0s; }
+html.side-panel-open .ask-lp {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity var(--dur) ease, visibility 0s linear var(--dur);
+}

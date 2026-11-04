@@ -98,9 +98,9 @@ a.od-tag:hover {
 }
 
 .od-tag-soon {
-    border-color: #ffd9a8;
-    background: #fff4e6;
-    color: #b25e00;
+    border-color: #FFD9A8;
+    background: #FFF4E6;
+    color: #B25E00;
 }
 
 .od-tag-closed {
@@ -186,9 +186,9 @@ a.od-tag:hover {
 }
 
 .od-save-opp.is-saved {
-    border-color: #ffd9a8;
-    background: #fff4e6;
-    color: #b25e00;
+    border-color: #FFD9A8;
+    background: #FFF4E6;
+    color: #B25E00;
 }
 
 .od-save-opp.is-saved svg { animation: od-pop 0.35s var(--ease-spring) both; }
@@ -659,7 +659,7 @@ a.od-tag:hover {
 .od-drop:hover,
 .od-drop.is-dragging {
     border-color: var(--orange);
-    background: #fff8ef;
+    background: #FFF8EF;
 }
 
 .od-drop.is-dragging { transform: scale(1.02); }

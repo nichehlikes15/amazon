@@ -230,8 +230,8 @@
 .qb-waiting {
     padding: 2px 9px;
     border-radius: var(--radius-sm);
-    background: #fff4e6;
-    color: #8a4b00;
+    background: #FFF4E6;
+    color: #8A4600;
     font-weight: 600;
 }
 
@@ -323,7 +323,7 @@
 .qb-small-btn:disabled { opacity: 0.5; cursor: default; }
 
 html[data-theme="dark"] .qb-safety { border-color: #5a2a2a; background: #3a1717; color: #ffd2cc; }
-html[data-theme="dark"] .qb-waiting { background: #3a2a14; color: #ffc27a; }
+html[data-theme="dark"] .qb-waiting { background: #3A2A14; color: #FFC27A; }
 html[data-theme="dark"] .qb-posted { color: #8fdca6; }
 
 @keyframes qb-in {

@@ -52,10 +52,10 @@ export default function InterviewerVideo({ speaking, listening, asking, thinking
         <path d="M292 214 L348 214 L352 270 C340 286 300 286 288 270 Z" fill={SKIN_SHADE} />
         <path d="M282 258 L320 300 L358 258 L372 266 L320 316 L268 266 Z" fill="#f2f5f8" />
         {/* lanyard + badge */}
-        <path d="M296 270 L312 340" stroke="#ff9900" strokeWidth="5" strokeLinecap="round" />
-        <path d="M344 270 L328 340" stroke="#ff9900" strokeWidth="5" strokeLinecap="round" />
+        <path d="M296 270 L312 340" stroke="#FF9900" strokeWidth="5" strokeLinecap="round" />
+        <path d="M344 270 L328 340" stroke="#FF9900" strokeWidth="5" strokeLinecap="round" />
         <rect x="300" y="334" width="40" height="30" rx="4" fill="#ffffff" />
-        <path d="M309 352 Q320 359 331 352" stroke="#232f3e" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+        <path d="M309 352 Q320 359 331 352" stroke="#232F3E" strokeWidth="2.5" fill="none" strokeLinecap="round" />
       </g>
 
       {/* Hand: hidden below the picture until Alex waves or gives a thumbs-up.
@@ -155,10 +155,10 @@ export function OfficeBackdrop() {
       <rect x="122" y="40" width="6" height="190" fill="#e6edf4" />
       {/* shelf with books */}
       <rect x="455" y="92" width="150" height="8" rx="2" fill="#a88b6c" />
-      <rect x="468" y="52" width="16" height="40" rx="2" fill="#ff9900" />
+      <rect x="468" y="52" width="16" height="40" rx="2" fill="#FF9900" />
       <rect x="488" y="58" width="14" height="34" rx="2" fill="#232F3E" />
       <rect x="506" y="48" width="18" height="44" rx="2" fill="#FF9900" opacity="0.7" />
-      <rect x="528" y="62" width="14" height="30" rx="2" fill="#232f3e" />
+      <rect x="528" y="62" width="14" height="30" rx="2" fill="#232F3E" />
       {/* plant */}
       <rect x="560" y="210" width="40" height="46" rx="6" fill="#e9e1d6" />
       <ellipse cx="580" cy="196" rx="34" ry="30" fill="#5f9e6e" />

@@ -1,15 +1,15 @@
 :root {
-    /* Amazon brand colours: Amazon Dark Blue (Squid Ink) #232F3E and Amazon Orange #FF9900.
-       Use the dark blue wherever you'd use black. */
+    /* Amazon brand colours: Amazon Orange #FF9900 and Amazon Dark Blue (Squid Ink) #232F3E,
+       with Off-white #F5F3EF for soft panels. Use the dark blue wherever you'd use black. */
     --navy: #232F3E;
     --orange: #FF9900;
     --ink: #232F3E;
     --muted: #536174;
     --line: #dce3eb;
-    --light: #f3f7fb;
+    --light: #F5F3EF;             /* Off-white: soft panels */
     --white: #ffffff;
     /* Orange buttons and fills are Amazon Orange with dark blue text on top
-       (white text on #FF9900 is too hard to read; dark blue is about 6.6:1). */
+       (white text on #FF9900 is too hard to read; dark blue passes easily). */
     --orange-solid: #FF9900;
     --orange-solid-hover: #F08F00;
     --on-orange: #232F3E;
@@ -159,14 +159,14 @@ html[data-contrast="high"] ::placeholder { color: #4a5560; opacity: 1; }
 /* The bit being read is highlighted so it's easy to follow */
 .is-reading-aloud {
     border-radius: 6px;
-    background: #fff4e6 !important;
-    box-shadow: 0 0 0 6px #fff4e6, inset 0 0 0 0 transparent;
+    background: #FFF4E6 !important;
+    box-shadow: 0 0 0 6px #FFF4E6, inset 0 0 0 0 transparent;
     transition: background var(--dur) ease, box-shadow var(--dur) ease;
 }
 
 html[data-theme="dark"] .is-reading-aloud {
-    background: #3a2a14 !important;
-    box-shadow: 0 0 0 6px #3a2a14;
+    background: #3A2A14 !important;
+    box-shadow: 0 0 0 6px #3A2A14;
 }
 
 .ra-player {
@@ -250,9 +250,9 @@ html[data-theme="dark"] .is-reading-aloud {
 
 /* Light pastel status pills / notices: deepen them in dark mode */
 html[data-theme="dark"] :is(.opp-closing.is-soon .opp-closing-pill, .od-tag-soon, .opp-save.saved, .od-save-opp.is-saved, .ccl-status, .cc-option.is-on, .admin-status-select.is-requested) {
-    background-color: #3a2a14;
-    border-color: #5a3d17;
-    color: #ffc27a;
+    background-color: #3A2A14;
+    border-color: #5A3D17;
+    color: #FFC27A;
 }
 html[data-theme="dark"] :is(.ccl-status.is-confirmed, .admin-status-select.is-confirmed, .ccl-meeting) { background-color: #2b3746; color: #e9eef5; }
 html[data-theme="dark"] :is(.ccl-status.is-completed, .admin-status-select.is-completed, .cc-sent-icon) { background-color: #15301f; color: #8fdca6; }
@@ -260,8 +260,8 @@ html[data-theme="dark"] :is(.ccl-status.is-cancelled, .admin-status-select.is-ca
 html[data-theme="dark"] :is(.auth-error, .od-error, .cc-error, .pf-error, .ccl-yes, [class$="-error"][role="alert"]) { background-color: #3a1717; border-color: #5c2424; color: #ffb4ab; }
 html[data-theme="dark"] .ccl-when { color: var(--navy); }
 html[data-theme="dark"] .od-drop:hover,
-html[data-theme="dark"] .od-drop.is-dragging { background: #2a1f12; }
-html[data-theme="dark"] ::selection { background: #5a3d17; color: #fff; }
+html[data-theme="dark"] .od-drop.is-dragging { background: #2A1F12; }
+html[data-theme="dark"] ::selection { background: #5A3D17; color: #fff; }
 
 /* ----- Dark mode fixes ----- */
 /* In dark mode --white turns near-black and --navy turns light, so anything
@@ -285,12 +285,12 @@ html[data-theme="dark"] .wtl-cta { background: #141d29; }
 
 /* Light orange highlights (active tabs, hovers, chosen cards) */
 html[data-theme="dark"] :is(.info2-rail button.is-active, .qz-answer:hover, .qz-answer:focus-visible) {
-    border-color: #5a3d17;
-    background: #2a1f12;
+    border-color: #5A3D17;
+    background: #2A1F12;
     color: var(--navy);
 }
-html[data-theme="dark"] .al-picker.is-active { border-color: #5a3d17; box-shadow: 0 8px 22px rgb(0 0 0 / 35%); }
-html[data-theme="dark"] .al-timeline::before { background: #5a3d17; }
+html[data-theme="dark"] .al-picker.is-active { border-color: #5A3D17; box-shadow: 0 8px 22px rgb(0 0 0 / 35%); }
+html[data-theme="dark"] .al-timeline::before { background: #5A3D17; }
 
 /* The sticky pathway strip on small screens was white */
 html[data-theme="dark"] .info2-rail { background: rgb(13 20 29 / 92%); border-color: var(--line); }
@@ -303,7 +303,7 @@ html[data-theme="dark"] .admin-table tr.is-editing td { background: var(--light)
 html[data-theme="dark"] .od-file-remove:hover { background: #3a1717; }
 html[data-theme="dark"] .ak-csv.is-danger:hover { border-color: #5c2424; }
 html[data-theme="dark"] .event-online { background: #2b3746; color: #e9eef5; }
-html[data-theme="dark"] .event-in-person { background: #3a2a14; color: #ffc27a; }
+html[data-theme="dark"] .event-in-person { background: #3A2A14; color: #FFC27A; }
 
 /* Outline button on the dark bands: its border and hover used --white */
 html[data-theme="dark"] .wtl-secondary-on-dark { border-color: #fff; color: #fff; }

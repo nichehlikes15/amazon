@@ -385,8 +385,8 @@
     }
 
     .info2-rail button.is-active {
-        border-color: #ffd9a8;
-        background: #fff4e6;
+        border-color: #FFD9A8;
+        background: #FFF4E6;
     }
 
     .pw-cols { grid-template-columns: 1fr; gap: 32px; }
