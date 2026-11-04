@@ -556,21 +556,8 @@ function TLevel() {
                       start when they apply.
                     </p>
                   </div>
-                  <Media alt="Amazon apprentice at work" className="earn-media" />
+                  <Media image="/assets/images/tl-apprentice.jpg" alt="Two apprentices in safety glasses and work aprons testing a robotics model on a workshop bench" className="earn-media" />
                 </div>
-            <div className="earn-callout">
-              <div>
-                <h3>Earn while you learn</h3>
-                <p>
-                  Amazon apprentices are paid a salary while they train and gain a
-                  recognised qualification, with <strong>zero tuition fees</strong>.
-                  Students who complete a T Level placement at Amazon already know the
-                  teams, the tools and the Leadership Principles, giving them a head
-                  start when they apply.
-                </p>
-              </div>
-              <Media image="/assets/images/tl-apprentice.jpg" alt="Two apprentices in safety glasses and work aprons testing a robotics model on a workshop bench" className="earn-media" />
-            </div>
 
                 <div className="tl-heading-row">
                   <h2 className="tl-subheading" id="apprenticeships-heading">Amazon apprenticeships you could progress into</h2>
